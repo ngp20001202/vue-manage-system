@@ -1,115 +1,26 @@
 <template>
 	<div class="config-site">
-		<el-card shadow="never" class="filter-card">
-			<el-form :inline="true" class="filter-form">
-				<el-form-item>
-					<el-input
-						v-model="keyword"
-						:placeholder="t('pages.Alias')"
-						clearable
-						class="keyword-input"
-						@keyup.enter="onSearch"
-					/>
-				</el-form-item>
-				<el-form-item>
-					<el-button type="primary" :icon="Search" @click="onSearch">
-						{{ t('pages.Search') }}
-					</el-button>
-					<el-button :icon="Refresh" @click="onReset">
-						{{ t('pages.Reset') }}
-					</el-button>
-					<el-button type="primary" :icon="Plus" @click="onCreate">
-						{{ t('pages.Create') }}
-					</el-button>
-				</el-form-item>
-			</el-form>
-		</el-card>
-
 		<el-card shadow="never" class="table-card">
-			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
-				<el-table-column :label="t('pages.Alias')" prop="alias" min-width="140">
+			<div class="operation">
+				<el-button type="success" size="small" class="export mr10" :icon="Plus" @click="onCreate" />
+			</div>
+
+			<el-table v-loading="loading" :data="routeData" style="width: 100%; margin-bottom: 15px" border size="small">
+				<el-table-column :label="t('pages.ID')">
 					<template #default="scope">
-						<span class="cyan">{{ scope.row.alias }}</span>
+						<span class="cyan" @click="() => onEdit(scope.row)">
+							<el-icon><Edit /></el-icon>{{ scope.row.id }}
+						</span>
 					</template>
 				</el-table-column>
-				<el-table-column
-					:label="t('pages.Username')"
-					prop="username"
-					min-width="140"
-				/>
-				<el-table-column
-					:label="t('pages.CompanyName')"
-					prop="companyName"
-					min-width="180"
-					show-overflow-tooltip
-				/>
-				<el-table-column :label="t('pages.CountryRegion')" min-width="140">
-					<template #default="scope">
-						{{ scope.row.countryRegion || scope.row.countryCode || '-' }}
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.Routes')" min-width="220">
-					<template #default="scope">
-						<div v-if="routeNames(scope.row).length" class="route-tags">
-							<el-tag
-								v-for="(name, idx) in routeNames(scope.row)"
-								:key="idx"
-								type="info"
-								effect="plain"
-								size="small"
-							>
-								{{ name }}
-							</el-tag>
-						</div>
-						<span v-else>-</span>
-					</template>
-				</el-table-column>
+				<el-table-column prop="alias" :label="t('pages.Alias')" min-width="140" />
+				<el-table-column prop="utcPlace" :label="t('pages.UtcPlace')" min-width="140" />
 				<el-table-column :label="t('pages.UtcOffset')" min-width="140">
 					<template #default="scope">
-						{{ scope.row.utcOffset || '-' }}
+						{{ scope.row.utcOffset?.value ?? scope.row.utcOffset ?? '-' }}
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.config.site.Status')" min-width="110">
-					<template #default="scope">
-						<el-tag :type="scope.row.enabled === false ? 'danger' : 'success'" effect="light">
-							{{
-								scope.row.enabled === false
-									? t('pages.config.site.disabled')
-									: t('pages.config.site.Enabled')
-							}}
-						</el-tag>
-					</template>
-				</el-table-column>
-				<el-table-column
-					:label="t('pages.Action')"
-					width="200"
-					align="center"
-					fixed="right"
-				>
-					<template #default="scope">
-						<div class="action-cell">
-							<el-button
-								type="primary"
-								size="small"
-								:icon="Edit"
-								@click="() => onEdit(scope.row)"
-							>
-								{{ t('pages.Edit') }}
-							</el-button>
-							<el-button
-								:type="scope.row.enabled === false ? 'success' : 'warning'"
-								size="small"
-								@click="() => onToggleStatus(scope.row)"
-							>
-								{{
-									scope.row.enabled === false
-										? t('pages.config.site.Enabled')
-										: t('pages.config.site.disabled')
-								}}
-							</el-button>
-						</div>
-					</template>
-				</el-table-column>
+				<el-table-column prop="adoptingCode" :label="t('pages.AdoptingCode')" min-width="140" />
 				<template #empty>
 					<el-empty :description="t('pages.NoData')" />
 				</template>
@@ -252,10 +163,10 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Refresh, Plus, Edit } from '@element-plus/icons-vue';
-import { sitelist, sitecreate, siteupdate, sitedisable } from '@/api/site';
+import { Plus, Edit } from '@element-plus/icons-vue';
+import { sitelist, sitecreate, siteupdate } from '@/api/site';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -269,7 +180,7 @@ interface SiteRow extends Record<string, any> {
 	countryCode?: string;
 	routes?: Array<string | Record<string, any>>;
 	utcPlace?: string;
-	utcOffset?: string;
+	utcOffset?: string | { value?: string };
 	adoptingCode?: string;
 	enabled?: boolean;
 }
@@ -294,7 +205,6 @@ const addressSections: Array<{ key: AddressKey; labelKey: string }> = [
 	{ key: 'returning', labelKey: 'pages.config.site.Return' },
 ];
 
-const keyword = ref('');
 const routeData = ref<SiteRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
@@ -341,14 +251,6 @@ const rules = reactive<FormRules>({
 	countryRegion: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
 });
 
-const routeNames = (row: SiteRow): string[] => {
-	const list = row.routes ?? row.svcRoutes ?? [];
-	if (!Array.isArray(list)) return [];
-	return list
-		.map((r: any) => (typeof r === 'string' ? r : r?.svcName ?? r?.name ?? ''))
-		.filter((n: string) => !!n);
-};
-
 const toAddress = (src: any): AddressForm => ({
 	...defaultAddress(),
 	contactName: src?.contactName ?? '',
@@ -362,20 +264,8 @@ const toAddress = (src: any): AddressForm => ({
 	streetLine2: src?.streetLine2 ?? '',
 });
 
-const onSearch = () => {
-	pagecurrent.value = 1;
-	getdata();
-};
-
-const onReset = () => {
-	keyword.value = '';
-	pagecurrent.value = 1;
-	getdata();
-};
-
 const getdata = async () => {
 	loading.value = true;
-	// shippingspa 的 siteslist 仅支持分页，keyword 留作本地过滤器
 	const res: ApiResponse<any> = await sitelist({
 		pageIndex: pagecurrent.value - 1,
 		pageSize: count.value,
@@ -402,7 +292,7 @@ const onEdit = (row: SiteRow) => {
 		countryRegion: row.countryRegion || row.countryCode || '',
 		adoptingCode: row.adoptingCode || '',
 		utcPlace: row.utcPlace || '',
-		utcOffset: row.utcOffset || '',
+		utcOffset: (typeof row.utcOffset === 'object' ? row.utcOffset?.value : row.utcOffset) || '',
 		billing: toAddress(row.billing),
 		shipping: toAddress(row.shipping),
 		returning: toAddress(row.returning),
@@ -451,31 +341,6 @@ const onSubmit = async () => {
 	}
 };
 
-const onToggleStatus = (row: SiteRow) => {
-	const enable = row.enabled === false;
-	const label = enable
-		? t('pages.config.site.Enabled')
-		: t('pages.config.site.disabled');
-	ElMessageBox.confirm(`${label} ${row.alias || row.username || ''}`, label, {
-		confirmButtonText: t('pages.Save'),
-		cancelButtonText: t('pages.Cancel'),
-		type: 'warning',
-		center: true,
-	})
-		.then(async () => {
-			const res: ApiResponse<any> = enable
-				? await siteupdate({ id: row.id, enabled: true })
-				: await sitedisable({ id: row.id });
-			if (res?.isSuccess) {
-				ElMessage.success(t('pages.Success'));
-				getdata();
-			} else {
-				ElMessage.error(res?.message || t('pages.Failed'));
-			}
-		})
-		.catch(() => {});
-};
-
 watch([count, pagecurrent], () => {
 	getdata();
 });
@@ -492,45 +357,29 @@ onMounted(() => {
 	flex-direction: column;
 	gap: 12px;
 }
-.filter-card,
 .table-card {
 	background: #fff;
 }
-.filter-form {
+.operation {
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
-	min-height: 60px;
+	min-height: 50px;
+	margin-bottom: 10px;
 }
-.filter-form :deep(.el-form-item) {
-	margin-right: 8px;
-	margin-bottom: 0;
-}
-.keyword-input {
-	width: 200px;
+.mr10 {
+	margin-right: 10px;
 }
 .route-tags {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
 }
-.action-cell {
-	display: flex;
-	flex-wrap: nowrap;
-	justify-content: center;
-	align-items: center;
-	gap: 4px;
-	padding: 0;
-}
-.action-cell :deep(.el-button.is-small) {
-	padding: 3px 6px;
-	font-size: 12px;
-}
-.action-cell :deep(.el-button.is-small .el-icon) {
-	font-size: 12px;
-}
 .cyan {
 	color: #17a2b8;
+	cursor: pointer;
+}
+.cyan .el-icon {
+	margin-right: 4px;
 }
 .site-form {
 	padding-right: 16px;

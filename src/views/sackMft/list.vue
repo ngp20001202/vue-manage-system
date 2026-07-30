@@ -1,49 +1,73 @@
 <template>
 	<div class="sackmft-list">
 		<el-card shadow="never" class="filter-card">
-			<el-tabs
-				v-model="activeName"
-				type="border-card"
-				class="demo-tabs"
-				:before-leave="beforeLeave"
-			>
-				<el-tab-pane :label="t('pages.all')" name="0" />
-				<el-tab-pane
-					v-for="item in tablist"
-					:key="item.stage"
-					:name="String(item.stage)"
+			<div class="tabs-header">
+				<el-tabs
+					v-model="activeName"
+					type="border-card"
+					class="demo-tabs"
+					:before-leave="beforeLeave"
 				>
-					<template #label>
-						<div>
-							{{ item.label }}
-							<el-badge :value="item.count" class="item" type="primary" />
-						</div>
-					</template>
-				</el-tab-pane>
-				<el-tab-pane :label="t('pages.tracking')" name="tracking" />
-			</el-tabs>
+					<el-tab-pane :label="t('pages.all')" name="0" />
+					<el-tab-pane
+						v-for="item in tablist"
+						:key="item.stage"
+						:name="String(item.stage)"
+					>
+						<template #label>
+							<div>
+								{{ item.label }}
+								<el-badge :value="item.count" class="item" type="primary" />
+							</div>
+						</template>
+					</el-tab-pane>
+					<el-tab-pane :label="t('pages.MawbMbl')" name="tracking" />
+				</el-tabs>
+				<el-button type="primary" class="tab-search" :icon="Search" @click="onSearch" />
+			</div>
 
 			<div class="tabs-content">
-				<el-form v-if="activeName === '0'" :inline="true" class="filter-form">
-					<div class="date-picker">
-						<el-date-picker
-							v-model="dates"
-							type="daterange"
-							unlink-panels
-							:start-placeholder="t('pages.startpicker')"
-							:end-placeholder="t('pages.endpicker')"
-							value-format="YYYY-MM-DD"
-						/>
+				<template v-if="activeName === '0'">
+					<div class="filter-row">
+						<div class="date-picker">
+							<el-date-picker
+								v-model="dates"
+								type="daterange"
+								unlink-panels
+								:start-placeholder="t('pages.startpicker')"
+								:end-placeholder="t('pages.endpicker')"
+								value-format="YYYY-MM-DD"
+							/>
+						</div>
+						<div class="stage-picker">
+							<el-select v-model="startStage" class="stage-select">
+								<el-option
+									v-for="opt in startOptions"
+									:key="opt.value"
+									:label="opt.label"
+									:value="opt.value"
+								/>
+							</el-select>
+							<span class="stage-sep">~</span>
+							<el-select v-model="endStage" class="stage-select">
+								<el-option
+									v-for="opt in endOptions"
+									:key="opt.value"
+									:label="opt.label"
+									:value="opt.value"
+								/>
+							</el-select>
+						</div>
+						<div class="filter-actions">
+							<el-button type="primary" :icon="Search" @click="onSearch">
+								{{ t('pages.Search') }}
+							</el-button>
+							<el-button :icon="Refresh" @click="onReset">
+								{{ t('pages.Reset') }}
+							</el-button>
+						</div>
 					</div>
-					<el-form-item>
-						<el-button type="primary" :icon="Search" @click="onSearch">
-							{{ t('pages.Search') }}
-						</el-button>
-						<el-button :icon="Refresh" @click="onReset">
-							{{ t('pages.Reset') }}
-						</el-button>
-					</el-form-item>
-				</el-form>
+				</template>
 				<div v-else-if="activeName === 'tracking'" class="tracking-block">
 					<el-input
 						v-model="textarea"
@@ -67,23 +91,14 @@
 		<el-card shadow="never" class="table-card">
 			<div v-show="routeData.length" class="op-row">
 				<div class="op-row-left">
-					<el-tooltip :content="t('pages.SackMfts.download')" placement="top" :enterable="false">
-						<el-button
-							type="info"
-							:disabled="!selectarr.length"
-							class="download"
-							@click="() => download(true)"
-						>
-							<el-icon><Download /></el-icon>
+					<el-tooltip :content="t('pages.upload')" placement="top" :enterable="false">
+						<el-button type="info" class="upload" @click="uploadVisible = true">
+							<el-icon><Upload /></el-icon>
 						</el-button>
 					</el-tooltip>
 					<el-tooltip :content="t('pages.Export')" placement="top" :enterable="false">
-						<el-button
-							type="success"
-							class="export"
-							@click="sackMftexportaction"
-						>
-							<el-icon><Upload /></el-icon>
+						<el-button type="success" class="export" @click="sackMftexportaction">
+							<el-icon><Download /></el-icon>
 						</el-button>
 					</el-tooltip>
 				</div>
@@ -101,21 +116,14 @@
 			</div>
 
 			<el-table
-				ref="multipleTableRef"
 				v-loading="loading"
 				:data="routeData"
 				style="width: 100%"
 				border
-				@selection-change="handleSelectionChange"
 			>
-				<el-table-column
-					type="selection"
-					width="55"
-					:selectable="(row) => canAction(row)"
-				/>
 				<el-table-column :label="t('pages.ID')" width="150">
 					<template #default="scope">
-						<span class="cyan" @click="setid(scope.row.id)">
+						<span class="cyan">
 							<el-icon><InfoFilled /></el-icon>
 							{{ scope.row.id }}
 						</span>
@@ -124,70 +132,61 @@
 				<el-table-column
 					property="brokerAlias"
 					:label="t('pages.SackMfts.brokerAlias')"
+					min-width="150"
+				/>
+				<el-table-column
+					property="clrMethodID"
+					:label="t('pages.SackMfts.clrMethod')"
+					min-width="150"
+				/>
+				<el-table-column
+					property="mawbNbr"
+					:label="t('pages.MawbMbl')"
 					width="150"
 				/>
 				<el-table-column
-					property="clrMethod"
-					:label="t('pages.SackMfts.clrMethod')"
+					property="flightNbr"
+					:label="t('pages.FlightVessel')"
 					width="150"
 				/>
-				<el-table-column min-width="180">
-					<template #header>
-						<span class="copy-header" @click="() => copy('lastMilerNbr')">
-							{{ t('pages.lastmiler') }}
-							<el-icon><DocumentCopy /></el-icon>
+				<el-table-column property="poa" :label="t('pages.POA')" width="150" />
+				<el-table-column :label="t('pages.Stage')" width="150">
+					<template #default="scope">
+						<span>
+							<el-icon><List /></el-icon>
+							{{ scope.row.stageText }}
 						</span>
 					</template>
-					<template #default="scope">
-						{{ scope.row.lastMilerNbr }}
-					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.date')" width="180">
+				<el-table-column :label="t('pages.PostedOn')" width="180">
 					<template #default="scope">
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Postedon')" width="180">
+				<el-table-column :label="t('pages.Action')" width="120" align="center" fixed="right">
 					<template #default="scope">
-						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="420" align="center" fixed="right">
-					<template #default="scope">
-						<div class="action-cell">
-							<el-button
-								v-if="scope.row.canOutgated"
-								type="primary"
-								size="small"
-								@click="() => cfmAction('cfmOutgated', scope.row.id)"
-							>
-								{{ t('pages.SackMfts.CfmOutgated') }}
+						<el-dropdown trigger="click">
+							<el-button type="primary" size="small">
+								<el-icon><Setting /></el-icon>
 							</el-button>
-							<el-button
-								v-if="scope.row.canFlightDeparted"
-								type="warning"
-								size="small"
-								@click="() => cfmAction('cfmFlightDeparted', scope.row.id)"
-							>
-								{{ t('pages.SackMfts.CfmFlightDeparted') }}
-							</el-button>
-							<el-button
-								v-if="scope.row.canFlightArrived"
-								type="success"
-								size="small"
-								@click="() => cfmAction('cfmFlightArrived', scope.row.id)"
-							>
-								{{ t('pages.SackMfts.CfmFlightArrived') }}
-							</el-button>
-							<el-button
-								v-if="scope.row.canPickup"
-								type="danger"
-								size="small"
-								@click="() => cfmAction('cfmPickup', scope.row.id)"
-							>
-								{{ t('pages.SackMfts.CfmPickup') }}
-							</el-button>
-						</div>
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item @click="downloads(scope.row.id)">
+										{{ t('pages.SackMfts.download') }}
+									</el-dropdown-item>
+									<el-dropdown-item @click="openScanForm(scope.row.id)">
+										{{ t('pages.SackMfts.SCANFORM') }}
+									</el-dropdown-item>
+									<el-dropdown-item
+										v-for="code in scope.row.roledActions"
+										:key="code"
+										@click="handleRoledAction(code, scope.row.id)"
+									>
+										{{ actionTitle(code) }}
+									</el-dropdown-item>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
 					</template>
 				</el-table-column>
 				<template #empty>
@@ -206,9 +205,11 @@
 				:page-sizes="[10, 20, 50, 100]"
 				@current-change="(p: number) => (pagecurrent = p)"
 				@size-change="(s: number) => (count = s)"
-			/>
-
+				/>
 		</el-card>
+
+		<SackMftUpload v-model="uploadVisible" @success="getdata" />
+		<ScanFormDialog v-model="scanFormVisible" :id="scanFormId" @success="downloads" />
 	</div>
 </template>
 
@@ -216,66 +217,81 @@
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Download, Upload, Search, Refresh, InfoFilled, DocumentCopy } from '@element-plus/icons-vue';
+import {
+	Upload,
+	Download,
+	Search,
+	Refresh,
+	InfoFilled,
+	List,
+	Setting,
+} from '@element-plus/icons-vue';
 import moment from 'moment';
 import { saveAs } from 'file-saver';
-import { formatParagraphtext } from '@/utils/format';
 import {
 	sackMftlist,
-	sackMftSearchlist,
+	sackMftstage,
 	sackMftCfmOutgated,
 	sackMftCfmFlightDeparted,
 	sackMftCfmFlightArrived,
 	sackMftCfmPickup,
 	sackMftexport,
+	sackMftsign,
 	getSackMftdashtab,
 } from '@/api/sackMft';
 import type { ApiResponse } from '@/api/types';
+import SackMftUpload from './components/SackMftUpload.vue';
+import ScanFormDialog from './components/ScanFormDialog.vue';
 
 const { t } = useI18n();
 
 interface SackMftRow extends Record<string, any> {
 	id: string | number;
 	brokerAlias?: string;
-	clrMethod?: string;
-	lastMilerNbr?: string;
+	clrMethodID?: string | number;
+	mawbNbr?: string;
+	flightNbr?: string;
+	poa?: string;
+	stageText?: string;
 	postedStamp?: { utcTime: string };
-	stageID?: number;
-	canOutgated?: boolean;
-	canFlightDeparted?: boolean;
-	canFlightArrived?: boolean;
-	canPickup?: boolean;
+	roledActions?: number[];
 }
 
 const activeName = ref('0');
 const tablist = ref<Array<{ stage: number | string; label: string; count: number }>>([]);
 const dates = ref<[string, string] | null>(null);
+const startStage = ref(0);
+const endStage = ref(0);
+const startOptions = ref<Array<{ value: number | string; label: string }>>([
+	{ value: 0, label: t('pages.fromstage') },
+]);
+const endOptions = ref<Array<{ value: number | string; label: string }>>([
+	{ value: 0, label: t('pages.tostage') },
+]);
 const textarea = ref('');
 const routeData = ref<SackMftRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
-const selectarr = ref<SackMftRow[]>([]);
-const multipleTableRef = ref();
+const uploadVisible = ref(false);
+const scanFormVisible = ref(false);
+const scanFormId = ref<string | number>('');
+
+const stageObj: Record<string, string> = {
+	SackMftCreated: t('pages.SackMfts.SackMftCreated'),
+	Outgated: t('pages.SackMfts.Outgated'),
+	AwaitingPickup: t('pages.SackMfts.AwaitingPickup'),
+};
 
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
-const copy = (key: string) => {
-	const text = formatParagraphtext(routeData.value, key);
-	if (text === ' ') {
-		ElMessage.warning('当前页没有可复制的数据');
-		return;
-	}
-	try {
-		navigator.clipboard.writeText(text);
-		ElMessage.success('复制成功');
-	} catch {
-		ElMessage.error('复制失败');
-	}
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return undefined;
+	return moment(date).utc().format();
 };
 
 const defaultRange = (): [string, string] => [
@@ -284,80 +300,58 @@ const defaultRange = (): [string, string] => [
 ];
 
 const init = () => {
-	dates.value = defaultRange();
+	dates.value = null;
+	startStage.value = 0;
+	endStage.value = 0;
 	textarea.value = '';
 };
 
 const onReset = () => {
 	init();
+	dates.value = defaultRange();
 	pagecurrent.value = 1;
 	onSearch();
 };
 
-const setid = (id: string | number) => {
-	ElMessage.info(`${t('pages.ID')}: ${id}`);
-};
-
-const handleSelectionChange = (rows: SackMftRow[]) => {
-	selectarr.value = rows;
-};
-
-const clearselect = () => {
-	multipleTableRef.value?.clearSelection();
-	selectarr.value = [];
-};
-
-const canAction = (row: SackMftRow) =>
-	Boolean(
-		row.canOutgated ||
-			row.canFlightDeparted ||
-			row.canFlightArrived ||
-			row.canPickup,
-	);
-
 const onSearch = () => {
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
-	}
+	pagecurrent.value = 1;
+	getdata();
 };
 
 const beforeLeave = (e: string | number) => {
 	init();
 	if (e === 'tracking') {
 		routeData.value = [];
+		activeName.value = 'tracking';
 		return true;
 	}
-	getdata();
+	activeName.value = String(e);
+	if (Number(e) !== 0) {
+		getdata();
+	} else {
+		dates.value = defaultRange();
+		getdata();
+	}
 	return true;
 };
 
 const getdata = async () => {
 	loading.value = true;
+	const isTracking = activeName.value === 'tracking';
+	const currentStage = isTracking ? 0 : Number(activeName.value) || 0;
+	const encodedTracking = isTracking ? encodeURIComponent(textarea.value) : undefined;
+
 	const res: ApiResponse<any> = await sackMftlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		Stage: 0,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
+		Stage: currentStage,
+		StageMin: startStage.value || undefined,
+		StageMax: endStage.value || undefined,
+		PeriodMin: !isTracking ? toUtcIso(dates.value?.[0]) : undefined,
+		PeriodMax: !isTracking ? toUtcIso(dates.value?.[1]) : undefined,
+		IsUseTrackingNbr: encodedTracking,
+		MawbNbr: encodedTracking,
 	} as any);
-	if (res?.isSuccess) {
-		routeData.value = res.result ?? [];
-		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
-	}
-	loading.value = false;
-};
-
-const postdata = async () => {
-	loading.value = true;
-	const res: ApiResponse<any> = await sackMftSearchlist({
-		pageIndex: pagecurrent.value - 1,
-		pageSize: count.value,
-		trackingNbrs: textarea.value
-			.split(/[\n,]+/)
-			.filter((s) => s.trim() !== ''),
-	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
@@ -368,75 +362,91 @@ const postdata = async () => {
 const tabs = async () => {
 	const res: ApiResponse<any[]> = await getSackMftdashtab();
 	if (res?.isSuccess && Array.isArray(res.result)) {
-		const labellist = [
-			t('pages.SackMfts.SackMftCreated'),
-			t('pages.SackMfts.Outgated'),
-			t('pages.SackMfts.AwaitingPickup'),
-		];
-		tablist.value = res.result.map((item: any, idx: number) => ({
-			stage: item.stage ?? item.id ?? idx,
-			label: labellist[idx] ?? item.label ?? '',
+		tablist.value = res.result.map((item: any) => ({
+			stage: item.stage ?? item.id ?? 0,
+			label: stageObj[item.stage] ?? item.label ?? item.stage ?? '',
 			count: item.count ?? 0,
 		}));
 	}
 };
 
-const cfmAction = async (
-	type: 'cfmOutgated' | 'cfmFlightDeparted' | 'cfmFlightArrived' | 'cfmPickup',
-	id: string | number,
-) => {
-	const isBatch = id === undefined;
-	const list = isBatch
-		? selectarr.value
-				.filter((r) => canAction(r))
-				.map((r) => r.id)
-		: [id];
+const stages = async () => {
+	const res: ApiResponse<any[]> = await sackMftstage();
+	if (res?.isSuccess && Array.isArray(res.result)) {
+		const mapped = res.result.map((item: any) => ({
+			value: item.stage ?? item.value ?? 0,
+			label: item.label ?? item.text ?? String(item.stage ?? item.value ?? ''),
+		}));
+		startOptions.value = [{ value: 0, label: t('pages.fromstage') }, ...mapped];
+		endOptions.value = [{ value: 0, label: t('pages.tostage') }, ...mapped];
+	}
+};
 
-	if (!list.length) {
-		ElMessage.warning(t('pages.NoData'));
+const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
+
+const downloads = async (id: string | number) => {
+	const url = `${window.location.origin}${apiBase}/api/SackMfts/${id}/docs`;
+	try {
+		const res: any = await sackMftsign({ url });
+		if (res?.token) {
+			window.open(`${url}?token=${res.token}`, '_blank');
+		} else {
+			ElMessage.error(t('pages.Failed'));
+		}
+	} catch {
+		ElMessage.error(t('pages.Failed'));
+	}
+};
+
+const openScanForm = (id: string | number) => {
+	scanFormId.value = id;
+	scanFormVisible.value = true;
+};
+
+const actionTitle = (code: number | string) => {
+	const map: Record<number | string, string> = {
+		31100: t('pages.SackMfts.Board'),
+		27100: t('pages.SackMfts.CfmOutgated'),
+		31300: t('pages.SackMfts.CfmFlightDeparted'),
+		31400: t('pages.SackMfts.CfmFlightArrived'),
+		31900: t('pages.SackMfts.CfmPickup'),
+	};
+	return map[code] ?? String(code);
+};
+
+const handleRoledAction = async (code: number | string, id: string | number) => {
+	const apiMap: Record<number | string, (body: { ids: (string | number)[] }) => Promise<ApiResponse>> = {
+		27100: sackMftCfmOutgated,
+		31300: sackMftCfmFlightDeparted,
+		31400: sackMftCfmFlightArrived,
+		31900: sackMftCfmPickup,
+	};
+	if (code === 31100) {
+		ElMessage.error(t('pages.SackMfts.Error'));
 		return;
 	}
-
-	const confirmLabel: Record<typeof type, string> = {
-		cfmOutgated: t('pages.SackMfts.CfmOutgated'),
-		cfmFlightDeparted: t('pages.SackMfts.CfmFlightDeparted'),
-		cfmFlightArrived: t('pages.SackMfts.CfmFlightArrived'),
-		cfmPickup: t('pages.SackMfts.CfmPickup'),
-	};
-
-	ElMessageBox.confirm(
-		`${confirmLabel[type]}?`,
-		t('pages.attention') as string,
-		{
+	const api = apiMap[code];
+	if (!api) {
+		ElMessage.error(t('pages.SackMfts.Error'));
+		return;
+	}
+	try {
+		await ElMessageBox.confirm(`${actionTitle(code)}?`, t('pages.attention') as string, {
 			confirmButtonText: t('pages.Save') as string,
 			cancelButtonText: t('pages.Cancel') as string,
 			type: 'warning',
 			center: true,
-		},
-	)
-		.then(async () => {
-			const apiMap = {
-				cfmOutgated: sackMftCfmOutgated,
-				cfmFlightDeparted: sackMftCfmFlightDeparted,
-				cfmFlightArrived: sackMftCfmFlightArrived,
-				cfmPickup: sackMftCfmPickup,
-			};
-			const res: ApiResponse<any> = await apiMap[type]({ ids: list });
-			if (res?.isSuccess) {
-				ElMessage.success(t('pages.Success'));
-				getdata();
-			} else {
-				ElMessage.error(res?.message || t('pages.Failed'));
-			}
-		})
-		.catch(() => {
-			clearselect();
 		});
-};
-
-const download = (isBatch: boolean) => {
-	ElMessage.success(t('pages.SackMfts.download'));
-	clearselect();
+		const res = await api({ ids: [id] });
+		if (res?.isSuccess) {
+			ElMessage.success(t('pages.Success'));
+			getdata();
+		} else {
+			ElMessage.error(res?.message || t('pages.Failed'));
+		}
+	} catch {
+		// cancelled
+	}
 };
 
 const sackMftexportaction = async () => {
@@ -444,16 +454,19 @@ const sackMftexportaction = async () => {
 		ElMessage.error('导出文件过大，调整一下查询条件');
 		return;
 	}
+	const isTracking = activeName.value === 'tracking';
 	const blob: any = await sackMftexport(
 		{
-			Stage: 0,
-			PeriodMin: dates.value?.[0],
-			PeriodMax: dates.value?.[1],
+			Stage: isTracking ? 0 : Number(activeName.value) || 0,
+			StageMin: startStage.value || undefined,
+			StageMax: endStage.value || undefined,
+			PeriodMin: !isTracking ? toUtcIso(dates.value?.[0]) : undefined,
+			PeriodMax: !isTracking ? toUtcIso(dates.value?.[1]) : undefined,
 		},
 		{
-			trackingNbrs: textarea.value
-				.split(/[\n,]+/)
-				.filter((s) => s.trim() !== ''),
+			trackingNbrs: isTracking
+				? textarea.value.split(/[\n,]+/).filter((s) => s.trim() !== '')
+				: undefined,
 		},
 	);
 	const filename = `sackMfts_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
@@ -462,16 +475,13 @@ const sackMftexportaction = async () => {
 };
 
 watch([count, pagecurrent], () => {
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
-	}
+	getdata();
 });
 
 onMounted(() => {
 	dates.value = defaultRange();
 	tabs();
+	stages();
 	getdata();
 });
 </script>
@@ -487,27 +497,46 @@ onMounted(() => {
 .table-card {
 	background: #fff;
 }
+.tabs-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+.tabs-header :deep(.el-tabs) {
+	flex: 1;
+}
+.tab-search {
+	flex-shrink: 0;
+	min-width: 0;
+}
 .tabs-content {
 	margin-top: 12px;
 }
-.filter-form {
+.filter-row {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
+	gap: 12px;
 	min-height: 60px;
-}
-.filter-form :deep(.el-form-item) {
-	margin-right: 8px;
-	margin-bottom: 0;
 }
 .date-picker {
 	width: 100%;
 	max-width: 320px;
 	min-width: 0;
-	margin-right: 28px;
 }
 .date-picker :deep(.el-date-editor) {
 	width: 100%;
+}
+.stage-picker {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.stage-select {
+	width: 140px;
+}
+.stage-sep {
+	color: #909399;
 }
 .tracking-input {
 	width: 70%;
@@ -542,7 +571,7 @@ onMounted(() => {
 .op-row-pager :deep(.el-pagination__sizes) {
 	margin-right: 0;
 }
-.download,
+.upload,
 .export {
 	display: inline-flex;
 	align-items: center;
@@ -553,31 +582,12 @@ onMounted(() => {
 	color: #fff;
 	border: none;
 }
-.download {
+.upload {
 	background-color: #17a2b8;
 }
 .export {
 	background-color: #28a745;
 	padding: 5px;
-}
-.download:disabled {
-	cursor: not-allowed;
-	opacity: 0.6;
-}
-.action-cell {
-	display: flex;
-	flex-wrap: nowrap;
-	justify-content: center;
-	align-items: center;
-	gap: 4px;
-	padding: 0;
-}
-.action-cell :deep(.el-button.is-small) {
-	padding: 3px 6px;
-	font-size: 12px;
-}
-.action-cell :deep(.el-button.is-small .el-icon) {
-	font-size: 12px;
 }
 .cyan {
 	color: #17a2b8;
@@ -585,19 +595,6 @@ onMounted(() => {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-}
-.cyan:hover {
-	text-decoration: underline;
-}
-.copy-header {
-	cursor: pointer;
-	color: #606266;
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-.copy-header:hover {
-	color: #409eff;
 }
 .pager {
 	margin-top: 16px;
@@ -619,10 +616,12 @@ onMounted(() => {
 	transform: translateY(-2px);
 }
 @media (max-width: 768px) {
-	.date-picker {
+	.date-picker,
+	.stage-select,
+	.tracking-input {
 		width: 100%;
 	}
-	.tracking-input {
+	.stage-picker {
 		width: 100%;
 	}
 }

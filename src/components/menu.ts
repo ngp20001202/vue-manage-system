@@ -125,6 +125,12 @@ export const menuData: Menus[] = [
                 index: '/exception/lastMilerRejected',
                 title: '获取面单失败',
             },
+            {
+                id: '132',
+                pid: '130',
+                index: '/exception/brokerRejected',
+                title: '清关推送失败',
+            },
         ],
     },
     {

@@ -188,6 +188,11 @@ const formatCreated = (utc: string | undefined) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return '';
+	return moment(date).utc().format();
+};
+
 const onSearch = () => {
 	pagecurrent.value = 1;
 	getdata();
@@ -215,8 +220,8 @@ const getdata = async () => {
 		index: pagecurrent.value - 1,
 		size: count.value,
 		Status: startstage.value,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
+		PeriodMin: toUtcIso(dates.value?.[0]),
+		PeriodMax: toUtcIso(dates.value?.[1]),
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];

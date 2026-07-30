@@ -351,6 +351,11 @@ const formatPosted = (utc: string | undefined) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return '';
+	return moment(date).utc().format();
+};
+
 const copy = (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
@@ -462,8 +467,8 @@ const getdata = async () => {
 		Stage: Stage.value as any,
 		StageMin: startstage.value as any,
 		StageMax: endStage.value as any,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
+		PeriodMin: toUtcIso(dates.value?.[0]),
+		PeriodMax: toUtcIso(dates.value?.[1]),
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -498,8 +503,8 @@ const parcelsexport = async () => {
 			Stage: Stage.value as any,
 			StageMin: startstage.value as any,
 			StageMax: endStage.value as any,
-			PeriodMin: dates.value?.[0],
-			PeriodMax: dates.value?.[1],
+			PeriodMin: toUtcIso(dates.value?.[0]),
+			PeriodMax: toUtcIso(dates.value?.[1]),
 		},
 		{
 			trackingNbrs: textarea.value

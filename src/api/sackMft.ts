@@ -76,13 +76,20 @@ export const sackMftexport = (params: { Stage?: number; StageMin?: number; Stage
 export const sackMftDownload = (id: string): Promise<Blob> =>
 	request({ url: `/api/SackMfts/${id}/docs`, method: 'GET', responseType: 'blob' });
 
-// 创建 SCAN FORM（multipart）
+// 创建 SCAN FORM
 export const sackMftScanform = (id: string, body: any): Promise<ApiResponse> =>
 	request({
 		url: `/api/SackMfts/${id}/scanform`,
-		headers: { 'Content-Type': 'multipart/form-data' },
 		method: 'POST',
 		data: body,
+	});
+
+// 批量导入
+export const sackMftimport = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/SackMfts/import',
+		method: 'POST',
+		data,
 	});
 
 // 签名 token（shippingspa ships from usesackMfts.js → /api/Tokens/sign）

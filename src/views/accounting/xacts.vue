@@ -139,10 +139,9 @@ const formatXactType = (type: string | undefined) => {
 	return type;
 };
 
-const datatoutc = (d: string | undefined) => {
-	if (!d) return '';
-	const m = moment.utc(d);
-	return m.format('YYYY-MM-DD');
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return '';
+	return moment(date).utc().format();
 };
 
 const defaultRange = (): [string, string] => [
@@ -163,8 +162,8 @@ const onReset = () => {
 
 const getdata = async () => {
 	loading.value = true;
-	const PeriodMin = dates.value ? datatoutc(dates.value[0]) : '';
-	const PeriodMax = dates.value ? datatoutc(dates.value[1]) : '';
+	const PeriodMin = dates.value ? toUtcIso(dates.value[0]) : '';
+	const PeriodMax = dates.value ? toUtcIso(dates.value[1]) : '';
 	const res: ApiResponse<any> = await xactslist({
 		index: pagecurrent.value - 1,
 		size: count.value,
@@ -179,19 +178,23 @@ const getdata = async () => {
 };
 
 const exportdata = async () => {
-	const PeriodMin = dates.value ? datatoutc(dates.value[0]) : '';
-	const PeriodMax = dates.value ? datatoutc(dates.value[1]) : '';
-	const params: string[] = [];
-	if (PeriodMin) params.push(`PeriodMin=${PeriodMin}`);
-	if (PeriodMax) params.push(`PeriodMax=${PeriodMax}`);
-	const url = `/api/accounting/xacts/export?` + params.join('&');
+	const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
+	const baseURL = window.location.origin;
+	const url = new URL(`${baseURL}${apiBase}/api/accounting/xacts/export`);
+	if (dates.value) {
+		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
+		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
+	}
 	try {
-		const res: any = await SackMftsign({ url });
+		const res: any = await SackMftsign({ url: url.toString() });
 		if (res?.token) {
-			const sep = url.includes('?') ? '&' : '?';
-			window.open(`${url}${sep}token=${res.token}`, '_blank');
+			url.searchParams.set('token', res.token);
+			window.open(url.toString(), '_blank');
 		} else {
-			const blob: any = await xactsexport({ PeriodMin, PeriodMax });
+			const blob: any = await xactsexport({
+				PeriodMin: toUtcIso(dates.value?.[0]),
+				PeriodMax: toUtcIso(dates.value?.[1]),
+			});
 			const blobUrl = window.URL.createObjectURL(new Blob([blob]));
 			const a = document.createElement('a');
 			a.href = blobUrl;
@@ -199,7 +202,7 @@ const exportdata = async () => {
 			a.click();
 			window.URL.revokeObjectURL(blobUrl);
 		}
-	} catch (e) {
+	} catch {
 		ElMessage.error(t('pages.Failed'));
 	}
 };

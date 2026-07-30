@@ -104,6 +104,11 @@ const formatDate = (utc: string | undefined) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return '';
+	return moment(date).utc().format();
+};
+
 const defaultRange = (): [string, string] => [
 	moment().subtract(30, 'days').format('YYYY-MM-DD'),
 	moment().format('YYYY-MM-DD'),
@@ -125,8 +130,8 @@ const getdata = async () => {
 	const res: ApiResponse<any> = await statementlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
+		PeriodMin: toUtcIso(dates.value?.[0]),
+		PeriodMax: toUtcIso(dates.value?.[1]),
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];

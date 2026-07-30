@@ -1,5 +1,5 @@
 <template>
-	<div class="parcel-cancel">
+	<div class="broker-rejected">
 		<el-card shadow="never" class="filter-card">
 			<el-tabs
 				v-model="activeName"
@@ -8,7 +8,7 @@
 				:before-leave="beforeLeave"
 			>
 				<el-tab-pane :label="t('pages.all')" name="0" />
-				<el-tab-pane :label="t('pages.tracking')" name="tracking" />
+				<el-tab-pane :label="t('pages.MawbMbl')" name="mawb" />
 			</el-tabs>
 
 			<div class="tabs-content">
@@ -24,6 +24,27 @@
 						/>
 					</div>
 					<el-form-item>
+						<el-select v-model="startstage" class="stage-select" :placeholder="t('pages.fromstage')">
+							<el-option
+								v-for="item in startsoptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							/>
+						</el-select>
+					</el-form-item>
+					<span class="tilde">~</span>
+					<el-form-item>
+						<el-select v-model="endStage" class="stage-select" :placeholder="t('pages.tostage')">
+							<el-option
+								v-for="item in endoptions"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							/>
+						</el-select>
+					</el-form-item>
+					<el-form-item>
 						<el-button type="primary" :icon="Search" @click="onSearch">
 							{{ t('pages.Search') }}
 						</el-button>
@@ -32,7 +53,7 @@
 						</el-button>
 					</el-form-item>
 				</el-form>
-				<div v-else-if="activeName === 'tracking'" class="tracking-block">
+				<div v-else-if="activeName === 'mawb'" class="tracking-block">
 					<el-input
 						v-model="textarea"
 						:rows="4"
@@ -55,14 +76,43 @@
 		<el-card shadow="never" class="table-card">
 			<div v-show="routeData.length" class="op-row">
 				<div class="op-row-left">
-					<el-tooltip :content="t('pages.undo')" placement="top" :enterable="false">
+					<el-tooltip :content="t('pages.Import')" placement="top" :enterable="false">
+						<el-button
+							type="primary"
+							class="import"
+							@click="() => $router.push('/exception/brokerRejected/import')"
+						>
+							<el-icon><Upload /></el-icon>
+						</el-button>
+					</el-tooltip>
+					<el-tooltip :content="t('pages.printlabel')" placement="top" :enterable="false">
+						<el-button
+							type="info"
+							:disabled="!selectarr.length"
+							class="print"
+							@click="() => printLabels(true)"
+						>
+							<el-icon><Printer /></el-icon>
+						</el-button>
+					</el-tooltip>
+					<el-tooltip :content="t('pages.downloadlabel')" placement="top" :enterable="false">
+						<el-button
+							type="info"
+							:disabled="!selectarr.length"
+							class="download"
+							@click="() => downloadLabels(true)"
+						>
+							<el-icon><Download /></el-icon>
+						</el-button>
+					</el-tooltip>
+					<el-tooltip :content="t('pages.cancelparcel')" placement="top" :enterable="false">
 						<el-button
 							type="danger"
 							:disabled="!selectarr.length"
 							class="cancell"
-							@click="() => undo(true)"
+							@click="() => cancel(true)"
 						>
-							<el-icon><RefreshLeft /></el-icon>
+							<el-icon><Delete /></el-icon>
 						</el-button>
 					</el-tooltip>
 				</div>
@@ -87,12 +137,8 @@
 				border
 				@selection-change="handleSelectionChange"
 			>
-				<el-table-column
-					type="selection"
-					width="55"
-					:selectable="(row) => show(row)"
-				/>
-				<el-table-column :label="t('pages.ID')" width="150">
+				<el-table-column type="selection" width="55" />
+				<el-table-column :label="t('pages.ID')" width="120">
 					<template #default="scope">
 						<span class="cyan" @click="() => setid('detail', scope.row.id)">
 							<el-icon><InfoFilled /></el-icon>
@@ -100,57 +146,62 @@
 						</span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150">
-					<template #header>
-						<span class="copy-header" @click="() => copy('clientRefNbr')">
-							{{ t('pages.Parcels.list.order') }}
-							<el-icon><DocumentCopy /></el-icon>
-						</span>
-					</template>
-					<template #default="scope">
-						{{ scope.row.clientRefNbr }}
-					</template>
-				</el-table-column>
-				<el-table-column min-width="150">
-					<template #header>
-						<span class="copy-header" @click="() => copy('lastMilerNbr')">
-							{{ t('pages.Parcels.list.lastmiler') }}
-							<el-icon><DocumentCopy /></el-icon>
-						</span>
-					</template>
-					<template #default="scope">
-						{{ scope.row.lastMilerNbr }}
-					</template>
-				</el-table-column>
+				<el-table-column
+					property="clientRefNbr"
+					:label="t('pages.PosterAlias')"
+					min-width="150"
+				/>
+				<el-table-column
+					property="lastMilerNbr"
+					:label="t('pages.Broker')"
+					min-width="150"
+				/>
 				<el-table-column
 					property="svcName"
-					:label="t('pages.servertype')"
+					:label="t('pages.MawbMbl')"
+					min-width="150"
+				/>
+				<el-table-column
+					property="stageText"
+					:label="t('pages.POA')"
 					width="150"
 				/>
-				<el-table-column :label="t('pages.Stage')" width="150">
+				<el-table-column :label="t('pages.Stage')" width="180">
 					<template #default="scope">
-						<span class="cyan" @click="() => setid('tracking', scope.row.id)">
-							<el-icon><List /></el-icon>
-							{{ scope.row.stageText }}
-						</span>
+						<span>{{ formatPosted(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.PostedOn')" width="180">
 					<template #default="scope">
-						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
+						<span>{{ formatPosted(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="200" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="280" align="center" fixed="right">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
-								v-if="show(scope.row)"
-								type="warning"
+								type="danger"
 								size="small"
-								:icon="RefreshLeft"
-								@click="() => undo(false, scope.row.id)"
+								:icon="Delete"
+								@click="() => cancel(false, scope.row.id)"
 							>
-								{{ t('pages.undo') }}
+								{{ t('pages.cancelparcel') }}
+							</el-button>
+							<el-button
+								type="info"
+								size="small"
+								:icon="Download"
+								@click="() => downloadLabels(false, scope.row.id)"
+							>
+								{{ t('pages.downloadlabel') }}
+							</el-button>
+							<el-button
+								type="primary"
+								size="small"
+								:icon="Printer"
+								@click="() => printLabels(false, scope.row.id)"
+							>
+								{{ t('pages.printlabel') }}
 							</el-button>
 						</div>
 					</template>
@@ -175,79 +226,79 @@
 		</el-card>
 
 		<ParcelDetail :id="parcelDetail.id" @changestatus="changestatus" />
-		<ParcelTracking :id="trackingDialog.id" @changestatus="changestatus" />
-		<ParcelDownload
-			:ids="parcelDownload.ids"
-			@changestatus="changestatus"
-			@clearselect="clearselect"
-		/>
 	</div>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue';
+<script setup lang="ts" name="broker-rejected">
+import { ref, reactive, watch, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { RefreshLeft, Search, Refresh, InfoFilled, DocumentCopy, List } from '@element-plus/icons-vue';
+import {
+	Search,
+	Refresh,
+	Upload,
+	Printer,
+	Download,
+	Delete,
+	InfoFilled,
+} from '@element-plus/icons-vue';
 import moment from 'moment';
-import { formatParagraphtext } from '@/utils/format';
-import { parcellist, parcelSearchlist, parcelUndo } from '@/api/parcel';
+import { brokerRejectedlist } from '@/api/rejection';
+import { parcelcancel, downloadlabel } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
-import ParcelDetail from './detail.vue';
-import ParcelTracking from './tracking.vue';
-import ParcelDownload from './download.vue';
+import ParcelDetail from '@/views/parcel/detail.vue';
 
 const { t } = useI18n();
 
-interface ParcelRow extends Record<string, any> {
+interface BrokerRow extends Record<string, any> {
 	id: string | number;
 	clientRefNbr?: string;
 	lastMilerNbr?: string;
 	svcName?: string;
 	stageText?: string;
-	postedStamp?: { utcTime: string };
+	statedStamp?: { utcTime: string };
 }
 
 const activeName = ref('0');
 const dates = ref<[string, string] | null>(null);
 const textarea = ref('');
-const routeData = ref<ParcelRow[]>([]);
+const startstage = ref<number>(0);
+const endStage = ref<number>(0);
+const routeData = ref<BrokerRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
-const selectarr = ref<ParcelRow[]>([]);
+const selectarr = ref<BrokerRow[]>([]);
 const multipleTableRef = ref();
 
 const parcelDetail = reactive({ id: '' });
-const parcelDownload = reactive<{ ids: Array<string | number> }>({ ids: [] });
-const trackingDialog = reactive({ id: '' });
+
+const STAGE_OPTIONS = [
+	{ value: 27150, label: 'pages.BrokerRejection.AwaitingPickup' },
+	{ value: 31600, label: 'pages.BrokerRejection.BoundingWarehouseAccepted' },
+	{ value: 27100, label: 'pages.BrokerRejection.BoundingWarehousePickedup' },
+	{ value: 31100, label: 'pages.BrokerRejection.ExportDeclared' },
+	{ value: 31510, label: 'pages.BrokerRejection.Outgated' },
+	{ value: 21500, label: 'pages.BrokerRejection.SackManifestArrived' },
+	{ value: 31500, label: 'pages.BrokerRejection.SackManifestBoaarded' },
+	{ value: 31508, label: 'pages.BrokerRejection.SackManifestCreated' },
+	{ value: 31505, label: 'pages.BrokerRejection.Surrendered' },
+];
+
+const startsoptions = computed(() => [
+	{ value: 0, label: t('pages.fromstage') },
+	...STAGE_OPTIONS.map((item) => ({ value: item.value, label: t(item.label) })),
+]);
+
+const endoptions = computed(() => [
+	{ value: 0, label: t('pages.tostage') },
+	...STAGE_OPTIONS.map((item) => ({ value: item.value, label: t(item.label) })),
+]);
 
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
-};
-
-const toUtcIso = (date: string | undefined) => {
-	if (!date) return '';
-	return moment(date).utc().format();
-};
-
-const show = (row: ParcelRow) =>
-	row.stageText === '订单已取消' || row.stageText === 'Parcel Voided';
-
-const copy = (key: string) => {
-	const text = formatParagraphtext(routeData.value, key);
-	if (text === ' ') {
-		ElMessage.warning('当前页没有可复制的数据');
-		return;
-	}
-	try {
-		navigator.clipboard.writeText(text);
-		ElMessage.success('复制成功');
-	} catch {
-		ElMessage.error('复制失败');
-	}
 };
 
 const defaultRange = (): [string, string] => [
@@ -258,6 +309,8 @@ const defaultRange = (): [string, string] => [
 const init = () => {
 	dates.value = defaultRange();
 	textarea.value = '';
+	startstage.value = 0;
+	endStage.value = 0;
 };
 
 const onReset = () => {
@@ -266,40 +319,26 @@ const onReset = () => {
 	onSearch();
 };
 
-const setid = (name: 'detail' | 'tracking', id: string | number) => {
-	if (name === 'detail') {
-		parcelDetail.id = String(id);
-	} else {
-		trackingDialog.id = String(id);
-	}
+const onSearch = () => {
+	pagecurrent.value = 1;
+	getdata();
 };
 
-const handleSelectionChange = (rows: ParcelRow[]) => {
+const setid = (_name: 'detail', id: string | number) => {
+	parcelDetail.id = String(id);
+};
+
+const handleSelectionChange = (rows: BrokerRow[]) => {
 	selectarr.value = rows;
-};
-
-const clearselect = () => {
-	multipleTableRef.value?.clearSelection();
-	selectarr.value = [];
 };
 
 const changestatus = () => {
 	parcelDetail.id = '';
-	trackingDialog.id = '';
-	parcelDownload.ids = [];
-};
-
-const onSearch = () => {
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
-	}
 };
 
 const beforeLeave = (e: string | number) => {
 	init();
-	if (e === 'tracking') {
+	if (e === 'mawb') {
 		routeData.value = [];
 		return true;
 	}
@@ -309,58 +348,41 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
-	const res: ApiResponse<any> = await parcellist({
+	const encodedText = encodeURIComponent(textarea.value);
+	const res: ApiResponse<any> = await brokerRejectedlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		Stage: 0,
-		PeriodMin: toUtcIso(dates.value?.[0]),
-		PeriodMax: toUtcIso(dates.value?.[1]),
-	} as any);
-	if (res?.isSuccess) {
-		routeData.value = (res.result ?? []).filter(
-			(r: ParcelRow) => r.stageText === '订单已取消' || r.stageText === 'Parcel Voided',
-		);
-		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
-	}
-	loading.value = false;
-};
-
-const postdata = async () => {
-	loading.value = true;
-	const res: ApiResponse<any> = await parcelSearchlist({
-		pageIndex: pagecurrent.value - 1,
-		pageSize: count.value,
-		trackingNbrs: textarea.value
-			.split(/[\n,]+/)
-			.filter((s) => s.trim() !== ''),
+		StageMin: startstage.value || undefined,
+		StageMax: endStage.value || undefined,
+		PeriodMin: dates.value?.[0],
+		PeriodMax: dates.value?.[1],
+		MawbNbr: activeName.value === 'mawb' ? encodedText : undefined,
 	});
 	if (res?.isSuccess) {
-		routeData.value = (res.result ?? []).filter(
-			(r: ParcelRow) => r.stageText === '订单已取消' || r.stageText === 'Parcel Voided',
-		);
+		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;
 };
 
-const undo = async (isBatch: boolean, id?: string | number) => {
+const cancel = async (isBatch: boolean, id?: string | number) => {
 	const list = isBatch
 		? selectarr.value.map((r) => r.id)
 		: [id as string | number];
 	ElMessageBox.confirm(
-		'撤销后该包裹将恢复正常状态',
-		'确认撤销该包裹?',
+		'取消后无法撤销该包裹',
+		'确认取消该包裹?',
 		{
-			confirmButtonText: '确认撤销',
+			confirmButtonText: '确认取消',
 			cancelButtonText: t('pages.Cancel'),
 			type: 'warning',
 			center: true,
 		},
 	)
 		.then(async () => {
-			const res: ApiResponse<any> = await parcelUndo({ ids: list });
+			const res: ApiResponse<any> = await parcelcancel({ ids: list as string[] });
 			if (res?.isSuccess) {
-				ElMessage.success('撤销成功');
+				ElMessage.success('取消成功');
 				getdata();
 			} else {
 				ElMessage.error(res?.message || t('pages.Failed'));
@@ -371,22 +393,51 @@ const undo = async (isBatch: boolean, id?: string | number) => {
 		});
 };
 
-watch([count, pagecurrent], () => {
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
+const getLabelUrl = async (id: string | number): Promise<string | null> => {
+	const res: ApiResponse<any> = await downloadlabel(String(id));
+	return res?.result || null;
+};
+
+const downloadLabels = async (isBatch: boolean, id?: string | number) => {
+	const ids = isBatch
+		? selectarr.value.map((r) => r.id)
+		: [id as string | number];
+	for (const item of ids) {
+		const url = await getLabelUrl(item);
+		if (url) {
+			const a = document.createElement('a');
+			a.target = '_blank';
+			a.href = url;
+			a.click();
+		}
 	}
+};
+
+const printLabels = async (isBatch: boolean, id?: string | number) => {
+	const ids = isBatch
+		? selectarr.value.map((r) => r.id)
+		: [id as string | number];
+	for (const item of ids) {
+		const url = await getLabelUrl(item);
+		if (url) {
+			const win = window.open(url, '_blank');
+			win?.print();
+		}
+	}
+};
+
+watch([count, pagecurrent], () => {
+	getdata();
 });
 
 onMounted(() => {
-	dates.value = defaultRange();
+	init();
 	getdata();
 });
 </script>
 
 <style lang="scss" scoped>
-.parcel-cancel {
+.broker-rejected {
 	padding: 12px;
 	display: flex;
 	flex-direction: column;
@@ -408,6 +459,9 @@ onMounted(() => {
 .filter-form :deep(.el-form-item) {
 	margin-right: 8px;
 	margin-bottom: 0;
+}
+.stage-select {
+	width: 180px;
 }
 .date-picker {
 	width: 100%;
@@ -432,6 +486,11 @@ onMounted(() => {
 	gap: 8px;
 	align-items: center;
 }
+.tilde {
+	color: #909399;
+	font-weight: 500;
+	margin-right: 8px;
+}
 .op-row {
 	display: flex;
 	gap: 12px;
@@ -451,6 +510,9 @@ onMounted(() => {
 .op-row-pager :deep(.el-pagination__sizes) {
 	margin-right: 0;
 }
+.import,
+.print,
+.download,
 .cancell {
 	display: inline-flex;
 	align-items: center;
@@ -460,8 +522,22 @@ onMounted(() => {
 	padding: 5px 4px;
 	color: #fff;
 	border: none;
+}
+.import {
+	background-color: #409eff;
+}
+.print {
+	background-color: #17a2b8;
+}
+.download {
+	background-color: #28a745;
+}
+.cancell {
 	background-color: #dc3545;
 }
+.import:disabled,
+.print:disabled,
+.download:disabled,
 .cancell:disabled {
 	cursor: not-allowed;
 	opacity: 0.6;
@@ -491,16 +567,6 @@ onMounted(() => {
 .cyan:hover {
 	text-decoration: underline;
 }
-.copy-header {
-	cursor: pointer;
-	color: #606266;
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-.copy-header:hover {
-	color: #409eff;
-}
 .pager {
 	margin-top: 16px;
 	justify-content: flex-end;
@@ -518,7 +584,8 @@ onMounted(() => {
 	line-height: 40px;
 }
 @media (max-width: 768px) {
-	.date-picker {
+	.date-picker,
+	.stage-select {
 		width: 100%;
 	}
 	.tracking-input {

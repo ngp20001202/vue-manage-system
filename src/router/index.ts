@@ -313,6 +313,24 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "exception-lastMilerRejected" */ '../views/exception/lastMilerRejected.vue'),
             },
             {
+                path: '/exception/brokerRejected',
+                name: 'exception-brokerRejected',
+                meta: {
+                    title: '清关推送失败',
+                    permiss: '132',
+                },
+                component: () => import(/* webpackChunkName: "exception-brokerRejected" */ '../views/exception/brokerRejected.vue'),
+            },
+            {
+                path: '/exception/brokerRejected/import',
+                name: 'exception-brokerRejected-import',
+                meta: {
+                    title: '清关推送失败 - 导入订单',
+                    permiss: '132',
+                },
+                component: () => import(/* webpackChunkName: "exception-brokerRejected-import" */ '../views/exception/brokerRejectedImport.vue'),
+            },
+            {
                 path: '/download',
                 name: 'download',
                 meta: {

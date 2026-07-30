@@ -29,3 +29,7 @@ export const formatChargeItem = (
 	if (!key) return String(chargeID);
 	return i18n.global.t(`pages.Charge.${key}`);
 };
+
+export const CHARGE_OPTIONS = Object.entries(CHARGE_ID_MAP)
+	.filter(([key]) => /^\d+$/.test(key) || key === 'Other')
+	.map(([value]) => ({ value, label: formatChargeItem(value) }));

@@ -34,12 +34,12 @@ export const userupdate = (
 ): Promise<ApiResponse> =>
 	request({ url: `/api/Users/${body.id}`, method: 'PUT', data: body });
 
-// 禁用 / 启用用户（推测为 POST 软禁用）
-export const userdisable = (body: { id: string | number; enabled?: boolean }): Promise<ApiResponse> =>
+// 禁用 / 启用用户（shippingspa: POST /api/Users/disable，body: { ID, IsDisable }）
+export const userdisable = (body: { ID: string | number; IsDisable: boolean }): Promise<ApiResponse> =>
 	request({ url: '/api/Users/disable', method: 'POST', data: body });
 
-// 重置密码（shippingspa: POST /api/Configuration/user/reset）
-export const userresetpwd = (body: { id: string | number; newPassword: string }): Promise<ApiResponse> =>
+// 重置密码（shippingspa: POST /api/Configuration/user/reset，body: { ID, NewPassword }）
+export const userresetpwd = (body: { ID: string | number; NewPassword: string }): Promise<ApiResponse> =>
 	request({
 		url: '/api/Configuration/user/reset',
 		method: 'POST',

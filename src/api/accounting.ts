@@ -37,19 +37,29 @@ export const xactsexport = (params: { PeriodMin?: string; PeriodMax?: string }):
 export const SackMftsign = (data: { url: string }): Promise<any> =>
 	request({ url: '/api/Tokens/sign', method: 'POST', data });
 
+// 充值：创建支付订单
+export const Paymentsdata = (data: any): Promise<ApiResponse> =>
+	request({ url: '/api/Payments', method: 'POST', data });
+
+// 充值：获取收银台支付链接
+export const CashierPayments = (data: any): Promise<any> =>
+	request({ url: '/cashier/Payments', method: 'POST', data });
+
 // 账单 / 发票列表
 export interface InvoicesListParams {
 	index: number;
 	size: number;
 	PeriodMin?: string;
 	PeriodMax?: string;
+	Status?: string;
 }
 export const GetInvoices = (data: InvoicesListParams): Promise<ApiResponse> => {
 	const PeriodMin = data.PeriodMin ? `&PeriodMin=${data.PeriodMin}` : '';
 	const PeriodMax = data.PeriodMax ? `&PeriodMax=${data.PeriodMax}` : '';
+	const Status = data.Status ? `&Status=${data.Status}` : '';
 	return request({
 		url: `/api/BillingStatements?pageIndex=${data.index}&pageSize=${data.size}` +
-			PeriodMin + PeriodMax,
+			PeriodMin + PeriodMax + Status,
 		method: 'GET',
 	});
 };
@@ -57,6 +67,10 @@ export const GetInvoices = (data: InvoicesListParams): Promise<ApiResponse> => {
 // 单个账单 PDF 导出（blob）
 export const ExportInvoices = (id: string | number): Promise<Blob> =>
 	request({ url: `/api/Invoices/${id}/export`, method: 'GET', responseType: 'blob' });
+
+// 账单 PDF 导出（与 BillingStatements 列表配套）
+export const ExportBillingStatement = (id: string | number): Promise<Blob> =>
+	request({ url: `/api/BillingStatements/${id}/export`, method: 'GET', responseType: 'blob' });
 
 // 账单详情
 export const GetInvoicesDetail = (id: string | number): Promise<ApiResponse> =>

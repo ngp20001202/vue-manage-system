@@ -1,146 +1,131 @@
 <template>
 	<div class="address-list">
 		<el-card shadow="never" class="filter-card">
-			<el-tabs
-				v-model="activeName"
-				type="border-card"
-				class="demo-tabs"
-				:before-leave="beforeLeave"
-			>
-				<el-tab-pane
-					:label="t('pages.address.type.Billing')"
-					name="Billing"
-				/>
-				<el-tab-pane
-					:label="t('pages.address.type.Shipping')"
-					name="Shipping"
-				/>
-				<el-tab-pane
-					:label="t('pages.address.type.Returning')"
-					name="Returning"
-				/>
-				<el-tab-pane
-					:label="t('pages.address.type.Amazon')"
-					name="Amazon"
-				/>
-				<el-tab-pane
-					:label="t('pages.address.type.Consignee')"
-					name="Consignee"
-				/>
-			</el-tabs>
-
-			<div class="tabs-content">
-				<el-form :inline="true" class="filter-form">
-					<el-form-item>
-						<el-input
-							v-model="keyword"
-							:placeholder="t('pages.Pleaseinput')"
-							clearable
-							class="keyword-input"
-							@keyup.enter="onSearch"
-						/>
-					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" :icon="Search" @click="onSearch">
-							{{ t('pages.Search') }}
-						</el-button>
-						<el-button :icon="Refresh" @click="onReset">
-							{{ t('pages.Reset') }}
-						</el-button>
-					</el-form-item>
-				</el-form>
+			<div class="filter-row">
+				<el-select
+					v-model="type"
+					class="type-select"
+					:placeholder="t('pages.type')"
+				>
+					<el-option
+						v-for="opt in typeOptions"
+						:key="opt.value"
+						:label="opt.label"
+						:value="opt.value"
+					/>
+				</el-select>
+				<el-button type="primary" :icon="Search" @click="onSearch">
+					{{ t('pages.Search') }}
+				</el-button>
+				<el-button :icon="Refresh" @click="onReset">
+					{{ t('pages.Reset') }}
+				</el-button>
 			</div>
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
-			<div class="op-row">
-				<div class="op-row-left">
-					<el-button
-						type="primary"
-						:icon="Plus"
-						class="create-btn"
-						@click="openCreate"
-					>
-						{{ t('pages.Create') }}
-					</el-button>
-				</div>
-				<el-pagination
-					class="op-row-pager"
-					background
-					layout="total, prev, pager, next, sizes"
-					:total="availcnt"
-					:current-page="pagecurrent"
-					:page-size="count"
-					:page-sizes="[10, 20, 50, 100]"
-					@current-change="(p: number) => (pagecurrent = p)"
-					@size-change="(s: number) => (count = s)"
-				/>
+			<div class="operation">
+				<el-button type="success" size="small" class="create-btn" :icon="Plus" @click="openCreate" />
 			</div>
 
-			<el-table
-				v-loading="loading"
-				:data="routeData"
-				style="width: 100%"
-				border
-			>
-				<el-table-column :label="t('pages.Name')" prop="name" min-width="140">
+			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
+				<el-table-column :label="t('pages.ID')" width="120">
 					<template #default="scope">
-						<div class="name-cell">
-							<span>{{ scope.row.name }}</span>
-							<el-tag
-								v-if="scope.row.isDefault"
-								type="success"
-								size="small"
-								class="default-tag"
-							>
-								{{ t('pages.DefaultAddress') }}
-							</el-tag>
-						</div>
+						<span class="cyan" @click="() => openEdit(scope.row)">
+							<el-icon><Edit /></el-icon>{{ scope.row.id }}
+						</span>
+					</template>
+				</el-table-column>
+				<el-table-column :label="t('pages.type')" width="120">
+					<template #default="scope">
+						{{ formatType(scope.row.type) }}
 					</template>
 				</el-table-column>
 				<el-table-column
-					:label="t('pages.ContactName')"
-					prop="contact"
+					:label="t('pages.CountryCode')"
+					prop="countryCode"
+					width="120"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.company')"
+					prop="company"
+					min-width="140"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.Name')"
+					prop="name"
 					min-width="120"
 					show-overflow-tooltip
 				/>
 				<el-table-column
 					:label="t('pages.Phone')"
 					prop="phone"
-					width="160"
+					width="140"
 					show-overflow-tooltip
 				/>
-				<el-table-column :label="fullAddressLabel" min-width="280">
-					<template #default="scope">
-						<span class="address-cell">
-							[{{ scope.row.countryCode || '--' }}]
-							{{ scope.row.state || '' }}
-							{{ scope.row.city || '' }}
-							{{ scope.row.streetLine1 || '' }}
-						</span>
-					</template>
-				</el-table-column>
+				<el-table-column
+					:label="t('pages.Email')"
+					prop="email"
+					min-width="160"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.ProvinceState')"
+					prop="state"
+					min-width="120"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.City')"
+					prop="city"
+					min-width="120"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.district')"
+					prop="district"
+					min-width="120"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.StreetLine1')"
+					prop="streetLine1"
+					min-width="160"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.StreetLine2')"
+					prop="streetLine2"
+					min-width="160"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.StreetLine3')"
+					prop="streetLine3"
+					min-width="160"
+					show-overflow-tooltip
+				/>
+				<el-table-column
+					:label="t('pages.ZipPostalCode')"
+					prop="zipPostalCode"
+					width="120"
+					show-overflow-tooltip
+				/>
 				<el-table-column
 					:label="t('pages.Action')"
-					width="220"
+					width="180"
 					align="center"
 					fixed="right"
 				>
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
-								v-if="!scope.row.isDefault"
-								type="success"
-								size="small"
-								@click="setDefault(scope.row)"
-							>
-								{{ t('pages.DefaultAddress') }}
-							</el-button>
-							<el-button
 								type="primary"
 								size="small"
 								:icon="Edit"
-								@click="openEdit(scope.row)"
+								@click="() => openEdit(scope.row)"
 							>
 								{{ t('pages.Edit') }}
 							</el-button>
@@ -148,7 +133,7 @@
 								type="danger"
 								size="small"
 								:icon="Delete"
-								@click="onDelete(scope.row)"
+								@click="() => onDelete(scope.row)"
 							>
 								{{ t('pages.Delete') }}
 							</el-button>
@@ -174,15 +159,11 @@
 			/>
 		</el-card>
 
-		<!-- 创建 / 编辑 弹窗 -->
 		<el-dialog
 			v-model="dialogVisible"
-			:title="
-				dialogMode === 'create'
-					? t('pages.address.create.title')
-					: t('pages.address.edit.title')
-			"
-			width="640px"
+			:title="dialogMode === 'create' ? t('pages.address.create.title') : t('pages.address.edit.title')"
+			width="680px"
+			destroy-on-close
 			:close-on-click-modal="false"
 			@closed="onDialogClosed"
 		>
@@ -190,11 +171,23 @@
 				ref="formRef"
 				:model="form"
 				:rules="rules"
-				label-width="120px"
-				label-position="right"
+				label-width="130px"
 			>
+				<el-form-item :label="t('pages.type')" prop="type">
+					<el-select v-model="form.type" style="width: 100%">
+						<el-option
+							v-for="opt in typeOptions.filter((o) => o.value !== 0)"
+							:key="opt.value"
+							:label="opt.label"
+							:value="opt.value"
+						/>
+					</el-select>
+				</el-form-item>
 				<el-form-item :label="t('pages.Name')" prop="name">
 					<el-input v-model="form.name" :placeholder="t('pages.Pleaseinput')" />
+				</el-form-item>
+				<el-form-item :label="t('pages.company')">
+					<el-input v-model="form.company" :placeholder="t('pages.Pleaseinput')" />
 				</el-form-item>
 				<el-form-item :label="t('pages.ContactName')">
 					<el-input v-model="form.contact" :placeholder="t('pages.Pleaseinput')" />
@@ -202,11 +195,11 @@
 				<el-form-item :label="t('pages.Phone')">
 					<el-input v-model="form.phone" :placeholder="t('pages.phoneplace')" />
 				</el-form-item>
+				<el-form-item :label="t('pages.Email')">
+					<el-input v-model="form.email" :placeholder="t('pages.emailplace')" />
+				</el-form-item>
 				<el-form-item :label="t('pages.CountryCode')">
-					<el-input
-						v-model="form.countryCode"
-						:placeholder="t('pages.countrycode')"
-					/>
+					<el-input v-model="form.countryCode" :placeholder="t('pages.countrycode')" />
 				</el-form-item>
 				<el-form-item :label="t('pages.ProvinceState')">
 					<el-input v-model="form.state" />
@@ -214,8 +207,17 @@
 				<el-form-item :label="t('pages.City')">
 					<el-input v-model="form.city" />
 				</el-form-item>
+				<el-form-item :label="t('pages.district')">
+					<el-input v-model="form.district" />
+				</el-form-item>
 				<el-form-item :label="t('pages.StreetLine1')">
 					<el-input v-model="form.streetLine1" />
+				</el-form-item>
+				<el-form-item :label="t('pages.StreetLine2')">
+					<el-input v-model="form.streetLine2" />
+				</el-form-item>
+				<el-form-item :label="t('pages.StreetLine3')">
+					<el-input v-model="form.streetLine3" />
 				</el-form-item>
 				<el-form-item :label="t('pages.ZipPostalCode')">
 					<el-input v-model="form.zipPostalCode" />
@@ -225,9 +227,7 @@
 				</el-form-item>
 			</el-form>
 			<template #footer>
-				<el-button @click="dialogVisible = false">
-					{{ t('pages.Cancel') }}
-				</el-button>
+				<el-button @click="dialogVisible = false">{{ t('pages.Cancel') }}</el-button>
 				<el-button type="primary" :loading="submitting" @click="onSubmit">
 					{{ t('pages.address.create.confirm') }}
 				</el-button>
@@ -237,22 +237,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from 'element-plus';
-import {
-	Search,
-	Refresh,
-	Plus,
-	Edit,
-	Delete,
-} from '@element-plus/icons-vue';
+import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue';
 import {
 	addresslist,
 	addresscreate,
 	addressupdate,
 	addressdelete,
-	addressdetail,
 	addresssetdefault,
 } from '@/api/address';
 import type { AddressBody } from '@/api/address';
@@ -275,19 +268,25 @@ interface AddressRow {
 	streetLine2?: string;
 	streetLine3?: string;
 	zipPostalCode?: string;
-	type: string;
+	type: string | number;
 	isDefault?: boolean;
 }
 
-const fullAddressLabel = computed(
-	() =>
-		`${t('pages.CountryCode')}/${t('pages.ProvinceState')}/${t('pages.City')}/${t(
-			'pages.StreetLine1',
-		)}`,
-);
+const typeOptions = [
+	{ value: 0, label: t('pages.type') },
+	{ value: 'Billing', label: t('pages.address.type.Billing') },
+	{ value: 'Shipping', label: t('pages.address.type.Shipping') },
+	{ value: 'Returning', label: t('pages.address.type.Returning') },
+	{ value: 'Amazon', label: t('pages.address.type.Amazon') },
+	{ value: 'Consignee', label: t('pages.address.type.Consignee') },
+];
 
-const activeName = ref<string>('Billing');
-const keyword = ref('');
+const formatType = (value?: string | number) => {
+	const found = typeOptions.find((o) => o.value === value);
+	return found?.label || String(value || '');
+};
+
+const type = ref<string | number>(0);
 const routeData = ref<AddressRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
@@ -303,31 +302,26 @@ const emptyForm = (): Omit<AddressRow, 'id'> => ({
 	name: '',
 	contact: '',
 	phone: '',
+	email: '',
+	company: '',
 	countryCode: '',
 	state: '',
 	city: '',
+	district: '',
 	streetLine1: '',
+	streetLine2: '',
+	streetLine3: '',
 	zipPostalCode: '',
-	type: activeName.value,
+	type: 'Billing',
 	isDefault: false,
 });
 
-const form = reactive<Omit<AddressRow, 'id'> & { id?: string | number }>(
-	emptyForm(),
-);
+const form = reactive<Omit<AddressRow, 'id'> & { id?: string | number }>(emptyForm());
 
 const rules = reactive<FormRules>({
-	name: [
-		{ required: true, message: t('pages.required'), trigger: 'blur' },
-	],
+	name: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
+	type: [{ required: true, message: t('pages.required'), trigger: 'change' }],
 });
-
-const beforeLeave = (tab: string | number) => {
-	activeName.value = String(tab);
-	pagecurrent.value = 1;
-	getdata();
-	return true;
-};
 
 const onSearch = () => {
 	pagecurrent.value = 1;
@@ -335,7 +329,7 @@ const onSearch = () => {
 };
 
 const onReset = () => {
-	keyword.value = '';
+	type.value = 0;
 	pagecurrent.value = 1;
 	getdata();
 };
@@ -345,8 +339,7 @@ const getdata = async () => {
 	const res: ApiResponse<any> = await addresslist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		Type: activeName.value,
-		Keyword: keyword.value,
+		Type: type.value || undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -357,13 +350,13 @@ const getdata = async () => {
 
 const openCreate = () => {
 	dialogMode.value = 'create';
-	Object.assign(form, emptyForm(), { type: activeName.value });
+	Object.assign(form, emptyForm());
 	dialogVisible.value = true;
 };
 
 const openEdit = (row: AddressRow) => {
 	dialogMode.value = 'edit';
-	Object.assign(form, row);
+	Object.assign(form, emptyForm(), row);
 	dialogVisible.value = true;
 };
 
@@ -400,16 +393,12 @@ const onSubmit = async () => {
 
 const setDefault = async (row: AddressRow) => {
 	try {
-		await ElMessageBox.confirm(
-			'',
-			t('pages.DefaultAddress'),
-			{
-				confirmButtonText: t('pages.address.create.confirm'),
-				cancelButtonText: t('pages.Cancel'),
-				type: 'warning',
-				center: true,
-			},
-		);
+		await ElMessageBox.confirm('', t('pages.DefaultAddress'), {
+			confirmButtonText: t('pages.address.create.confirm'),
+			cancelButtonText: t('pages.Cancel'),
+			type: 'warning',
+			center: true,
+		});
 	} catch {
 		return;
 	}
@@ -424,16 +413,12 @@ const setDefault = async (row: AddressRow) => {
 
 const onDelete = async (row: AddressRow) => {
 	try {
-		await ElMessageBox.confirm(
-			'',
-			t('pages.Delete'),
-			{
-				confirmButtonText: t('pages.address.create.confirm'),
-				cancelButtonText: t('pages.Cancel'),
-				type: 'warning',
-				center: true,
-			},
-		);
+		await ElMessageBox.confirm('', t('pages.Delete'), {
+			confirmButtonText: t('pages.address.create.confirm'),
+			cancelButtonText: t('pages.Cancel'),
+			type: 'warning',
+			center: true,
+		});
 	} catch {
 		return;
 	}
@@ -466,55 +451,27 @@ onMounted(() => {
 .table-card {
 	background: #fff;
 }
-.tabs-content {
-	margin-top: 12px;
-}
-.filter-form {
+.filter-row {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
+	gap: 8px;
 	min-height: 60px;
 }
-.filter-form :deep(.el-form-item) {
-	margin-right: 8px;
-	margin-bottom: 0;
-}
-.keyword-input {
+.type-select {
 	width: 220px;
 }
-.name-cell {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-}
-.default-tag {
-	flex-shrink: 0;
-}
-.address-cell {
-	color: #606266;
-}
-.op-row {
+.operation {
 	display: flex;
-	gap: 12px;
 	align-items: center;
-	margin-bottom: 12px;
-	flex-wrap: wrap;
-	justify-content: space-between;
-}
-.op-row-left {
-	display: flex;
-	gap: 8px;
-	align-items: center;
-}
-.op-row-pager {
-	flex-shrink: 0;
-}
-.op-row-pager :deep(.el-pagination__sizes) {
-	margin-right: 0;
+	min-height: 50px;
+	margin-bottom: 10px;
 }
 .create-btn {
-	background-color: #409eff;
-	border-color: #409eff;
+	min-width: 0 !important;
+	padding: 5px 8px;
+	color: #fff;
+	border: none;
 }
 .action-cell {
 	display: flex;
@@ -531,24 +488,23 @@ onMounted(() => {
 .action-cell :deep(.el-button.is-small .el-icon) {
 	font-size: 12px;
 }
+.cyan {
+	color: #17a2b8;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+.cyan:hover {
+	text-decoration: underline;
+}
 .pager {
 	margin-top: 16px;
 	justify-content: flex-end;
 	display: flex;
 }
-:deep(.el-tabs--border-card) {
-	box-shadow: none;
-	border: 1px solid #ebeef5;
-}
-:deep(.el-tabs__content) {
-	display: none !important;
-}
-:deep(.el-tabs__item) {
-	height: 40px;
-	line-height: 40px;
-}
 @media (max-width: 768px) {
-	.keyword-input {
+	.type-select {
 		width: 100%;
 	}
 }

@@ -53,9 +53,6 @@
                                 >
                                     {{ t('pages.trackingPage.deliveryTime') }}:
                                     {{ getDeliveryTime(item) }}
-                                    <span v-if="getDeliveryDays(item) !== ''"
-                                        >（{{ getDeliveryDays(item) }} {{ t('pages.trackingPage.days') }}）</span
-                                    >
                                 </div>
                             </div>
                         </div>
@@ -78,14 +75,11 @@
                             </template>
                             <template v-else>
                                 <div class="latest">
-                                    <div class="latest-place">
-                                        {{ item.utcPlace || '' }}
+                                    <div class="latest-time">
+                                        {{ getLatestTime(item) || '' }}
                                     </div>
                                     <div class="latest-content">
                                         {{ getLatestStatus(item) || '' }}
-                                    </div>
-                                    <div class="latest-time">
-                                        {{ getLatestTime(item) || '' }}
                                     </div>
                                 </div>
                             </template>
@@ -104,19 +98,24 @@
                             </div>
                             <el-timeline v-else>
                                 <el-timeline-item
-                                    v-for="ev in getDetail(item).eventItems"
+                                    v-for="(ev, idx) in getDetail(item).eventItems"
                                     :key="ev.id || ev.utcTime"
-                                    :timestamp="formatUtc(ev.utcTime)"
-                                    placement="top"
-                                    type="primary"
+                                    :color="idx === 0 ? '#0bbd87' : '#e4e7ed'"
                                 >
-                                    <div class="event-place" v-if="ev.utcPlace">
-                                        [{{ ev.utcPlace }}]
-                                    </div>
-                                    <div class="event-content">{{ ev.content }}</div>
-                                    <div class="event-operator" v-if="ev.operator">
-                                        <el-icon><User /></el-icon>
-                                        <span>{{ ev.operator }}</span>
+                                    <div class="timeline-content">
+                                        <div class="timeline-time">
+                                            {{ formatUtc(ev.utcTime) }}
+                                        </div>
+                                        <div
+                                            v-if="ev.operator"
+                                            class="timeline-operator"
+                                        >
+                                            <el-icon><User /></el-icon>
+                                            <span>{{ ev.operator }}</span>
+                                        </div>
+                                        <div class="timeline-place">
+                                            [{{ ev.utcPlace }}] {{ ev.content }}
+                                        </div>
                                     </div>
                                 </el-timeline-item>
                             </el-timeline>
@@ -219,7 +218,13 @@ const onSearch = async () => {
             TrackingNbrs: toQuery.join('\n'),
         });
         if (res?.isSuccess) {
-            list.value = (res.result ?? []) as TrackingItem[];
+            list.value = (res.result ?? []).map((item) => ({
+                ...item,
+                checked: false,
+                getdata: true,
+                hasError: false,
+                eventItems: item.eventItems || [],
+            })) as TrackingItem[];
             await loadAllDetails();
         } else {
             list.value = [];
@@ -239,67 +244,57 @@ const onReset = () => {
 };
 
 const isDelivered = (item: TrackingItem): boolean => {
-    if (!item) return false;
-    if (item.deliveryTime) return true;
-    const events = item.eventItems;
-    if (events && events.length) {
-        const last = events[0];
-        const c = String(last?.content || '').toLowerCase();
-        if (
-            c.includes('delivered') ||
-            c.includes('签收') ||
-            c.includes('已送达')
-        ) {
-            return true;
-        }
-    }
-    return String(item.status) === '3' || item.stage === 'Delivered';
+    const events = getDetail(item).eventItems;
+    if (!events || !events.length) return false;
+    const latest = events[0];
+    const c = String(latest?.content || '').toLowerCase();
+    return (
+        c.includes('delivered') ||
+        c.includes('签收') ||
+        c.includes('已送达')
+    );
 };
 
-const getLatestEvent = (item: TrackingItem): TrackingEvent | undefined => {
-    const events = item.eventItems;
+const getDeliveryEvent = (item: TrackingItem): TrackingEvent | undefined => {
+    const events = getDetail(item).eventItems;
     if (!events || !events.length) return undefined;
-    const sorted = [...events].sort((a, b) => {
-        const ta = a.utcTime ? new Date(a.utcTime).getTime() : 0;
-        const tb = b.utcTime ? new Date(b.utcTime).getTime() : 0;
-        return tb - ta;
-    });
-    return sorted[0];
+    return events.find(
+        (e) =>
+            e.content &&
+            (e.content.toLowerCase().includes('delivered') ||
+                e.content.includes('签收') ||
+                e.content.includes('已送达')),
+    );
 };
 
 const getLatestStatus = (item: TrackingItem): string => {
-    const ev =
-        getDetail(item).eventItems?.[0] || getLatestEvent(item);
-    return ev?.content || item.stageText || '';
+    const ev = getDetail(item).eventItems?.[0];
+    if (ev) {
+        return `[${ev.utcPlace || ''}] ${ev.content || ''}`;
+    }
+    return String(item.stage || '') || t('pages.trackingPage.noTrackingInfo');
 };
 
 const getLatestTime = (item: TrackingItem): string => {
-    const ev =
-        getDetail(item).eventItems?.[0] || getLatestEvent(item);
+    const ev = getDetail(item).eventItems?.[0];
     return formatUtc(ev?.utcTime);
 };
 
 const getDeliveryTime = (item: TrackingItem): string => {
-    if (item.deliveryTime) return formatUtc(item.deliveryTime);
-    const events = getDetail(item).eventItems;
-    const found = (events || []).find((ev) =>
-        String(ev.content || '')
-            .toLowerCase()
-            .match(/delivered|签收|已送达/),
-    );
-    if (found?.utcTime) return formatUtc(found.utcTime);
+    const delivered = getDeliveryEvent(item);
+    if (delivered?.utcTime) {
+        return delivered.utcTime.split(' ')[0];
+    }
     return '';
 };
 
 const getDeliveryDays = (item: TrackingItem): string | number => {
-    const posted = item.postedStamp?.utcTime;
-    const delivered = item.deliveryTime;
-    if (!posted || !delivered) return '';
-    const start = moment.utc(posted);
-    const end = moment.utc(delivered);
-    if (!start.isValid() || !end.isValid()) return '';
-    const days = end.diff(start, 'day');
-    return days >= 0 ? days : '';
+    const delivered = getDeliveryEvent(item);
+    if (!delivered?.utcTime) return '';
+    const date = new Date(delivered.utcTime);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
 };
 
 const formatUtc = (utc?: string) => {
@@ -323,9 +318,12 @@ const statusClass = (item: TrackingItem) => {
 
 const statusText = (item: TrackingItem) => {
     if (item.hasError) return t('pages.trackingPage.queryRestricted');
-    if (isDelivered(item)) return t('pages.trackingPage.delivered');
+    if (isDelivered(item)) {
+        const days = getDeliveryDays(item);
+        return `${t('pages.trackingPage.delivered')} (${days}${t('pages.trackingPage.days')})`;
+    }
     if (!item.stage) return t('pages.trackingPage.noTrackingInfo');
-    return item.stageText || t('pages.trackingPage.notFound');
+    return String(item.stage);
 };
 
 const isExpanded = (item: TrackingItem) =>
@@ -338,11 +336,12 @@ const toggleExpand = async (item: TrackingItem) => {
         return;
     }
     expandedId.value = key;
-    // 如果详情没拉过/列表没事件，则拉一次
-    const cached = detailMap[key];
+    // 仅当 id 非 0、stage 非空且未加载过详情时拉取一次（对齐 shippingspa）
     if (
-        !cached ||
-        (!cached.eventItems?.length && !item.eventItems?.length)
+        item.id !== 0 &&
+        item.stage !== '' &&
+        !detailLoadingMap.value[key] &&
+        !getDetail(item).eventItems?.length
     ) {
         await loadDetail(item);
     }
@@ -350,19 +349,21 @@ const toggleExpand = async (item: TrackingItem) => {
 
 const getDetail = (item: TrackingItem) => {
     const key = itemKey(item);
-    return detailMap[key] || { eventItems: [] };
+    return detailMap.value[key] || { eventItems: item.eventItems || [] };
 };
 
 const loadDetail = async (item: TrackingItem) => {
     const key = itemKey(item);
-    const id = String(item.id ?? item.trackingNbr ?? '');
-    if (!id) return;
+    const id = item.id;
+    if (id === 0 || id === '' || id === undefined || id === null || item.stage === '') return;
+    if (detailLoadingMap.value[key]) return;
     detailLoadingMap.value[key] = true;
     try {
         const res: ApiResponse<TrackingEvent[]> = await trackingDetail(id);
         if (res?.isSuccess && res.result) {
+            const result = res.result as any;
             detailMap.value[key] = {
-                eventItems: (res.result as any)?.eventItems ?? (res.result as any) ?? [],
+                eventItems: result?.eventItems ?? result ?? [],
             };
         } else {
             detailMap.value[key] = { eventItems: [] };
@@ -376,7 +377,7 @@ const loadDetail = async (item: TrackingItem) => {
 
 // 控制并发：每批最多 CONCURRENCY 个
 async function loadAllDetails() {
-    const items = list.value.filter((i) => i.id || i.trackingNbr);
+    const items = list.value.filter((i) => i.id !== 0 && i.stage !== '');
     const queue = [...items];
     const workers: Promise<void>[] = [];
     const runOne = async () => {
@@ -541,23 +542,23 @@ export default { name: 'tracking-index' };
     border-top: 1px dashed #ebeef5;
     padding-top: 12px;
 }
-.event-place {
-    color: #f56c6c;
-    font-size: 12px;
-    margin-bottom: 2px;
-}
-.event-content {
-    color: #303133;
+.timeline-time {
     font-size: 13px;
+    color: #303133;
     margin-bottom: 4px;
-    word-break: break-word;
 }
-.event-operator {
+.timeline-operator {
     color: #909399;
     font-size: 12px;
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    margin-bottom: 4px;
+}
+.timeline-place {
+    color: #f56c6c;
+    font-size: 12px;
+    word-break: break-word;
 }
 .no-detail {
     color: #909399;

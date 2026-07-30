@@ -1,109 +1,75 @@
 <template>
 	<div class="config-user">
 		<el-card shadow="never" class="filter-card">
-			<el-tabs
-				v-model="activeName"
-				type="border-card"
-				class="demo-tabs"
-				:before-leave="beforeLeave"
-			>
-				<el-tab-pane :label="t('pages.all')" name="0" />
-				<el-tab-pane :label="t('pages.config.user.TenantUser')" name="1" />
-				<el-tab-pane :label="t('pages.config.user.SiteUser')" name="2" />
-			</el-tabs>
-
-			<div class="tabs-content">
-				<el-form :inline="true" class="filter-form">
-					<el-form-item>
-						<el-input
-							v-model="keyword"
-							:placeholder="t('pages.Alias')"
-							clearable
-							class="keyword-input"
-							@keyup.enter="onSearch"
+			<el-form :inline="true" class="filter-form">
+				<el-form-item>
+					<el-select
+						v-model="siteId"
+						class="site-select"
+						:placeholder="t('pages.config.user.Site')"
+						filterable
+					>
+						<el-option :label="t('pages.config.user.Site')" :value="0" />
+						<el-option
+							v-for="s in siteOptions"
+							:key="s.id"
+							:label="s.alias"
+							:value="s.id"
 						/>
-					</el-form-item>
-					<el-form-item v-if="activeName === '2'">
-						<el-select
-							v-model="siteId"
-							class="site-select"
-							:placeholder="t('pages.config.user.Site')"
-							clearable
-						>
-							<el-option
-								v-for="s in siteOptions"
-								:key="s.id"
-								:label="s.alias"
-								:value="s.id"
-							/>
-						</el-select>
-					</el-form-item>
-					<el-form-item>
-						<el-button type="primary" :icon="Search" @click="onSearch">
-							{{ t('pages.Search') }}
-						</el-button>
-						<el-button :icon="Refresh" @click="onReset">
-							{{ t('pages.Reset') }}
-						</el-button>
-						<el-button type="primary" :icon="Plus" @click="onCreate">
-							{{ t('pages.Create') }}
-						</el-button>
-					</el-form-item>
-				</el-form>
-			</div>
+					</el-select>
+				</el-form-item>
+				<el-form-item>
+					<el-input
+						v-model="alias"
+						:placeholder="t('pages.Alias')"
+						clearable
+						class="keyword-input"
+						@keyup.enter="onSearch"
+					/>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" :icon="Search" @click="onSearch">
+						{{ t('pages.Search') }}
+					</el-button>
+					<el-button :icon="Refresh" @click="onReset">
+						{{ t('pages.Reset') }}
+					</el-button>
+				</el-form-item>
+			</el-form>
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
-			<el-table
-				v-loading="loading"
-				:data="routeData"
-				style="width: 100%"
-				border
-			>
-				<el-table-column :label="t('pages.Alias')" prop="alias" min-width="140">
+			<div class="operation">
+				<el-button type="success" size="small" class="create-btn" :icon="Plus" @click="onCreate" />
+			</div>
+
+			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
+				<el-table-column :label="t('pages.ID')" min-width="120">
 					<template #default="scope">
-						<span class="cyan">{{ scope.row.alias }}</span>
+						<span class="cyan" @click="() => onEdit(scope.row)">
+							<el-icon class="edit-icon"><Edit /></el-icon>
+							{{ scope.row.id }}
+						</span>
 					</template>
 				</el-table-column>
+				<el-table-column
+					:label="t('pages.Alias')"
+					prop="userAlias"
+					min-width="160"
+				/>
 				<el-table-column
 					:label="t('pages.Username')"
-					prop="username"
-					min-width="140"
+					prop="loginName"
+					min-width="160"
 				/>
-				<el-table-column :label="t('pages.Role')" min-width="140">
-					<template #default="scope">
-						<el-tag :type="roleTagType(scope.row.role)" effect="light">
-							{{ roleText(scope.row.role) }}
-						</el-tag>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.config.user.UserType')" min-width="120">
-					<template #default="scope">
-						<el-tag
-							:type="scope.row.userType === 1 ? 'success' : 'warning'"
-							effect="plain"
-						>
-							{{ userTypeText(scope.row.userType) }}
-						</el-tag>
-					</template>
-				</el-table-column>
 				<el-table-column
-					:label="t('pages.config.user.Site')"
+					:label="t('pages.Site')"
 					prop="siteAlias"
-					min-width="140"
+					min-width="160"
 				/>
-				<el-table-column :label="t('pages.Phone')" prop="phone" min-width="140" />
-				<el-table-column :label="t('pages.Email')" prop="email" min-width="180" />
-				<el-table-column :label="statusLabel" min-width="120">
-					<template #default="scope">
-						<el-tag :type="scope.row.enabled ? 'success' : 'danger'" effect="light">
-							{{ scope.row.enabled ? t('pages.config.user.Enabled') : t('pages.config.user.disabled') }}
-						</el-tag>
-					</template>
-				</el-table-column>
 				<el-table-column
 					:label="t('pages.Action')"
-					width="220"
+					width="280"
 					align="center"
 					fixed="right"
 				>
@@ -112,26 +78,28 @@
 							<el-button
 								type="primary"
 								size="small"
-								:icon="Edit"
-								@click="() => onEdit(scope.row)"
-							>
-								{{ t('pages.Edit') }}
-							</el-button>
-							<el-button
-								:type="scope.row.enabled ? 'warning' : 'success'"
-								size="small"
-								:icon="scope.row.enabled ? 'Lock' : 'Unlock'"
-								@click="() => onToggleStatus(scope.row)"
-							>
-								{{ scope.row.enabled ? t('pages.config.user.disabled') : t('pages.config.user.Enabled') }}
-							</el-button>
-							<el-button
-								type="info"
-								size="small"
 								:icon="Key"
 								@click="() => onResetPassword(scope.row)"
 							>
 								{{ t('pages.config.user.ResetPassword') }}
+							</el-button>
+							<el-button
+								v-if="!scope.row.isDisabled"
+								type="danger"
+								size="small"
+								:icon="Lock"
+								@click="() => onToggleDisabled(scope.row, true)"
+							>
+								{{ t('pages.config.user.disabled') }}
+							</el-button>
+							<el-button
+								v-else
+								type="success"
+								size="small"
+								:icon="Unlock"
+								@click="() => onToggleDisabled(scope.row, false)"
+							>
+								{{ t('pages.config.user.Enabled') }}
 							</el-button>
 						</div>
 					</template>
@@ -173,10 +141,7 @@
 				<h4 class="form-section">
 					{{ t('pages.config.user.LoginInformation') }}
 				</h4>
-				<el-form-item
-					:label="t('pages.Username')"
-					prop="username"
-				>
+				<el-form-item :label="t('pages.Username')" prop="username">
 					<el-input v-model="form.username" :placeholder="t('pages.Username')" />
 				</el-form-item>
 				<el-form-item
@@ -207,10 +172,7 @@
 				<h4 class="form-section">
 					{{ t('pages.config.user.UserInformation') }}
 				</h4>
-				<el-form-item
-					:label="t('pages.Alias')"
-					prop="alias"
-				>
+				<el-form-item :label="t('pages.Alias')" prop="alias">
 					<el-input
 						v-model="form.alias"
 						:placeholder="t('pages.config.user.Aliasplace')"
@@ -255,7 +217,10 @@
 					<el-input v-model="form.email" :placeholder="t('pages.emailplace')" />
 				</el-form-item>
 				<el-form-item :label="t('pages.countrycode')" prop="countryCode">
-					<el-input v-model="form.countryCode" :placeholder="t('pages.countrycode')" />
+					<el-input
+						v-model="form.countryCode"
+						:placeholder="t('pages.countrycode')"
+					/>
 				</el-form-item>
 			</el-form>
 			<template #footer>
@@ -282,10 +247,7 @@
 				<el-form-item :label="t('pages.Username')">
 					<span>{{ resetForm.username }}</span>
 				</el-form-item>
-				<el-form-item
-					:label="t('pages.config.user.Password')"
-					prop="newPassword"
-				>
+				<el-form-item :label="t('pages.config.user.Password')" prop="newPassword">
 					<el-input
 						v-model="resetForm.newPassword"
 						type="password"
@@ -320,11 +282,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import { Search, Refresh, Plus, Edit, Key } from '@element-plus/icons-vue';
+import { Search, Refresh, Plus, Edit, Key, Lock, Unlock } from '@element-plus/icons-vue';
 import {
 	userlist,
 	usercreate,
@@ -332,7 +294,6 @@ import {
 	userdisable,
 	userresetpwd,
 	usersitelist,
-	userroleslist,
 } from '@/api/userlist';
 import type { ApiResponse } from '@/api/types';
 
@@ -340,21 +301,20 @@ const { t } = useI18n();
 
 interface UserRow extends Record<string, any> {
 	id: string | number;
-	alias?: string;
-	username?: string;
-	role?: string;
+	userAlias?: string;
+	loginName?: string;
+	siteAlias?: string;
+	isDisabled?: boolean;
 	userType?: number;
 	siteId?: number;
-	siteAlias?: string;
+	role?: string;
 	phone?: string;
 	email?: string;
 	countryCode?: string;
-	enabled?: boolean;
 }
 
-const activeName = ref('0');
-const keyword = ref('');
-const siteId = ref<string | number | undefined>(undefined);
+const alias = ref('');
+const siteId = ref(0);
 const siteOptions = ref<Array<{ id: string | number; alias: string }>>([]);
 const routeData = ref<UserRow[]>([]);
 const loading = ref(true);
@@ -384,9 +344,7 @@ const defaultForm = () => ({
 const form = reactive(defaultForm());
 
 const rules = reactive<FormRules>({
-	username: [
-		{ required: true, message: t('pages.required'), trigger: 'blur' },
-	],
+	username: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
 	password: [
 		{ required: true, message: t('pages.required'), trigger: 'blur' },
 		{ min: 6, message: t('pages.required'), trigger: 'blur' },
@@ -410,55 +368,14 @@ const rules = reactive<FormRules>({
 	role: [{ required: true, message: t('pages.required'), trigger: 'change' }],
 });
 
-const statusLabel = computed(() => t('pages.config.user.Enabled') + '/' + t('pages.config.user.disabled'));
-
-const userTypeText = (ut?: number) =>
-	ut === 1
-		? t('pages.config.user.TenantUser')
-		: ut === 2
-		? t('pages.config.user.SiteUser')
-		: '';
-
-const roleText = (r?: string) => {
-	if (!r) return '';
-	if (r === 'ClientMgr') return t('pages.config.user.ClientMgr');
-	if (r === 'ClientAdmin') return t('pages.config.user.ClientAdmin');
-	if (r === 'ClientOP') return t('pages.config.user.ClientOP');
-	if (r === 'HubOperator') return t('pages.config.user.HubOperator');
-	return r;
-};
-
-const roleTagType = (r?: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
-	if (r === 'ClientAdmin') return 'danger';
-	if (r === 'ClientMgr') return 'warning';
-	if (r === 'HubOperator') return 'info';
-	return 'success';
-};
-
-const init = () => {
-	keyword.value = '';
-	siteId.value = undefined;
+const onSearch = () => {
+	pagecurrent.value = 1;
+	getdata();
 };
 
 const onReset = () => {
-	init();
-	pagecurrent.value = 1;
-	onSearch();
-};
-
-const beforeLeave = (e: string | number) => {
-	init();
-	pagecurrent.value = 1;
-	if (String(e) === '0') {
-		activeName.value = '0';
-	} else {
-		activeName.value = String(e);
-	}
-	getdata();
-	return true;
-};
-
-const onSearch = () => {
+	alias.value = '';
+	siteId.value = 0;
 	pagecurrent.value = 1;
 	getdata();
 };
@@ -468,32 +385,21 @@ const loadSites = async () => {
 	if (res?.isSuccess && Array.isArray(res.result)) {
 		siteOptions.value = res.result.map((s: any) => ({
 			id: s.id ?? s.siteId,
-			alias: s.alias ?? s.name ?? String(s.id ?? ''),
+			alias: s.alias ?? s.name ?? s.text ?? String(s.id ?? ''),
 		}));
 	}
 };
 
 const getdata = async () => {
 	loading.value = true;
-	// shippingspa 后端：UserAlias（关键字）/ SiteID（操作点过滤）。
-	// 角色 / 类型 tab 改成客户端过滤。
 	const res: ApiResponse<any> = await userlist({
 		pageIndex: pagecurrent.value - 1,
 		pageSize: count.value,
-		UserAlias: keyword.value,
+		UserAlias: alias.value,
 		SiteID: siteId.value || undefined,
 	});
 	if (res?.isSuccess) {
-		const all = (res.result ?? []) as UserRow[];
-		// 客户端按角色 / tab 过滤
-		const tab = activeName.value;
-		routeData.value = tab === '0'
-			? all
-			: all.filter((u) => {
-				if (tab === '1') return !!u.tenantID && !u.siteID;
-				if (tab === '2') return !!u.siteID;
-				return true;
-			});
+		routeData.value = (res.result ?? []) as UserRow[];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;
@@ -508,8 +414,8 @@ const onCreate = () => {
 const onEdit = (row: UserRow) => {
 	Object.assign(form, defaultForm(), {
 		id: row.id,
-		username: row.username || '',
-		alias: row.alias || '',
+		username: row.loginName || '',
+		alias: row.userAlias || '',
 		userType: row.userType ?? 1,
 		siteId: row.siteId,
 		role: row.role || 'ClientOP',
@@ -552,7 +458,7 @@ const onSubmit = async () => {
 	submitting.value = false;
 
 	if (res?.isSuccess) {
-		ElMessage.success(t('pages.Success'));
+		ElMessage.success(res.message || t('pages.Success'));
 		closeDialog();
 		getdata();
 	} else {
@@ -560,39 +466,13 @@ const onSubmit = async () => {
 	}
 };
 
-const onToggleStatus = (row: UserRow) => {
-	const target = !row.enabled;
-	ElMessageBox.confirm(
-		target
-			? t('pages.config.user.Enabled') + ' ' + (row.username || row.alias)
-			: t('pages.config.user.disabled') + ' ' + (row.username || row.alias),
-		target ? t('pages.config.user.Enabled') : t('pages.config.user.disabled'),
-		{
-			confirmButtonText: t('pages.Save'),
-			cancelButtonText: t('pages.Cancel'),
-			type: 'warning',
-			center: true,
-		},
-	)
-		.then(async () => {
-			const res: ApiResponse<any> = await userupdate({
-				id: row.id as any,
-				enabled: target,
-			});
-			if (res?.isSuccess) {
-				ElMessage.success(t('pages.Success'));
-				getdata();
-			} else {
-				ElMessage.error(res?.message || t('pages.Failed'));
-			}
-		})
-		.catch(() => {});
-};
-
-const onDisableRow = async (row: UserRow) => {
-	const res: ApiResponse<any> = await userdisable({ id: row.id });
+const onToggleDisabled = async (row: UserRow, isDisable: boolean) => {
+	const res: ApiResponse<any> = await userdisable({
+		ID: row.id,
+		IsDisable: isDisable,
+	});
 	if (res?.isSuccess) {
-		ElMessage.success(t('pages.Success'));
+		ElMessage.success(res.message || t('pages.Success'));
 		getdata();
 	} else {
 		ElMessage.error(res?.message || t('pages.Failed'));
@@ -631,7 +511,7 @@ const resetRules = reactive<FormRules>({
 
 const onResetPassword = (row: UserRow) => {
 	resetForm.id = row.id;
-	resetForm.username = row.username || row.alias || '';
+	resetForm.username = row.loginName || row.userAlias || '';
 	resetForm.newPassword = '';
 	resetForm.verifyPassword = '';
 	resetPwdVisible.value = true;
@@ -643,12 +523,12 @@ const onSubmitReset = async () => {
 	if (!valid) return;
 	resetSubmitting.value = true;
 	const res: ApiResponse<any> = await userresetpwd({
-		id: resetForm.id,
-		newPassword: resetForm.newPassword,
+		ID: resetForm.id,
+		NewPassword: resetForm.newPassword,
 	});
 	resetSubmitting.value = false;
 	if (res?.isSuccess) {
-		ElMessage.success(t('pages.Success'));
+		ElMessage.success(res.message || t('pages.Success'));
 		resetPwdVisible.value = false;
 	} else {
 		ElMessage.error(res?.message || t('pages.Failed'));
@@ -676,9 +556,6 @@ onMounted(() => {
 .table-card {
 	background: #fff;
 }
-.tabs-content {
-	margin-top: 12px;
-}
 .filter-form {
 	display: flex;
 	align-items: center;
@@ -693,7 +570,19 @@ onMounted(() => {
 	width: 200px;
 }
 .site-select {
-	width: 180px;
+	width: 220px;
+}
+.operation {
+	display: flex;
+	align-items: center;
+	min-height: 50px;
+	margin-bottom: 10px;
+}
+.create-btn {
+	min-width: 0 !important;
+	padding: 5px 8px;
+	color: #fff;
+	border: none;
 }
 .action-cell {
 	display: flex;
@@ -712,6 +601,11 @@ onMounted(() => {
 }
 .cyan {
 	color: #17a2b8;
+	cursor: pointer;
+}
+.edit-icon {
+	margin-right: 4px;
+	vertical-align: middle;
 }
 .user-form {
 	padding-right: 16px;
@@ -726,17 +620,6 @@ onMounted(() => {
 	margin-top: 16px;
 	justify-content: flex-end;
 	display: flex;
-}
-:deep(.el-tabs--border-card) {
-	box-shadow: none;
-	border: 1px solid #ebeef5;
-}
-:deep(.el-tabs__content) {
-	display: none !important;
-}
-:deep(.el-tabs__item) {
-	height: 40px;
-	line-height: 40px;
 }
 @media (max-width: 768px) {
 	.keyword-input,

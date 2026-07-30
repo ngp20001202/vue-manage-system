@@ -1,50 +1,84 @@
 <template>
 	<div class="balance-page">
 		<el-card shadow="never">
-			<template #header>
-				<span>{{ t('menu.Accounting.AccountBalance') }}</span>
-			</template>
-
-			<el-descriptions v-loading="loading" :column="2" border>
-				<el-descriptions-item :label="t('pages.AccountBalance.Currency')">
-					{{ balance.currency }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.VaultBalance')">
-					{{ balance.vaultBalance }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.InvoicedAmount')">
-					{{ balance.invoicedAmount }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.UninvoicedAmount')">
-					{{ balance.uninvoicedAmount }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.CreditLimit')">
-					{{ balance.creditLimit }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.CurrentBalance')">
-					{{ balance.currentBalance }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.AccountBalance.LastUpdatedOn')" :span="2">
-					{{ formatDate(balance.lastUpdatedOn) }}
-				</el-descriptions-item>
-			</el-descriptions>
+			<el-table v-loading="loading" :data="balanceList" style="width: 100%" border>
+				<el-table-column
+					property="currencyText"
+					:label="t('pages.AccountBalance.Currency')"
+					min-width="120"
+				/>
+				<el-table-column :label="t('pages.AccountBalance.VaultBalance')" min-width="140">
+					<template #default="scope">
+						<span>{{ scope.row.vaultBal?.value }}{{ scope.row.vaultBal?.unit }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column :label="t('pages.AccountBalance.InvoicedAmount')" min-width="140">
+					<template #default="scope">
+						<span>{{ scope.row.invoicedAmt?.value }}{{ scope.row.invoicedAmt?.unit }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column :label="t('pages.AccountBalance.UninvoicedAmount')" min-width="140">
+					<template #default="scope">
+						<span>{{ scope.row.uninvoicedAmt?.value }}{{ scope.row.uninvoicedAmt?.unit }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column :label="t('pages.AccountBalance.CreditLimit')" min-width="140">
+					<template #default="scope">
+						<span>{{ scope.row.creditLimit?.value }}{{ scope.row.creditLimit?.unit }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column :label="t('pages.AccountBalance.CurrentBalance')" min-width="140">
+					<template #default="scope">
+						<span>{{ scope.row.curBal?.value }}{{ scope.row.curBal?.unit }}</span>
+					</template>
+				</el-table-column>
+				<el-table-column align="center" width="120">
+					<template #default="scope">
+						<el-button size="small" @click="openRecharge(scope.row)">
+							{{ t('pages.Recharge.Recharge') }}
+						</el-button>
+					</template>
+				</el-table-column>
+				<template #empty>
+					<el-empty :description="t('pages.NoData')" />
+				</template>
+			</el-table>
 		</el-card>
+
+		<RechargeDialog v-model="rechargeVisible" :row="rechargeRow" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import moment from 'moment';
 import { getBalance } from '@/api/accounting';
+import RechargeDialog from './components/RechargeDialog.vue';
+
+interface BalanceRow extends Record<string, any> {
+	currencyText?: string;
+	vaultBal?: { value: number | string; unit?: string };
+	invoicedAmt?: { value: number | string; unit?: string };
+	uninvoicedAmt?: { value: number | string; unit?: string };
+	creditLimit?: { value: number | string; unit?: string };
+	curBal?: { value: number | string; unit?: string };
+}
 
 const { t } = useI18n();
 const loading = ref(false);
-const balance = ref<Record<string, any>>({});
+const balance = ref<BalanceRow | BalanceRow[]>({});
+const rechargeVisible = ref(false);
+const rechargeRow = ref<BalanceRow | undefined>(undefined);
 
-const formatDate = (utc: string | undefined) => {
-	if (!utc) return '-';
-	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
+const balanceList = computed(() => {
+	if (Array.isArray(balance.value)) return balance.value;
+	if (balance.value && Object.keys(balance.value).length) return [balance.value];
+	return [];
+});
+
+const openRecharge = (row: BalanceRow) => {
+	rechargeRow.value = row;
+	rechargeVisible.value = true;
 };
 
 const loadBalance = async () => {
@@ -62,6 +96,6 @@ onMounted(loadBalance);
 
 <style scoped>
 .balance-page {
-	padding: 20px;
+	padding: 12px;
 }
 </style>
