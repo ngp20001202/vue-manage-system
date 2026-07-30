@@ -34,7 +34,7 @@ export const menuData: Menus[] = [
                 id: '102',
                 pid: '100',
                 index: '/parcel/cancel',
-                title: '撤销列表',
+                title: '取消列表',
             },
             {
                 id: '103',
@@ -62,6 +62,12 @@ export const menuData: Menus[] = [
         index: '110',
         icon: 'Money',
         children: [
+            {
+                id: '113',
+                pid: '110',
+                index: '/accounting/xacts/balance',
+                title: '账户余额',
+            },
             {
                 id: '112',
                 pid: '110',

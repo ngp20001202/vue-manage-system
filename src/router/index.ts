@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { usePermissStore } from '../store/permiss';
 import Home from '../views/home.vue';
 import NProgress from 'nprogress';
@@ -322,6 +322,15 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "download" */ '../views/download/index.vue'),
             },
             {
+                path: '/accounting/xacts/balance',
+                name: 'accounting-balance',
+                meta: {
+                    title: '账户余额',
+                    permiss: '3',
+                },
+                component: () => import(/* webpackChunkName: "accounting-balance" */ '../views/accounting/balance.vue'),
+            },
+            {
                 path: '/accounting/xacts',
                 name: 'accounting-xacts',
                 meta: {
@@ -421,7 +430,7 @@ const routes: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes,
 });
 
