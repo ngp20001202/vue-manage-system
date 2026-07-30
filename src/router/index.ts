@@ -376,13 +376,13 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "address-list" */ '../views/address/index.vue'),
             },
             {
-                path: '/tracking',
-                name: 'tracking',
+                path: '/Tools/Tracking',
+                name: 'tools-tracking',
                 meta: {
                     title: '追踪',
                     permiss: '150',
                 },
-                component: () => import(/* webpackChunkName: "tracking" */ '../views/tracking/index.vue'),
+                component: () => import(/* webpackChunkName: "tools-tracking" */ '../views/tracking/index.vue'),
             },
         ],
     },

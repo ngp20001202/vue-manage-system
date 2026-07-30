@@ -136,7 +136,7 @@ export const menuData: Menus[] = [
     {
         id: '150',
         title: '追踪',
-        index: '/tracking',
+        index: '/Tools/Tracking',
         icon: 'Search',
     },
     {
