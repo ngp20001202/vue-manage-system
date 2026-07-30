@@ -34,7 +34,7 @@
 					<el-input v-model="form.utcPlace" :placeholder="t('pages.UtcPlace')" />
 				</el-form-item>
 
-				<el-form-item :label="t('pages.UtcOffset')" prop="utcOffsetValue">
+				<el-form-item :label="t('pages.UtcOffset')" prop="utcOffset.value">
 					<el-select
 						v-model="form.utcOffset.value"
 						:placeholder="t('pages.UtcOffset')"
@@ -210,7 +210,7 @@ const validateEmail = (_rule: any, value: string, callback: Function) => {
 const rules = reactive<FormRules>({
 	country: [{ required: true, message: t('pages.required'), trigger: 'change' }],
 	utcPlace: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	utcOffsetValue: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+	'utcOffset.value': [{ required: true, message: t('pages.required'), trigger: 'change' }],
 	'billingInfo.name': [{ required: true, message: t('pages.required'), trigger: 'blur' }],
 	'billingInfo.phone': [{ required: true, message: t('pages.required'), trigger: 'blur' }],
 	'billingInfo.countryCode': [{ required: true, message: t('pages.required'), trigger: 'change' }],
