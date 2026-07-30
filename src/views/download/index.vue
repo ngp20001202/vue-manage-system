@@ -149,7 +149,6 @@ import { saveAs } from 'file-saver';
 import { downloadlist, DELETEDownload, Downloadpdf } from '@/api/download';
 import { SackMftsign } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
-import { filenames } from '@/utils/filename';
 
 const { t } = useI18n();
 
@@ -274,9 +273,14 @@ const downloads = async (url: string) => {
 };
 
 const Combinedsheet = async (id: string | number, url: string) => {
-	const res: any = await Downloadpdf(id, { url });
-	const filename = filenames(res) || `download_${id}.pdf`;
-	saveAs(res, filename);
+	try {
+		const blob: any = await Downloadpdf(id, { url });
+		const filename = `download_${id}.pdf`;
+		saveAs(blob, filename);
+		ElMessage.success(t('pages.Success'));
+	} catch {
+		ElMessage.error(t('pages.Failed'));
+	}
 };
 
 watch([count, pagecurrent], () => {

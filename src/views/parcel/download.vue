@@ -57,7 +57,6 @@ import { useI18n } from 'vue-i18n';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 import { POSTparcelslabels } from '@/api/parcel';
-import type { ApiResponse } from '@/api/types';
 
 interface LabelItem {
 	key: string;
@@ -189,11 +188,16 @@ const downloadLabels = async () => {
 };
 
 const loadLabels = async () => {
-	const res: ApiResponse<any[]> = await POSTparcelslabels({
-		ids: props.ids as any,
-	});
-	if (res?.isSuccess && Array.isArray(res.result)) {
-		labels.value = res.result.map((y) => ({ ...y, status: '正在下载' }));
+	// shippingspa: POSTparcelslabels(ids) returns a bare array of {key, value},
+	// where `value` is a URL to fetch the actual label blob from.
+	const res = await POSTparcelslabels(props.ids as any);
+	const arr = Array.isArray(res)
+		? res
+		: (res && (res as any).isSuccess && Array.isArray((res as any).result)
+			? (res as any).result
+			: []);
+	if (arr.length) {
+		labels.value = arr.map((y: any) => ({ ...y, status: '正在下载' }));
 		downloadLabels();
 	}
 };

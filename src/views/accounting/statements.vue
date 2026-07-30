@@ -22,6 +22,19 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
+			<div v-show="routeData.length" class="op-row">
+				<el-tooltip :content="t('pages.Export')" placement="top" :enterable="false">
+					<el-button
+						type="success"
+						class="export"
+						:loading="exporting"
+						@click="exportdata"
+					>
+						<el-icon><Upload /></el-icon>
+					</el-button>
+				</el-tooltip>
+			</div>
+
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
 				<el-table-column :label="t('pages.ID')" prop="id" width="180" />
 				<el-table-column :label="t('pages.date')" width="180">
@@ -75,9 +88,12 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, Refresh } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { Search, Refresh, Upload } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { statementlist } from '@/api/accounting';
+import { saveAs } from 'file-saver';
+import { statementlist, statementexport } from '@/api/accounting';
+import { datatoutc } from '@/utils/format';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -98,15 +114,11 @@ const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
+const exporting = ref(false);
 
 const formatDate = (utc: string | undefined) => {
 	if (!utc) return '';
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
-};
-
-const toUtcIso = (date: string | undefined) => {
-	if (!date) return '';
-	return moment(date).utc().format();
 };
 
 const defaultRange = (): [string, string] => [
@@ -130,14 +142,31 @@ const getdata = async () => {
 	const res: ApiResponse<any> = await statementlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		PeriodMin: toUtcIso(dates.value?.[0]),
-		PeriodMax: toUtcIso(dates.value?.[1]),
+		PeriodMin: datatoutc(dates.value?.[0]),
+		PeriodMax: datatoutc(dates.value?.[1]),
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;
+};
+
+const exportdata = async () => {
+	exporting.value = true;
+	try {
+		const blob: any = await statementexport({
+			PeriodMin: datatoutc(dates.value?.[0]),
+			PeriodMax: datatoutc(dates.value?.[1]),
+		});
+		const filename = `statements_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+		saveAs(blob, filename);
+		ElMessage.success(t('pages.Success'));
+	} catch {
+		ElMessage.error(t('pages.Failed'));
+	} finally {
+		exporting.value = false;
+	}
 };
 
 watch([count, pagecurrent], () => {
@@ -175,6 +204,23 @@ onMounted(() => {
 }
 .date-picker :deep(.el-date-editor) {
 	width: 100%;
+}
+.op-row {
+	display: flex;
+	align-items: center;
+	min-height: 50px;
+	margin-bottom: 10px;
+}
+.export {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 33px;
+	min-width: 0 !important;
+	padding: 5px;
+	color: #fff;
+	border: none;
+	background-color: #28a745;
 }
 .pager {
 	margin-top: 16px;

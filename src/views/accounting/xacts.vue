@@ -41,8 +41,16 @@
 				:data="routeData"
 				style="width: 100%"
 				border
+				@row-click="onRowClick"
 			>
-				<el-table-column :label="t('pages.ID')" prop="id" width="180" />
+				<el-table-column :label="t('pages.ID')" prop="id" width="180">
+					<template #default="scope">
+						<span class="cyan">
+							<el-icon style="margin-right: 4px"><InfoFilled /></el-icon>
+							{{ scope.row.id }}
+						</span>
+					</template>
+				</el-table-column>
 				<el-table-column :label="t('pages.date')" width="180">
 					<template #default="scope">
 						<span>{{ formatDate(scope.row.xactedOn) }}</span>
@@ -92,16 +100,23 @@
 				@size-change="(s: number) => (count = s)"
 			/>
 		</el-card>
+
+		<XactDetailDialog
+			v-model="detailVisible"
+			:id="detailId"
+			:invoiceID="detailInvoiceId"
+			:paymentID="detailPaymentId"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
-import { Search, Refresh } from '@element-plus/icons-vue';
+import { Search, Refresh, InfoFilled } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { xactslist, xactsexport, SackMftsign } from '@/api/accounting';
+import { xactslist, SackMftsign } from '@/api/accounting';
+import XactDetailDialog from './components/XactDetailDialog.vue';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -125,6 +140,10 @@ const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
 const dates = ref<[string, string] | null>(null);
+const detailVisible = ref(false);
+const detailId = ref<string | number>('');
+const detailInvoiceId = ref<string | number>('');
+const detailPaymentId = ref<string | number>('');
 
 const formatDate = (utc: string | undefined) => {
 	if (!utc) return '';
@@ -185,26 +204,18 @@ const exportdata = async () => {
 		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
 		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
 	}
-	try {
-		const res: any = await SackMftsign({ url: url.toString() });
-		if (res?.token) {
-			url.searchParams.set('token', res.token);
-			window.open(url.toString(), '_blank');
-		} else {
-			const blob: any = await xactsexport({
-				PeriodMin: toUtcIso(dates.value?.[0]),
-				PeriodMax: toUtcIso(dates.value?.[1]),
-			});
-			const blobUrl = window.URL.createObjectURL(new Blob([blob]));
-			const a = document.createElement('a');
-			a.href = blobUrl;
-			a.download = `xacts_${moment().format('YYYYMMDDHHmmss')}.xlsx`;
-			a.click();
-			window.URL.revokeObjectURL(blobUrl);
-		}
-	} catch {
-		ElMessage.error(t('pages.Failed'));
+	const res: any = await SackMftsign({ url: url.toString() });
+	if (res?.token) {
+		url.searchParams.set('token', res.token);
+		window.open(url.toString(), '_blank');
 	}
+};
+
+const onRowClick = (row: XactsRow) => {
+	detailId.value = row?.id ?? '';
+	detailInvoiceId.value = row?.invoiceID ?? '';
+	detailPaymentId.value = row?.paymentID ?? '';
+	detailVisible.value = true;
 };
 
 watch([count, pagecurrent], () => {

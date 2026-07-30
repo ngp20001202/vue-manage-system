@@ -1,3 +1,11 @@
+import moment from 'moment';
+
+// 日期转 UTC ISO 字符串（对齐 shippingspa src/until/setdate.js 的 datatoutc）
+export const datatoutc = (value: string | undefined | null): string => {
+	if (!value) return '';
+	return moment(value).utc().format();
+};
+
 export const formatParagraphtext = (
 	datalist: any[],
 	param: string,

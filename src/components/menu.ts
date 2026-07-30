@@ -1,12 +1,13 @@
 import { Menus } from '@/types/menu';
 
-// 菜单按迁移要求排列，仅保留迁移业务菜单 + 系统首页，
-// 隐藏原 vue-manage-system 的演示菜单（系统管理、组件、表格、图表、图标、主题、附加页面）。
+// 菜单按 shippingspa release 分支 menu.json 排列：
+// 包裹管理 / 清单管理 / 财务管理 / 配置 / 异常处理 / 收发件地址 / 追踪 / 下载中心，
+// 另增 "工具" 组承载换单列表/换单导入/面单打印/异常导入。
 export const menuData: Menus[] = [
     {
         id: '0',
         title: '系统首页',
-        index: '/dashboard',
+        index: '/home',
         icon: 'Odometer',
     },
     {
@@ -15,24 +16,13 @@ export const menuData: Menus[] = [
         index: '100',
         icon: 'Box',
         children: [
-            {
-                id: '101',
-                pid: '100',
-                index: '/parcel/list',
-                title: '包裹查询',
-            },
-            {
-                id: '102',
-                pid: '100',
-                index: '/parcel/cancel',
-                title: '取消列表',
-            },
-            {
-                id: '103',
-                pid: '100',
-                index: '/parcel/refund',
-                title: '退款列表',
-            },
+            { id: '101', pid: '100', index: '/Parcels/List', title: '包裹查询' },
+            { id: '102', pid: '100', index: '/parcel/cancel', title: '取消列表' },
+            { id: '103', pid: '100', index: '/Parcels/RefundList', title: '退款列表' },
+            { id: '115', pid: '100', index: '/Parcels/Single', title: '单票下单' },
+            { id: '116', pid: '100', index: '/Parcels/Import', title: '包裹导入' },
+            { id: '117', pid: '100', index: '/Parcels/Batchcalculation', title: '批量试算' },
+            { id: '118', pid: '100', index: '/PostingToLastMiler/Import', title: '推送末段' },
         ],
     },
     {
@@ -41,12 +31,7 @@ export const menuData: Menus[] = [
         index: '120',
         icon: 'List',
         children: [
-            {
-                id: '9',
-                pid: '120',
-                index: '/customManagers/sackMfts',
-                title: '清单列表',
-            },
+            { id: '9', pid: '120', index: '/CustomManagers/SackMfts/List', title: '清单列表' },
         ],
     },
     {
@@ -55,30 +40,11 @@ export const menuData: Menus[] = [
         index: '110',
         icon: 'Money',
         children: [
-            {
-                id: '113',
-                pid: '110',
-                index: '/accounting/xacts/balance',
-                title: '账户余额',
-            },
-            {
-                id: '112',
-                pid: '110',
-                index: '/accounting/xacts',
-                title: '交易记录',
-            },
-            {
-                id: '107',
-                pid: '110',
-                index: '/accounting/ledger',
-                title: '账本流水',
-            },
-            {
-                id: '109',
-                pid: '110',
-                index: '/accounting/invoices',
-                title: '周期账单',
-            },
+            { id: '113', pid: '110', index: '/Accountings/Xacts/Balance', title: '账户余额' },
+            { id: '112', pid: '110', index: '/Accountings/Xacts', title: '交易记录' },
+            { id: '107', pid: '110', index: '/Accountings/AR/LedgerList', title: '账本流水' },
+            { id: '109', pid: '110', index: '/Accountings/Invoices/List', title: '周期账单' },
+            { id: '105', pid: '110', index: '/accounting/statements', title: '应收运费' },
         ],
     },
     {
@@ -87,30 +53,10 @@ export const menuData: Menus[] = [
         index: '160',
         icon: 'Setting',
         children: [
-            {
-                id: '108',
-                pid: '160',
-                index: '/configuration/site',
-                title: '操作点',
-            },
-            {
-                id: '106',
-                pid: '160',
-                index: '/configuration/user',
-                title: '用户',
-            },
-            {
-                id: '161',
-                pid: '160',
-                index: '/configuration/company',
-                title: '公司',
-            },
-            {
-                id: '104',
-                pid: '160',
-                index: '/parcel/services',
-                title: '服务列表',
-            },
+            { id: '108', pid: '160', index: '/Configurations/Sites/List', title: '操作点' },
+            { id: '106', pid: '160', index: '/Configurations/Users/List', title: '用户' },
+            { id: '161', pid: '160', index: '/Configurations/Company', title: '公司' },
+            { id: '104', pid: '160', index: '/Parcels/Services', title: '服务列表' },
         ],
     },
     {
@@ -119,24 +65,15 @@ export const menuData: Menus[] = [
         index: '130',
         icon: 'Warning',
         children: [
-            {
-                id: '131',
-                pid: '130',
-                index: '/exception/lastMilerRejected',
-                title: '获取面单失败',
-            },
-            {
-                id: '132',
-                pid: '130',
-                index: '/exception/brokerRejected',
-                title: '清关推送失败',
-            },
+            { id: '131', pid: '130', index: '/Exceptions/LastMilerRejected', title: '获取面单失败' },
+            { id: '132', pid: '130', index: '/exception/brokerRejected', title: '清关推送失败' },
+            { id: '133', pid: '130', index: '/exception/import', title: '异常导入' },
         ],
     },
     {
         id: '140',
         title: '收发件地址',
-        index: '/address/list',
+        index: '/Addresses',
         icon: 'Location',
     },
     {
@@ -146,9 +83,20 @@ export const menuData: Menus[] = [
         icon: 'Search',
     },
     {
+        id: '180',
+        title: '工具',
+        index: '180',
+        icon: 'Tools',
+        children: [
+            { id: '119', pid: '180', index: '/overlabel/list', title: '换单列表' },
+            { id: '121', pid: '180', index: '/overlabel/import', title: '换单导入' },
+            { id: '171', pid: '180', index: '/printing', title: '面单打印' },
+        ],
+    },
+    {
         id: '170',
         title: '下载中心',
-        index: '/download',
+        index: '/Download',
         icon: 'Download',
     },
 ];

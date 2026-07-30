@@ -19,7 +19,6 @@ export interface SackMftListParams {
 	PeriodMin?: string;
 	PeriodMax?: string;
 	IsUseTrackingNbr?: string;
-	MawbNbr?: string;
 }
 export const sackMftlist = (data: SackMftListParams): Promise<ApiResponse> => {
 	const Stage = data.Stage ? `&Stage=${data.Stage}` : '';
@@ -27,8 +26,9 @@ export const sackMftlist = (data: SackMftListParams): Promise<ApiResponse> => {
 	const StageMax = data.StageMax ? `&StageMax=${data.StageMax}` : '';
 	const PeriodMin = data.PeriodMin ? `&PeriodMin=${data.PeriodMin}` : '';
 	const PeriodMax = data.PeriodMax ? `&PeriodMax=${data.PeriodMax}` : '';
+	// IsUseTrackingNbr 同时充当开关与 MAWB 取值（对齐 shippingspa usesackMfts.js）
 	const IsUseMawbNbr = data.IsUseTrackingNbr
-		? `&IsUseMawbNbr=true&MawbNbr=${data.MawbNbr ?? data.IsUseTrackingNbr}`
+		? `&IsUseMawbNbr=true&MawbNbr=${data.IsUseTrackingNbr}`
 		: '';
 	return request({
 		url: `/api/SackMfts?pageIndex=${data.index}&pageSize=${data.size}` +
@@ -56,21 +56,6 @@ export const sackMftCfmFlightArrived = (body: { ids: (string | number)[] }): Pro
 // 确认取货
 export const sackMftCfmPickup = (body: { ids: (string | number)[] }): Promise<ApiResponse> =>
 	request({ url: '/api/SackMfts/cfmPickup', method: 'POST', data: body });
-
-// 清单列表导出（blob）
-export const sackMftexport = (params: { Stage?: number; StageMin?: number; StageMax?: number; PeriodMin?: string; PeriodMax?: string }, body: { trackingNbrs?: string[] }): Promise<Blob> =>
-	request({
-		url: `/api/SackMfts/export?` +
-			(params.Stage ? `Stage=${params.Stage}&` : '') +
-			(params.StageMin ? `StageMin=${params.StageMin}&` : '') +
-			(params.StageMax ? `StageMax=${params.StageMax}&` : '') +
-			(params.PeriodMin ? `PeriodMin=${params.PeriodMin}&` : '') +
-			(params.PeriodMax ? `PeriodMax=${params.PeriodMax}` : ''),
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		data: body,
-		responseType: 'blob',
-	});
 
 // 下载相关文档（shippingspa uses /api/SackMfts/{id}/docs）
 export const sackMftDownload = (id: string): Promise<Blob> =>

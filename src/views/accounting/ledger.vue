@@ -130,10 +130,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
 import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { ledgerlist, ledgerexport, SackMftsign } from '@/api/accounting';
+import { ledgerlist, SackMftsign } from '@/api/accounting';
 import { formatChargeItem, CHARGE_OPTIONS } from '@/utils/charge-item';
 import type { ApiResponse } from '@/api/types';
 
@@ -254,34 +253,27 @@ const exportdata = async () => {
 	const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
 	const url = new URL(`${window.location.origin}${apiBase}/api/accounting/ledger/export`);
 
-	if (dates.value) {
-		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
-		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
-	}
-	if (chargeID.value !== '' && chargeID.value != null) {
-		url.searchParams.set('ChargeID', String(chargeID.value));
+	let trackingNbr: string | undefined;
+	if (activeTab.value === 'all') {
+		if (dates.value) {
+			url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
+			url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
+		}
+		if (chargeID.value !== '' && chargeID.value != null) {
+			url.searchParams.set('ChargeID', String(chargeID.value));
+		}
+	} else {
+		trackingNbr = parseTrackingNumbers(trackingNumbers.value) || undefined;
+		if (trackingNbr) {
+			url.searchParams.set('IsUseTrackingNbr', 'true');
+			url.searchParams.set('RefNbrs', trackingNbr);
+		}
 	}
 
-	try {
-		const res: any = await SackMftsign({ url: url.toString() });
-		if (res?.token) {
-			url.searchParams.set('token', res.token);
-			window.open(url.toString(), '_blank');
-		} else {
-			const blob: any = await ledgerexport({
-				PeriodMin: toUtcIso(dates.value?.[0]),
-				PeriodMax: toUtcIso(dates.value?.[1]),
-				ChargeID: chargeID.value,
-			});
-			const blobUrl = window.URL.createObjectURL(new Blob([blob]));
-			const a = document.createElement('a');
-			a.href = blobUrl;
-			a.download = `ledger_${moment().format('YYYYMMDDHHmmss')}.xlsx`;
-			a.click();
-			window.URL.revokeObjectURL(blobUrl);
-		}
-	} catch {
-		ElMessage.error(t('pages.Failed'));
+	const res: any = await SackMftsign({ url: url.toString() });
+	if (res?.token) {
+		url.searchParams.set('token', res.token);
+		window.open(url.toString(), '_blank');
 	}
 };
 

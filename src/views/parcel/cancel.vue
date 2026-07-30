@@ -190,7 +190,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { RefreshLeft, Search, Refresh, InfoFilled, DocumentCopy, List } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { formatParagraphtext } from '@/utils/format';
+import { formatParagraphtext, datatoutc } from '@/utils/format';
 import { parcellist, parcelSearchlist, parcelUndo } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from './detail.vue';
@@ -226,11 +226,6 @@ const trackingDialog = reactive({ id: '' });
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
-};
-
-const toUtcIso = (date: string | undefined) => {
-	if (!date) return '';
-	return moment(date).utc().format();
 };
 
 const show = (row: ParcelRow) =>
@@ -312,14 +307,14 @@ const getdata = async () => {
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		Stage: 0,
-		PeriodMin: toUtcIso(dates.value?.[0]),
-		PeriodMax: toUtcIso(dates.value?.[1]),
-	} as any);
+		StageMin: 10005,
+		StageMax: 10005,
+		PeriodMin: datatoutc(dates.value?.[0]),
+		PeriodMax: datatoutc(dates.value?.[1]),
+		IsUseTrackingNbr: encodeURIComponent(textarea.value),
+	});
 	if (res?.isSuccess) {
-		routeData.value = (res.result ?? []).filter(
-			(r: ParcelRow) => r.stageText === '订单已取消' || r.stageText === 'Parcel Voided',
-		);
+		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;
@@ -335,9 +330,7 @@ const postdata = async () => {
 			.filter((s) => s.trim() !== ''),
 	});
 	if (res?.isSuccess) {
-		routeData.value = (res.result ?? []).filter(
-			(r: ParcelRow) => r.stageText === '订单已取消' || r.stageText === 'Parcel Voided',
-		);
+		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;

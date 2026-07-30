@@ -204,7 +204,7 @@
 				</el-table-column>
 				<el-table-column :label="t('pages.Action')" width="360" align="center" fixed="right">
 					<template #default="scope">
-						<div class="action-cell">
+						<div v-if="showoption(scope.row)" class="action-cell">
 							<el-button
 								v-if="scope.row.canPrintLabel"
 								type="primary"
@@ -282,7 +282,8 @@ import {
 } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { saveAs } from 'file-saver';
-import { formatParagraphtext } from '@/utils/format';
+import { formatParagraphtext, datatoutc } from '@/utils/format';
+import { filenames } from '@/utils/filename';
 import {
 	parcellist,
 	parcelstage,
@@ -346,14 +347,12 @@ const commonHidden = [10005, 11040, 11020, 11010];
 const show = (row: ParcelRow) =>
 	!(commonHidden.includes(Number(row.stageID)) || Number(row.stageText) === 11030);
 
+// 行操作菜单可见性：已取消 / 已拒收等终态不展示操作
+const showoption = (row: ParcelRow) => !commonHidden.includes(Number(row.stageID));
+
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
-};
-
-const toUtcIso = (date: string | undefined) => {
-	if (!date) return '';
-	return moment(date).utc().format();
 };
 
 const copy = (key: string) => {
@@ -467,8 +466,10 @@ const getdata = async () => {
 		Stage: Stage.value as any,
 		StageMin: startstage.value as any,
 		StageMax: endStage.value as any,
-		PeriodMin: toUtcIso(dates.value?.[0]),
-		PeriodMax: toUtcIso(dates.value?.[1]),
+		PeriodMin: datatoutc(dates.value?.[0]),
+		PeriodMax: datatoutc(dates.value?.[1]),
+		IsUseTrackingNbr:
+			activeName.value === 'tracking' ? encodeURIComponent(textarea.value) : undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -498,23 +499,27 @@ const parcelsexport = async () => {
 		ElMessage.error('导出文件过大，调整一下查询条件');
 		return;
 	}
-	const blob: any = await parcelexport(
-		{
-			Stage: Stage.value as any,
-			StageMin: startstage.value as any,
-			StageMax: endStage.value as any,
-			PeriodMin: toUtcIso(dates.value?.[0]),
-			PeriodMax: toUtcIso(dates.value?.[1]),
-		},
-		{
-			trackingNbrs: textarea.value
-				.split(/[\n,]+/)
-				.filter((s) => s.trim() !== ''),
-		},
-	);
-	const filename = `parcels_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-	saveAs(blob, filename);
-	ElMessage.success(t('pages.Success'));
+	try {
+		const blob: any = await parcelexport(
+			{
+				Stage: Stage.value as any,
+				StageMin: startstage.value as any,
+				StageMax: endStage.value as any,
+				PeriodMin: datatoutc(dates.value?.[0]),
+				PeriodMax: datatoutc(dates.value?.[1]),
+			},
+			{
+				trackingNbrs: textarea.value
+					.split(/[\n,]+/)
+					.filter((s) => s.trim() !== ''),
+			},
+		);
+		const filename = `parcels_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+		saveAs(blob, filename);
+		ElMessage.success(t('pages.Success'));
+	} catch {
+		ElMessage.error(t('pages.Failed'));
+	}
 };
 
 const downloads = (id: string | number) => {
@@ -572,7 +577,10 @@ const download = () => {
 	parcelDownload.ids = list;
 };
 
+const batchdownloadbool = ref(false);
 const batchdownload = async () => {
+	if (batchdownloadbool.value) return;
+	batchdownloadbool.value = true;
 	const list = selectarr.value
 		.filter((r) => r.lastMilerNbr)
 		.map((r) => r.id);
@@ -584,6 +592,7 @@ const batchdownload = async () => {
 	} else {
 		ElMessage.error(res?.message || t('pages.Failed'));
 	}
+	batchdownloadbool.value = false;
 	clearselect();
 };
 

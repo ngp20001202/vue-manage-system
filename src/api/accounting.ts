@@ -104,16 +104,42 @@ export const ledgerexport = (params: {
 	PeriodMin?: string;
 	PeriodMax?: string;
 	ChargeID?: number | string;
+	TrackingNbr?: string;
 }): Promise<Blob> => {
 	const PeriodMin = params.PeriodMin ? `PeriodMin=${params.PeriodMin}&` : '';
 	const PeriodMax = params.PeriodMax ? `PeriodMax=${params.PeriodMax}&` : '';
 	const ChargeID = params.ChargeID ? `ChargeID=${params.ChargeID}&` : '';
+	const IsUseTrackingNbr = params.TrackingNbr
+		? `IsUseTrackingNbr=true&RefNbrs=${params.TrackingNbr}`
+		: '';
 	return request({
-		url: `/api/accounting/ledger/export?` + ChargeID + PeriodMin + PeriodMax,
+		url: `/api/accounting/ledger/export?` + ChargeID + PeriodMin + PeriodMax + IsUseTrackingNbr,
 		method: 'GET',
 		responseType: 'blob',
 	});
 };
+
+// 余额明细：获取支付单详情
+export const getPayment = (id: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/accounting/xacts/Payment/${id}`, method: 'GET' });
+
+// 余额明细：获取账单详情
+export const getInvoice = (
+	id: string | number,
+	invoiceID: string | number,
+): Promise<ApiResponse> =>
+	request({ url: `/api/accounting/xacts/${id}/Invoices/${invoiceID}`, method: 'GET' });
+
+// 余额明细：账单导出（blob）
+export const Invoiceexport = (
+	id: string | number,
+	invoiceID: string | number,
+): Promise<Blob> =>
+	request({
+		url: `/api/Accounting/xacts/${id}/invoices/${invoiceID}/export`,
+		method: 'GET',
+		responseType: 'blob',
+	});
 
 // 应收-运费 / Statements 列表（应收运费）
 export interface StatementListParams {

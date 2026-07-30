@@ -96,11 +96,6 @@
 							<el-icon><Upload /></el-icon>
 						</el-button>
 					</el-tooltip>
-					<el-tooltip :content="t('pages.Export')" placement="top" :enterable="false">
-						<el-button type="success" class="export" @click="sackMftexportaction">
-							<el-icon><Download /></el-icon>
-						</el-button>
-					</el-tooltip>
 				</div>
 				<el-pagination
 					class="op-row-pager"
@@ -219,7 +214,6 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
 	Upload,
-	Download,
 	Search,
 	Refresh,
 	InfoFilled,
@@ -227,7 +221,6 @@ import {
 	Setting,
 } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { saveAs } from 'file-saver';
 import {
 	sackMftlist,
 	sackMftstage,
@@ -235,7 +228,6 @@ import {
 	sackMftCfmFlightDeparted,
 	sackMftCfmFlightArrived,
 	sackMftCfmPickup,
-	sackMftexport,
 	sackMftsign,
 	getSackMftdashtab,
 } from '@/api/sackMft';
@@ -349,8 +341,8 @@ const getdata = async () => {
 		StageMax: endStage.value || undefined,
 		PeriodMin: !isTracking ? toUtcIso(dates.value?.[0]) : undefined,
 		PeriodMax: !isTracking ? toUtcIso(dates.value?.[1]) : undefined,
+		// MAWB 搜索仅在 tracking 页签生效，IsUseTrackingNbr 同时充当开关与取值
 		IsUseTrackingNbr: encodedTracking,
-		MawbNbr: encodedTracking,
 	} as any);
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -447,31 +439,6 @@ const handleRoledAction = async (code: number | string, id: string | number) => 
 	} catch {
 		// cancelled
 	}
-};
-
-const sackMftexportaction = async () => {
-	if (availcnt.value > 20000) {
-		ElMessage.error('导出文件过大，调整一下查询条件');
-		return;
-	}
-	const isTracking = activeName.value === 'tracking';
-	const blob: any = await sackMftexport(
-		{
-			Stage: isTracking ? 0 : Number(activeName.value) || 0,
-			StageMin: startStage.value || undefined,
-			StageMax: endStage.value || undefined,
-			PeriodMin: !isTracking ? toUtcIso(dates.value?.[0]) : undefined,
-			PeriodMax: !isTracking ? toUtcIso(dates.value?.[1]) : undefined,
-		},
-		{
-			trackingNbrs: isTracking
-				? textarea.value.split(/[\n,]+/).filter((s) => s.trim() !== '')
-				: undefined,
-		},
-	);
-	const filename = `sackMfts_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-	saveAs(blob, filename);
-	ElMessage.success(t('pages.Success'));
 };
 
 watch([count, pagecurrent], () => {
@@ -571,8 +538,7 @@ onMounted(() => {
 .op-row-pager :deep(.el-pagination__sizes) {
 	margin-right: 0;
 }
-.upload,
-.export {
+.upload {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -584,10 +550,6 @@ onMounted(() => {
 }
 .upload {
 	background-color: #17a2b8;
-}
-.export {
-	background-color: #28a745;
-	padding: 5px;
 }
 .cyan {
 	color: #17a2b8;

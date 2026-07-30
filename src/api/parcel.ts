@@ -81,9 +81,9 @@ export const getdashtab = () =>
 export const SackMftsign = (data: { url: string }) =>
 	request({ url: '/api/Tokens/sign', method: 'POST', data });
 
-// 批量下载面单（添加到下载中心任务）
+// 批量下载面单（添加到下载中心任务，shippingspa: /api/Download/parcels）
 export const parceldownloadfile = (body: { ids: string[] }) =>
-	request({ url: '/api/Parcels/labels', method: 'POST', data: body });
+	request({ url: '/api/Download/parcels', method: 'POST', data: body });
 
 // 包裹详情
 export const parcellistdetail = (params: { id: string }) =>
@@ -112,3 +112,121 @@ export const trackingdetail = (id: string) =>
 // 批量获取面单 URL
 export const POSTparcelslabels = (body: { ids: string[] }) =>
 	request({ url: '/api/Parcels/labels', method: 'POST', data: body });
+
+// 单笔创建包裹（提交到 lastMiler）
+export const createparcel = (data: any) =>
+	request({ url: '/api/Parcels/submit', method: 'POST', data });
+
+// 试算运费
+export const postrate = (data: any) =>
+	request({ url: '/api/Parcels/rate', method: 'POST', data });
+
+// 收发件地址列表
+export const parcelsender = () =>
+	request({ url: '/api/address/list', method: 'GET' });
+
+// 获取可用服务（lastMiler 渠道）
+export const getservices = () =>
+	request({ url: '/api/Parcels/services', method: 'GET' });
+
+// 收件人地址簿（Amazon）
+export const getAmazon = () =>
+	request({ url: '/api/address/Amazon/list', method: 'GET' });
+
+// 发票详情
+export const getInvoice = (id: string, invoiceID: string) =>
+	request({ url: `/api/accounting/xacts/${id}/Invoices/${invoiceID}`, method: 'GET' });
+
+// 地址详情
+export const addressdetail = (id: string) =>
+	request({ url: `/api/address/${id}`, method: 'GET' });
+
+// 新建地址
+export const addresscreate = (data: any) =>
+	request({ url: `/api/address/create`, method: 'POST', data });
+
+// 编辑地址
+export const addressedit = (data: any) =>
+	request({ url: `/api/address/edit`, method: 'POST', data });
+
+// ========================= Overlabel =========================
+
+// 换单列表（shippingspa: /api/Parcels/overlabel/list）
+export interface OverlabelListParams {
+	index: number;
+	size: number;
+	StageMin?: number;
+	StageMax?: number;
+	PeriodMin?: string;
+	PeriodMax?: string;
+	IsUseTrackingNbr?: string;
+}
+export const overlabellist = (data: OverlabelListParams): Promise<ApiResponse> => {
+	const StageMin = data.StageMin ? `&StageMin=${data.StageMin}` : '';
+	const StageMax = data.StageMax ? `&StageMax=${data.StageMax}` : '';
+	const PeriodMin = data.PeriodMin ? `&PeriodMin=${data.PeriodMin}` : '';
+	const PeriodMax = data.PeriodMax ? `&PeriodMax=${data.PeriodMax}` : '';
+	const IsUseTrackingNbr = data.IsUseTrackingNbr
+		? `&IsUseTrackingNbr=true&TrackingNbr=${data.IsUseTrackingNbr}`
+		: '';
+	return request({
+		url: `/api/Parcels/overlabel/list?pageIndex=${data.index}&pageSize=${data.size}` +
+			StageMin + StageMax + PeriodMin + PeriodMax + IsUseTrackingNbr,
+		method: 'GET',
+	});
+};
+
+// 换单导入（shippingspa: /api/Parcels/overlabel/import）
+export const overlabelImport = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Parcels/overlabel/import',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
+// 换单导入确认（shippingspa: /api/Parcels/overlabel/{fileid}/confirm）
+export const overlabelCfmImport = (fileid: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/Parcels/overlabel/${fileid}/confirm`, method: 'POST' });
+
+// ========================= 包裹批量导入 =========================
+
+// 包裹批量导入（shippingspa: importfile）
+export const parcelImportfile = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Parcels/import',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
+// 导入预览明细（shippingspa: DetailImport）
+export const parcelDetailImport = (fileid: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/Parcels/files/${fileid}/detail`, method: 'GET' });
+
+// 导出导入错误信息（shippingspa: ExportImport）
+export const parcelExportImport = (fileid: string | number): Promise<any> =>
+	request({
+		url: `/api/Parcels/files/${fileid}/export`,
+		method: 'GET',
+		responseType: 'blob',
+	});
+
+// 确认导入（shippingspa: CfmImport）
+export const parcelCfmImport = (fileid: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/Parcels/files/${fileid}/confirm`, method: 'POST' });
+
+// ========================= 推送入网 =========================
+
+// 推送入网批量导入（shippingspa: postingfile）
+export const postingfile = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Parcels/postingToLastMiler/Import',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
+// 推送入网导入结果确认（shippingspa: CfmPosting）
+export const CfmPosting = (fileid: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/Parcels/postingToLastMiler/${fileid}/confirm`, method: 'POST' });
