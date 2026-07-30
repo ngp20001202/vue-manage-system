@@ -480,6 +480,12 @@ export default {
     Void: "Void",
     Pleaseinput: "Please input",
     Searchcontent: "Search content",
+    SenderSearch: {
+      Title: "Address Book",
+      Search: "Search",
+      Select: "Select",
+      NoResults: "No results found",
+    },
     Cancel: "Cancel",
     TotalAmount: "Total Amount",
     courier: "Courier",

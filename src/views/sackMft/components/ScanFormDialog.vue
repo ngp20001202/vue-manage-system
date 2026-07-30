@@ -6,6 +6,12 @@
 		:close-on-click-modal="false"
 		@closed="handleClose"
 	>
+		<div class="sender-bar">
+			<span class="sender-bar__title">{{ t('pages.Shipper') }}</span>
+			<el-button type="primary" plain size="small" @click="senderSearchVisible = true">
+				{{ t('pages.SelectAddress') }}
+			</el-button>
+		</div>
 		<el-form :model="form" label-width="130px">
 			<el-row :gutter="16">
 				<el-col :span="12">
@@ -80,6 +86,9 @@
 				</el-col>
 				</el-row>
 				</el-form>
+
+				<SenderSearchDialog v-model="senderSearchVisible" @select="applySender" />
+
 				<template #footer>
 					<div class="dialog-footer">
 						<el-button @click="handleClose">{{ t('pages.Cancel') }}</el-button>
@@ -97,6 +106,7 @@ import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import moment from 'moment';
 import { sackMftScanform } from '@/api/sackMft';
+import SenderSearchDialog, { type SenderAddress } from './SenderSearchDialog.vue';
 
 const props = defineProps<{ modelValue: boolean; id: string | number }>();
 const emit = defineEmits(['update:modelValue', 'success']);
@@ -104,6 +114,7 @@ const emit = defineEmits(['update:modelValue', 'success']);
 const { t } = useI18n();
 const visible = ref(false);
 const loading = ref(false);
+const senderSearchVisible = ref(false);
 const form = ref({
 	name: '',
 	company: '',
@@ -148,6 +159,27 @@ const handleClose = () => {
 	emit('update:modelValue', false);
 };
 
+// 从地址簿选中发件人后回填表单
+const applySender = (row: SenderAddress) => {
+	const c = row?.contact;
+	if (!c) return;
+	form.value = {
+		...form.value,
+		name: c.name ?? '',
+		company: c.company ?? '',
+		phone: c.phone ?? '',
+		email: c.email ?? '',
+		countryCode: c.countryCode ?? '',
+		province: c.province ?? '',
+		city: c.city ?? '',
+		district: c.district ?? '',
+		street1: c.street1 ?? '',
+		street2: c.street2 ?? '',
+		street3: c.street3 ?? '',
+		postalCode: c.postalCode ?? '',
+	};
+};
+
 const submit = async () => {
 	loading.value = true;
 	const body = {
@@ -181,6 +213,18 @@ const submit = async () => {
 </script>
 
 <style lang="scss" scoped>
+.sender-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.sender-bar__title {
+	font-size: 15px;
+	font-weight: 600;
+}
+
 .dialog-footer {
 	display: flex;
 	justify-content: flex-end;

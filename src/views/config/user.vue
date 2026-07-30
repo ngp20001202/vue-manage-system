@@ -254,6 +254,26 @@
 						show-password
 						:placeholder="t('pages.config.user.Password')"
 					/>
+					<div v-if="resetForm.newPassword" class="pwd-strength">
+						<div class="pwd-strength__segments">
+							<div
+								v-for="i in 5"
+								:key="i"
+								class="pwd-strength__segment"
+								:class="{ active: i <= resetPwdStrength.level }"
+								:style="{
+									backgroundColor:
+										i <= resetPwdStrength.level ? resetPwdStrength.color : '#e0e0e0',
+								}"
+							/>
+						</div>
+						<span
+							class="pwd-strength__label"
+							:style="{ color: resetPwdStrength.color }"
+						>
+							{{ resetPwdStrength.label }}
+						</span>
+					</div>
 				</el-form-item>
 				<el-form-item
 					:label="t('pages.config.user.VerifyPassword')"
@@ -296,6 +316,7 @@ import {
 	usersitelist,
 } from '@/api/userlist';
 import type { ApiResponse } from '@/api/types';
+import { passwordLevel, passwordStrengthValidator } from '@/utils/password-strength';
 
 const { t } = useI18n();
 
@@ -492,7 +513,21 @@ const resetForm = reactive({
 const resetRules = reactive<FormRules>({
 	newPassword: [
 		{ required: true, message: t('pages.required'), trigger: 'blur' },
-		{ min: 6, message: t('pages.required'), trigger: 'blur' },
+		{
+			validator: (_r, value, cb) => {
+				if (!value) {
+					cb(new Error(t('pages.required')));
+					return;
+				}
+				const result = passwordStrengthValidator(value, 3);
+				if (result === true) {
+					cb();
+				} else {
+					cb(new Error(result));
+				}
+			},
+			trigger: 'blur',
+		},
 	],
 	verifyPassword: [
 		{ required: true, message: t('pages.required'), trigger: 'blur' },
@@ -508,6 +543,14 @@ const resetRules = reactive<FormRules>({
 		},
 	],
 });
+
+const resetPwdStrength = ref(passwordLevel(''));
+watch(
+	() => resetForm.newPassword,
+	(val) => {
+		resetPwdStrength.value = passwordLevel(val);
+	},
+);
 
 const onResetPassword = (row: UserRow) => {
 	resetForm.id = row.id;
@@ -626,5 +669,29 @@ onMounted(() => {
 	.site-select {
 		width: 100%;
 	}
+}
+.pwd-strength {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 6px;
+}
+.pwd-strength__segments {
+	display: flex;
+	flex: 1;
+	gap: 3px;
+	height: 5px;
+}
+.pwd-strength__segment {
+	flex: 1;
+	height: 100%;
+	background-color: #e0e0e0;
+	transition: background-color 0.3s ease;
+}
+.pwd-strength__label {
+	font-size: 12px;
+	min-width: 48px;
+	text-align: right;
+	transition: color 0.3s ease;
 }
 </style>

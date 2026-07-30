@@ -479,6 +479,12 @@ export default {
     Cancel: "取消",
     Pleaseinput: "请输入",
     Searchcontent: "搜索的内容",
+    SenderSearch: {
+      Title: "发件人查询",
+      Search: "搜索",
+      Select: "选择",
+      NoResults: "暂无匹配的地址",
+    },
     TotalAmount: "总金额",
     courier: "末端",
     eta: "预计到港前",
