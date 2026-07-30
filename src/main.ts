@@ -4,12 +4,15 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import App from './App.vue';
 import router from './router';
 import { usePermissStore } from './store/permiss';
+import { useUserStore } from './store/user';
+import i18n from './language';
 import 'element-plus/dist/index.css';
 import './assets/css/icon.css';
 
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);
+app.use(i18n);
 
 // 注册elementplus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
@@ -17,6 +20,8 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 // 自定义权限指令
 const permiss = usePermissStore();
+const user = useUserStore();
+user.init();
 app.directive('permiss', {
     mounted(el, binding) {
         if (binding.value && !permiss.key.includes(String(binding.value))) {

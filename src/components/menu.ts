@@ -1,11 +1,158 @@
 import { Menus } from '@/types/menu';
 
+// 菜单分组说明（参考 shippingspa 顺序，但去重 / 调整以适配 vue-manage-system）：
+//   包裹管理 (100) — 客户域：包裹查询 / 撤销 / 退款 / 服务 / 下载
+//   财务管理 (110) — 租户域：交易 / 应收运费 / 账本流水 / 周期账单 / 余额（占位）
+//   清单管理 (120) — 清关：清单列表
+//   异常处理 (130) — 清关 + 末段：获取面单失败 / 清关推送失败（占位）
+//   地址     (140)
+//   追踪     (150)
+//   配置管理 (160) — 用户 / 操作点 / 公司
+//   系统管理 (1)   — 用户 / 角色 / 菜单（vue-manage-system 自身管理）
+//
+// NOTE: 标题暂用中文硬编码，i18n 化是后续工作。
 export const menuData: Menus[] = [
     {
         id: '0',
         title: '系统首页',
         index: '/dashboard',
         icon: 'Odometer',
+    },
+    {
+        id: '100',
+        title: '包裹管理',
+        index: '100',
+        icon: 'Box',
+        children: [
+            {
+                id: '101',
+                pid: '100',
+                index: '/parcel/list',
+                title: '包裹查询',
+            },
+            {
+                id: '102',
+                pid: '100',
+                index: '/parcel/cancel',
+                title: '撤销列表',
+            },
+            {
+                id: '103',
+                pid: '100',
+                index: '/parcel/refund',
+                title: '退款列表',
+            },
+            {
+                id: '104',
+                pid: '100',
+                index: '/parcel/services',
+                title: '服务列表',
+            },
+            {
+                id: '111',
+                pid: '100',
+                index: '/download',
+                title: '下载任务',
+            },
+        ],
+    },
+    {
+        id: '110',
+        title: '财务管理',
+        index: '110',
+        icon: 'Money',
+        children: [
+            {
+                id: '112',
+                pid: '110',
+                index: '/accounting/xacts',
+                title: '交易记录',
+            },
+            {
+                id: '105',
+                pid: '110',
+                index: '/accounting/statements',
+                title: '应收运费',
+            },
+            {
+                id: '107',
+                pid: '110',
+                index: '/accounting/ledger',
+                title: '账本流水',
+            },
+            {
+                id: '109',
+                pid: '110',
+                index: '/accounting/invoices',
+                title: '周期账单',
+            },
+        ],
+    },
+    {
+        id: '120',
+        title: '清单管理',
+        index: '120',
+        icon: 'List',
+        children: [
+            {
+                id: '9',
+                pid: '120',
+                index: '/customManagers/sackMfts',
+                title: '清单列表',
+            },
+        ],
+    },
+    {
+        id: '130',
+        title: '异常处理',
+        index: '130',
+        icon: 'Warning',
+        children: [
+            {
+                id: '131',
+                pid: '130',
+                index: '/exception/lastMilerRejected',
+                title: '获取面单失败',
+            },
+        ],
+    },
+    {
+        id: '140',
+        title: '收发件地址',
+        index: '/address/list',
+        icon: 'Location',
+    },
+    {
+        id: '150',
+        title: '追踪',
+        index: '/tracking',
+        icon: 'Search',
+    },
+    {
+        id: '160',
+        title: '配置管理',
+        index: '160',
+        icon: 'Setting',
+        children: [
+            {
+                id: '106',
+                pid: '160',
+                index: '/configuration/user',
+                title: '用户管理',
+            },
+            {
+                id: '108',
+                pid: '160',
+                index: '/configuration/site',
+                title: '操作点',
+            },
+            {
+                id: '161',
+                pid: '160',
+                index: '/configuration/company',
+                title: '公司管理',
+            },
+        ],
     },
     {
         id: '1',
@@ -17,7 +164,7 @@ export const menuData: Menus[] = [
                 id: '11',
                 pid: '1',
                 index: '/system-user',
-                title: '用户管理',
+                title: '系统用户',
             },
             {
                 id: '12',

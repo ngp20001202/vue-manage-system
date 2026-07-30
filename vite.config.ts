@@ -6,6 +6,20 @@ import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 export default defineConfig({
 	base: './',
+	server: {
+		host: '0.0.0.0',
+		port: 5173,
+		strictPort: true,
+		open: false,
+		proxy: {
+			'/api1': {
+				target: 'https://shipping.sandbox.golads.com',
+				changeOrigin: true,
+				secure: false,
+				rewrite: (path) => path.replace(/^\/api1/, ''),
+			}
+		}
+	},
 	plugins: [
 		vue(),
 		VueSetupExtend(),

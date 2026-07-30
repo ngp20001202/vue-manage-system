@@ -221,6 +221,160 @@ const routes: RouteRecordRaw[] = [
                 },
                 component: () => import(/* webpackChunkName: "statistic" */ '../views/element/statistic.vue'),
             },
+            {
+                path: '/parcel/list',
+                name: 'parcel-list',
+                meta: {
+                    title: '包裹列表',
+                    permiss: '101',
+                },
+                component: () => import(/* webpackChunkName: "parcel-list" */ '../views/parcel/list.vue'),
+            },
+            {
+                path: '/parcel/cancel',
+                name: 'parcel-cancel',
+                meta: {
+                    title: '撤销列表',
+                    permiss: '102',
+                },
+                component: () => import(/* webpackChunkName: "parcel-cancel" */ '../views/parcel/cancel.vue'),
+            },
+            {
+                path: '/parcel/refund',
+                name: 'parcel-refund',
+                meta: {
+                    title: '退款列表',
+                    permiss: '103',
+                },
+                component: () => import(/* webpackChunkName: "parcel-refund" */ '../views/parcel/refund.vue'),
+            },
+            {
+                path: '/parcel/services',
+                name: 'parcel-services',
+                meta: {
+                    title: '服务列表',
+                    permiss: '104',
+                },
+                component: () => import(/* webpackChunkName: "parcel-services" */ '../views/parcel/services.vue'),
+            },
+            {
+                path: '/customManagers/sackMfts',
+                name: 'customManagers-sackMfts',
+                meta: {
+                    title: '清单列表',
+                    permiss: '9',
+                },
+                component: () => import(/* webpackChunkName: "customManagers-sackMfts" */ '../views/sackMft/list.vue'),
+            },
+            {
+                path: '/configuration/user',
+                name: 'configuration-user',
+                meta: {
+                    title: '用户管理',
+                    permiss: '106',
+                },
+                component: () => import(/* webpackChunkName: "configuration-user" */ '../views/config/user.vue'),
+            },
+            {
+                path: '/configuration/site',
+                name: 'configuration-site',
+                meta: {
+                    title: '操作点管理',
+                    permiss: '108',
+                },
+                component: () => import(/* webpackChunkName: "configuration-site" */ '../views/config/site.vue'),
+            },
+            {
+                path: '/configuration/company',
+                name: 'configuration-company',
+                meta: {
+                    title: '公司配置',
+                    permiss: '160',
+                },
+                component: () => import(/* webpackChunkName: "configuration-company" */ '../views/config/company.vue'),
+            },
+            {
+                path: '/parcel/list/detail',
+                name: 'parcel-list-detail',
+                meta: {
+                    title: '包裹详情',
+                    permiss: '101',
+                    hideInTabs: true,
+                },
+                component: () => import(/* webpackChunkName: "parcel-list-detail" */ '../views/parcel/detail.vue'),
+            },
+            {
+                path: '/exception/lastMilerRejected',
+                name: 'exception-lastMilerRejected',
+                meta: {
+                    title: '获取面单失败',
+                    permiss: '6',
+                },
+                component: () => import(/* webpackChunkName: "exception-lastMilerRejected" */ '../views/exception/lastMilerRejected.vue'),
+            },
+            {
+                path: '/download',
+                name: 'download',
+                meta: {
+                    title: '下载任务',
+                    permiss: '101',
+                },
+                component: () => import(/* webpackChunkName: "download" */ '../views/download/index.vue'),
+            },
+            {
+                path: '/accounting/xacts',
+                name: 'accounting-xacts',
+                meta: {
+                    title: '交易记录',
+                    permiss: '4',
+                },
+                component: () => import(/* webpackChunkName: "accounting-xacts" */ '../views/accounting/xacts.vue'),
+            },
+            {
+                path: '/accounting/statements',
+                name: 'accounting-statements',
+                meta: {
+                    title: '应收运费',
+                    permiss: '105',
+                },
+                component: () => import(/* webpackChunkName: "accounting-statements" */ '../views/accounting/statements.vue'),
+            },
+            {
+                path: '/accounting/invoices',
+                name: 'accounting-invoices',
+                meta: {
+                    title: '周期账单',
+                    permiss: '109',
+                },
+                component: () => import(/* webpackChunkName: "accounting-invoices" */ '../views/accounting/invoices.vue'),
+            },
+            {
+                path: '/accounting/ledger',
+                name: 'accounting-ledger',
+                meta: {
+                    title: '账本流水',
+                    permiss: '107',
+                },
+                component: () => import(/* webpackChunkName: "accounting-ledger" */ '../views/accounting/ledger.vue'),
+            },
+            {
+                path: '/address/list',
+                name: 'address-list',
+                meta: {
+                    title: '收发件地址',
+                    permiss: '8',
+                },
+                component: () => import(/* webpackChunkName: "address-list" */ '../views/address/index.vue'),
+            },
+            {
+                path: '/tracking',
+                name: 'tracking',
+                meta: {
+                    title: '追踪',
+                    permiss: '150',
+                },
+                component: () => import(/* webpackChunkName: "tracking" */ '../views/tracking/index.vue'),
+            },
         ],
     },
     {
