@@ -253,12 +253,14 @@ import {
 	addressupdate,
 	addressdelete,
 	addressdetail,
+	addresssetdefault,
 } from '@/api/address';
+import type { AddressBody } from '@/api/address';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
 
-interface AddressRow extends Record<string, any> {
+interface AddressRow {
 	id: string | number;
 	name: string;
 	contact?: string;
@@ -380,9 +382,9 @@ const onSubmit = async () => {
 	try {
 		let res: ApiResponse<any>;
 		if (dialogMode.value === 'create') {
-			res = await addresscreate({ ...form });
+			res = await addresscreate(form as AddressBody);
 		} else {
-			res = await addressupdate({ ...(form as AddressRow) });
+			res = await addressupdate(form as AddressBody & { id: string | number });
 		}
 		if (res?.isSuccess) {
 			ElMessage.success(t('pages.Success'));

@@ -98,7 +98,7 @@ const splitArray = <T,>(array: T[], chunkSize: number): T[][] => {
 	return result;
 };
 
-const saveLabel = (element: LabelItem) => {
+const saveLabel = (element: { key: string; blob?: Blob }) => {
 	try {
 		if (element.blob) {
 			saveAs(element.blob, `${element.key}.pdf`);

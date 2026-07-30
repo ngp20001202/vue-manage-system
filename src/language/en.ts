@@ -406,7 +406,6 @@ export default {
     district: "District ",
     districtplace: "eg.Jing An District",
     trackplace: "Enter tracking# or order# separated by comma or newline ",
-    tracking: "Tracking # or Order # ",
     trackingPage: {
       trackplace:
         "Enter tracking# or order# separated by comma or newline (max 200)",

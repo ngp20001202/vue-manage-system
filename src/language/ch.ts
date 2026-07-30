@@ -404,7 +404,6 @@ export default {
     district: "区",
     districtplace: "例如：工业园区",
     trackplace: "请输入运单号或订单号（多个请以逗号或换行符分割）",
-    tracking: "运单号或者订单号",
     trackingPage: {
       trackplace:
         "请输入运单号或订单号（多个请以逗号或换行符分割，仅限200条数据查询）",

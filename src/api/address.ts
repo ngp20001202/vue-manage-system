@@ -47,6 +47,10 @@ export const addresscreate = (body: AddressBody): Promise<ApiResponse> =>
 export const addressupdate = (body: AddressBody & { id: string | number }): Promise<ApiResponse> =>
 	request({ url: '/api/address/Edit', method: 'PUT', data: body });
 
+// 设置默认地址
+export const addresssetdefault = (id: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/address/setDefault/${id}`, method: 'POST' });
+
 // 删除地址（shippingspa: POST /api/address/remove）
 export const addressdelete = (body: { id: string | number }): Promise<ApiResponse> =>
 	request({ url: '/api/address/remove', method: 'POST', data: body });

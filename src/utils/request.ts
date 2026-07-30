@@ -1,7 +1,7 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ElMessage } from 'element-plus';
 
-const service: AxiosInstance = axios.create({
+const service = axios.create({
 	baseURL: (import.meta.env.VITE_APP_BASE as string) || '/api1',
 	timeout: 60000,
 });
@@ -48,4 +48,6 @@ service.interceptors.response.use(
 	},
 );
 
-export default service;
+const request = (config: any): Promise<any> => service(config);
+
+export default request;
