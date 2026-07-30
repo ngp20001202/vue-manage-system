@@ -176,6 +176,11 @@ const formatPosted = (utc: string | undefined) => {
 	return moment(utc).format('YYYY-MM-DD HH:mm:ss');
 };
 
+const toUtcIso = (date: string | undefined) => {
+	if (!date) return undefined;
+	return moment(date).utc().format();
+};
+
 const defaultRange = (): [string, string] => [
 	moment().subtract(14, 'days').format('YYYY-MM-DD'),
 	moment().format('YYYY-MM-DD'),
@@ -197,7 +202,11 @@ const changestatus = () => {
 };
 
 const onSearch = () => {
-	getdata();
+	if (activeName.value === 'tracking') {
+		getdata(1);
+	} else {
+		getdata();
+	}
 };
 
 const beforeLeave = (e: string | number) => {
@@ -213,9 +222,11 @@ const beforeLeave = (e: string | number) => {
 	return true;
 };
 
-const getdata = async () => {
+const getdata = async (type?: number, tabName?: string | number) => {
 	loading.value = true;
-	const isTracking = activeName.value === 'tracking';
+	const currentTab = tabName ?? activeName.value;
+	const isTracking = currentTab === 'tracking';
+
 	const rawTrackingNbrs = textarea.value
 		.split(/[\n\r,,，]+/)
 		.map((s) => s.trim())
@@ -224,14 +235,27 @@ const getdata = async () => {
 		ElMessage.info(t('pages.trackingPage.limitInfo'));
 	}
 	const trackingNbrs = rawTrackingNbrs.slice(0, 200).join('\n');
-	const res: ApiResponse<any> = await refundlist({
+
+	const params: Record<string, any> = {
 		pageIndex: pagecurrent.value - 1,
 		pageSize: count.value,
-		RefNbrs: isTracking ? trackingNbrs : undefined,
-		stateID: isTracking ? '' : activeName.value,
-		periodMin: isTracking ? '' : dates.value?.[0],
-		periodMax: isTracking ? '' : dates.value?.[1],
-	} as any);
+	};
+	if (type || isTracking) {
+		params.RefNbrs = trackingNbrs;
+	} else {
+		params.stateID = currentTab;
+		params.periodMin = toUtcIso(dates.value?.[0]);
+		params.periodMax = toUtcIso(dates.value?.[1]);
+	}
+
+	const res: ApiResponse<any> = await refundlist(params as {
+		pageIndex: number;
+		pageSize: number;
+		RefNbrs?: string;
+		stateID?: string | number;
+		periodMin?: string;
+		periodMax?: string;
+	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
@@ -240,7 +264,11 @@ const getdata = async () => {
 };
 
 watch([count, pagecurrent], () => {
-	getdata();
+	if (activeName.value === 'tracking') {
+		getdata(1);
+	} else {
+		getdata();
+	}
 });
 
 onMounted(() => {
