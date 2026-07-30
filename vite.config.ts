@@ -4,8 +4,8 @@ import VueSetupExtend from 'vite-plugin-vue-setup-extend';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
-export default defineConfig({
-	base: './',
+export default defineConfig(({ mode }) => ({
+	base: mode === 'production' ? './' : '/',
 	server: {
 		host: '0.0.0.0',
 		port: 5173,
