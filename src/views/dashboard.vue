@@ -45,12 +45,10 @@
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
 import { useUserStore } from '@/store/user';
 import { getBalance } from '@/api/accounting';
 
 const { t } = useI18n();
-const route = useRoute();
 const user = useUserStore();
 
 interface BalanceCard {
@@ -86,12 +84,12 @@ const onRecharge = (_card: BalanceCard) => {
 	ElMessage.info(t('pages.Recharge.Recharge') + ' - ' + (_card.currencyText || ''));
 };
 
+// 免密登录（URL 上带 ?token=）已经在 router.beforeEach 里完成，
+// 这里只负责拉余额，不再处理 token。
 onMounted(async () => {
-	const tokenInQuery = route.query.token as string | undefined;
-	if (tokenInQuery) {
-		await user.loginByToken(tokenInQuery);
+	if (user.token) {
+		await loadBalance();
 	}
-	await loadBalance();
 });
 </script>
 
