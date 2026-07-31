@@ -80,7 +80,7 @@
 						<el-button
 							type="primary"
 							class="import"
-							@click="() => $router.push('/exception/brokerRejected/import')"
+							@click="() => $router.push('/Exceptions/BrokerRejected/Import')"
 						>
 							<el-icon><Upload /></el-icon>
 						</el-button>

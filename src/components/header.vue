@@ -16,7 +16,7 @@
     <div class="header-right">
       <div class="header-user-con">
         <!-- 下载任务 -->
-        <div class="btn-icon" @click="router.push('/download')">
+        <div class="btn-icon" @click="router.push('/Download')">
           <el-tooltip effect="dark" content="下载任务" placement="bottom">
             <i class="iconfont icon-piliangxiazai" style="font-size: 22px"></i>
           </el-tooltip>

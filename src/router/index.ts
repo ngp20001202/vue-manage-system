@@ -150,6 +150,36 @@ const routes: RouteRecordRaw[] = [
                 meta: { title: '下载任务', permiss: '101', hideInMenu: true },
                 component: () => import(/* webpackChunkName: "download" */ '../views/download/index.vue'),
             },
+            {
+                path: '/Overlabel/List',
+                name: 'shippingspa-overlabel-list',
+                meta: { title: '换单列表', permiss: '100', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "overlabel-list" */ '../views/overlabel/list.vue'),
+            },
+            {
+                path: '/Overlabel/Import',
+                name: 'shippingspa-overlabel-import',
+                meta: { title: '换单导入', permiss: '100', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "overlabel-import" */ '../views/overlabel/import.vue'),
+            },
+            {
+                path: '/Exceptions/BrokerRejected',
+                name: 'shippingspa-exception-brokerRejected',
+                meta: { title: '清关失败', permiss: '6', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "exception-brokerRejected" */ '../views/exception/brokerRejected.vue'),
+            },
+            {
+                path: '/Exceptions/BrokerRejected/Import',
+                name: 'shippingspa-exception-brokerRejected-import',
+                meta: { title: '清关失败导入', permiss: '6', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "exception-brokerRejectedImport" */ '../views/exception/brokerRejectedImport.vue'),
+            },
+            {
+                path: '/Exceptions/Import',
+                name: 'shippingspa-exception-import',
+                meta: { title: '异常导入', permiss: '6', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "exception-import" */ '../views/exception/import.vue'),
+            },
         ],
     },
     {

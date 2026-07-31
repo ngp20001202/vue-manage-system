@@ -288,7 +288,7 @@ const submitImport = async () => {
 		const res: ApiResponse<any> = await brokerRejectedImport(form);
 		if (res?.isSuccess) {
 			ElMessage.success(res.message || t('pages.Success'));
-			router.push('/exception/brokerRejected');
+			router.push('/Exceptions/BrokerRejected');
 		} else {
 			ElMessage.error(res?.message || t('pages.Failed'));
 		}
@@ -300,7 +300,7 @@ const submitImport = async () => {
 };
 
 const goBack = () => {
-	router.push('/exception/brokerRejected');
+	router.push('/Exceptions/BrokerRejected');
 };
 </script>
 

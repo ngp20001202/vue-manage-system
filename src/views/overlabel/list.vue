@@ -93,7 +93,7 @@
 						<el-button
 							type="success"
 							class="import"
-							@click="$router.push('/overlabel/import')"
+							@click="$router.push('/Overlabel/Import')"
 						>
 							<el-icon><Upload /></el-icon>
 						</el-button>

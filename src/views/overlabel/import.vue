@@ -175,7 +175,7 @@ const submitImport = async () => {
 		const res: ApiResponse<any> = await overlabelImport(form);
 		if (res?.isSuccess) {
 			ElMessage.success(res.message || t('pages.Success'));
-			router.push('/overlabel/list');
+			router.push('/Overlabel/List');
 		} else {
 			ElMessage.error(res?.message || t('pages.Failed'));
 		}
@@ -187,7 +187,7 @@ const submitImport = async () => {
 };
 
 const goBack = () => {
-	router.push('/overlabel/list');
+	router.push('/Overlabel/List');
 };
 </script>
 

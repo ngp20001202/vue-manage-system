@@ -348,6 +348,30 @@
 			@close="onRateDialogClose"
 		>
 			<el-table :data="ratePreview" v-loading="rateLoading" style="width: 100%">
+				<el-table-column :label="t('pages.Image') || '图片'" width="100">
+					<template #default="scope">
+						<svg
+							v-if="scope.row.icon?.startsWith('icon-')"
+							class="icon"
+							aria-hidden="true"
+							style="width: 50px; height: 50px"
+						>
+							<use :xlink:href="'#' + scope.row.icon" />
+						</svg>
+						<el-image
+							v-else-if="scope.row.icon"
+							:src="scope.row.icon"
+							style="width: 50px; height: 50px"
+							fit="contain"
+						>
+							<template #error>
+								<div class="image-slot" style="text-align: center">
+									<el-icon style="font-size: 30px"><Picture /></el-icon>
+								</div>
+							</template>
+						</el-image>
+					</template>
+				</el-table-column>
 				<el-table-column
 					:label="t('pages.Channelname') || '渠道'"
 					prop="name"
@@ -374,20 +398,6 @@
 					</template>
 				</el-table-column>
 			</el-table>
-			<template #footer>
-				<el-button @click="rateDialogVisible = false">
-					{{ t('pages.Cancel') || '取消' }}
-				</el-button>
-				<el-button
-					type="primary"
-					plain
-					:loading="rateLoading"
-					@click="fetchRates"
-				>
-					<el-icon><Refresh /></el-icon>
-					{{ t('pages.refreshrate') || '刷新报价' }}
-				</el-button>
-			</template>
 		</el-dialog>
 
 		<!-- Submit actions -->
@@ -515,6 +525,7 @@ import {
 	Refresh,
 	Search,
 	Check,
+	Picture,
 } from '@element-plus/icons-vue';
 import {
 	createparcel,
@@ -527,9 +538,11 @@ import {
 	addressedit,
 } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
+import { useCreateParcelStore } from '@/store/createparcel';
 
 const { t } = useI18n();
 const router = useRouter();
+const createParcelStore = useCreateParcelStore();
 
 // Country list (a static subset; full list provided via dropdown)
 const countries = ref<Array<{ value: string; label: string }>>([
@@ -580,7 +593,7 @@ const priceOptions = [
 ];
 
 // Order number (optional)
-const clientRefNbr = ref('');
+const clientRefNbr = ref(createParcelStore.ClientRefNbr || '');
 
 // Shipper state
 interface AddressItem {
@@ -603,7 +616,11 @@ interface AddressItem {
 	};
 }
 
-const shipper = ref<AddressItem>({});
+const shipper = ref<AddressItem>(
+	createParcelStore.Shipper && Object.keys(createParcelStore.Shipper).length
+		? JSON.parse(JSON.stringify(createParcelStore.Shipper))
+		: {},
+);
 const shipperList = ref<AddressItem[]>([]);
 const shipperDropdown = ref(false);
 const shipperSearch = ref('');
@@ -634,20 +651,20 @@ interface Consignee {
 }
 
 const cnee = reactive<Consignee>({
-	Name: '',
-	Phone: '',
-	Email: '',
-	Company: '',
-	Street1: '',
-	Street2: '',
-	Street3: '',
-	District: '',
-	City: '',
-	Province: '',
-	PostalCode: '',
-	CountryCode: '',
+	Name: createParcelStore.Cnee?.Name || '',
+	Phone: createParcelStore.Cnee?.Phone || '',
+	Email: createParcelStore.Cnee?.Email || '',
+	Company: createParcelStore.Cnee?.Company || '',
+	Street1: createParcelStore.Cnee?.Street1 || '',
+	Street2: createParcelStore.Cnee?.Street2 || '',
+	Street3: createParcelStore.Cnee?.Street3 || '',
+	District: createParcelStore.Cnee?.District || '',
+	City: createParcelStore.Cnee?.City || '',
+	Province: createParcelStore.Cnee?.Province || '',
+	PostalCode: createParcelStore.Cnee?.PostalCode || '',
+	CountryCode: createParcelStore.Cnee?.CountryCode || '',
 });
-const isSign = ref<0 | 1>(0);
+const isSign = ref<0 | 1>(createParcelStore.IsSign || 0);
 
 const cneeFormRef = ref<FormInstance>();
 const cneeRules = reactive<FormRules>({
@@ -695,26 +712,30 @@ interface Parcel {
 	LineInfos: LineInfo[];
 }
 
-const parcels = ref<Parcel[]>([
-	{
-		Count: 1,
-		DecalaredWt: '',
-		WeightUnit: 2,
-		DimUnit: 1,
-		DeclaredLen: '',
-		DeclaredWidth: '',
-		DeclaredHeight: '',
-		PickingInfo: '',
-		LineInfos: [
+const parcels = ref<Parcel[]>(
+	createParcelStore.Parcels && createParcelStore.Parcels.length
+		? JSON.parse(JSON.stringify(createParcelStore.Parcels))
+		: [
 			{
-				GoodsInfo: { Sku: '', Name: '', HSCode: '', LocalName: '' },
-				LineTotal: { Value: '', Unit: 1 },
-				Quantity: 1,
-				CmdyID: 0,
+				Count: 1,
+				DecalaredWt: '',
+				WeightUnit: 2,
+				DimUnit: 1,
+				DeclaredLen: '',
+				DeclaredWidth: '',
+				DeclaredHeight: '',
+				PickingInfo: '',
+				LineInfos: [
+					{
+						GoodsInfo: { Sku: '', Name: '', HSCode: '', LocalName: '' },
+						LineTotal: { Value: '', Unit: 1 },
+						Quantity: 1,
+						CmdyID: 0,
+					},
+				],
 			},
 		],
-	},
-]);
+);
 
 const pkgForms = ref<Record<number, FormInstance | null>>({});
 const itemForms = ref<Record<string, FormInstance | null>>({});
@@ -835,6 +856,7 @@ const shipperEditRules = reactive<FormRules>({
 interface RateRow {
 	id: string | number;
 	name: string;
+	icon?: string;
 	lastMilerID?: string | number;
 	show: boolean;
 	quote: string;
@@ -1070,6 +1092,7 @@ const fetchRates = async () => {
 			rows.push({
 				id: svc.id,
 				name: svc.name,
+				icon: svc.icon,
 				lastMilerID: svc.lastMilerID,
 				show: r.show,
 				quote: r.quote,
@@ -1163,8 +1186,9 @@ const confirmOrder = async (row: RateRow) => {
 		if (res?.isSuccess) {
 			ElMessage.success(t('pages.CreateSuccess'));
 			rateDialogVisible.value = false;
+			createParcelStore.reset();
 			setTimeout(() => {
-				router.push('/parcel/list').catch(() => {
+				router.push('/Parcels/List').catch(() => {
 					router.go(0);
 				});
 			}, 800);
@@ -1186,10 +1210,15 @@ const validateConsignee = async () => {
 };
 
 const validateAllParcels = async (): Promise<boolean> => {
+	// 等下一帧确保所有 el-form 实例已挂载
+	await nextTick();
 	// validate packages
 	for (let i = 0; i < parcels.value.length; i++) {
 		const form = pkgForms.value[i];
-		if (!form) continue;
+		if (!form) {
+			ElMessage.error(`包裹 ${i + 1} 表单未就绪`);
+			return false;
+		}
 		const ok = await form.validate().catch(() => false);
 		if (!ok) {
 			ElMessage.error(`包裹 ${i + 1} 信息不完整`);
@@ -1197,7 +1226,10 @@ const validateAllParcels = async (): Promise<boolean> => {
 		}
 		for (let j = 0; j < parcels.value[i].LineInfos.length; j++) {
 			const itemForm = itemForms.value[`${i}_${j}`];
-			if (!itemForm) continue;
+			if (!itemForm) {
+				ElMessage.error(`包裹 ${i + 1} 品项 ${j + 1} 表单未就绪`);
+				return false;
+			}
 			const okItem = await itemForm.validate().catch(() => false);
 			if (!okItem) {
 				ElMessage.error(`包裹 ${i + 1} 品项 ${j + 1} 信息不完整`);
@@ -1256,6 +1288,35 @@ onMounted(async () => {
 
 watch(addressBookVisible, (visible) => {
 	if (visible) fetchAddressBook();
+});
+
+// Persist create state to store so it survives navigation away and back
+watch(
+	shipper,
+	(val) => {
+		createParcelStore.setShipper(val);
+	},
+	{ deep: true },
+);
+watch(
+	cnee,
+	(val) => {
+		createParcelStore.setCnee(val);
+	},
+	{ deep: true },
+);
+watch(
+	parcels,
+	(val) => {
+		createParcelStore.setParcels(val);
+	},
+	{ deep: true },
+);
+watch(clientRefNbr, (val) => {
+	createParcelStore.setClientRefNbr(val);
+});
+watch(isSign, (val) => {
+	createParcelStore.setIsSign(val);
 });
 </script>
 
