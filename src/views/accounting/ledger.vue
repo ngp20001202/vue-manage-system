@@ -134,6 +134,7 @@ import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { ledgerlist, SackMftsign } from '@/api/accounting';
 import { formatChargeItem, CHARGE_OPTIONS } from '@/utils/charge-item';
+import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -250,8 +251,7 @@ const getdata = async () => {
 };
 
 const exportdata = async () => {
-	const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
-	const url = new URL(`${window.location.origin}${apiBase}/api/accounting/ledger/export`);
+	const url = new URL(`${getoriginurl()}/api/accounting/ledger/export`);
 
 	let trackingNbr: string | undefined;
 	if (activeTab.value === 'all') {

@@ -116,6 +116,7 @@ import { useI18n } from 'vue-i18n';
 import { Search, Refresh, InfoFilled } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { xactslist, SackMftsign } from '@/api/accounting';
+import { getoriginurl } from '@/utils/originurl';
 import XactDetailDialog from './components/XactDetailDialog.vue';
 import type { ApiResponse } from '@/api/types';
 
@@ -197,9 +198,7 @@ const getdata = async () => {
 };
 
 const exportdata = async () => {
-	const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
-	const baseURL = window.location.origin;
-	const url = new URL(`${baseURL}${apiBase}/api/accounting/xacts/export`);
+	const url = new URL(`${getoriginurl()}/api/accounting/xacts/export`);
 	if (dates.value) {
 		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
 		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');

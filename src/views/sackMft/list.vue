@@ -232,6 +232,7 @@ import {
 	getSackMftdashtab,
 } from '@/api/sackMft';
 import type { ApiResponse } from '@/api/types';
+import { getoriginurl } from '@/utils/originurl';
 import SackMftUpload from './components/SackMftUpload.vue';
 import ScanFormDialog from './components/ScanFormDialog.vue';
 
@@ -374,10 +375,8 @@ const stages = async () => {
 	}
 };
 
-const apiBase = (import.meta.env.VITE_APP_BASE as string) || '/api1';
-
 const downloads = async (id: string | number) => {
-	const url = `${window.location.origin}${apiBase}/api/SackMfts/${id}/docs`;
+	const url = `${getoriginurl()}/api/SackMfts/${id}/docs`;
 	try {
 		const res: any = await sackMftsign({ url });
 		if (res?.token) {
