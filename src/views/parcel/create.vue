@@ -225,10 +225,10 @@
 							v-model="pkg.DeclaredHeight"
 							type="number"
 							min="0"
-							style="width: 140px"
+							style="width: 120px"
 						>
 							<template #append>
-								<el-select v-model="pkg.DimUnit" style="width: 90px">
+								<el-select v-model="pkg.DimUnit" style="width: 70px">
 									<el-option
 										v-for="val in dimOptions"
 										:key="val.label"
@@ -274,10 +274,10 @@
 								v-model="item.LineTotal.Value"
 								type="number"
 								min="0"
-								style="width: 180px"
+								style="width: 150px"
 							>
 								<template #append>
-									<el-select v-model="item.LineTotal.Unit" style="width: 100px">
+									<el-select v-model="item.LineTotal.Unit" style="width: 80px">
 										<el-option
 											v-for="option in priceOptions"
 											:key="option.label"
@@ -401,7 +401,7 @@
 		<el-dialog
 			v-model="addressBookVisible"
 			:title="t('pages.SelectAddress') || '地址簿'"
-			width="50%"
+			width="560px"
 		>
 			<el-input
 				v-model="addressBookSearch"
@@ -430,7 +430,7 @@
 		<el-dialog
 			v-model="shipperEditVisible"
 			:title="(t('pages.Shipper') || '寄件人') + ' - ' + (shipperEditId ? (t('pages.Edit') || '编辑') : (t('pages.Create') || '新建'))"
-			width="60%"
+			width="560px"
 			:close-on-click-modal="false"
 		>
 			<el-form
@@ -495,7 +495,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
@@ -1046,6 +1046,9 @@ const fetchRates = async () => {
 		ElMessage.error('请完善收件人信息');
 		return;
 	}
+	// Validate packages and line items before fetching rates
+	const parcelsOk = await validateAllParcels();
+	if (!parcelsOk) return;
 	rateLoading.value = true;
 	ratePreview.value = [];
 	try {
@@ -1228,6 +1231,10 @@ onMounted(async () => {
 	await nextTick();
 	document.addEventListener('mousedown', onDocClick);
 	fetchShippers();
+});
+
+watch(addressBookVisible, (visible) => {
+	if (visible) fetchAddressBook();
 });
 </script>
 

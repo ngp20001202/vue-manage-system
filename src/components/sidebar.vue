@@ -15,7 +15,7 @@
                             <el-icon>
                                 <component :is="item.icon"></component>
                             </el-icon>
-                            <span>{{ item.title }}</span>
+                            <span>{{ titleOf(item) }}</span>
                         </template>
                         <template v-for="subItem in item.children">
                             <el-sub-menu
@@ -24,18 +24,18 @@
                                 :key="subItem.index"
                                 v-permiss="item.id"
                             >
-                                <template #title>{{ subItem.title }}</template>
+                                <template #title>{{ titleOf(subItem) }}</template>
                                 <el-menu-item
                                     v-for="(threeItem, i) in subItem.children"
                                     :key="i"
                                     :index="threeItem.index"
                                     @mouseenter="prefetchRoute(threeItem.index)"
                                 >
-                                    {{ threeItem.title }}
+                                    {{ titleOf(threeItem) }}
                                 </el-menu-item>
                             </el-sub-menu>
                             <el-menu-item v-else :index="subItem.index" v-permiss="item.id" @mouseenter="prefetchRoute(subItem.index)">
-                                {{ subItem.title }}
+                                {{ titleOf(subItem) }}
                             </el-menu-item>
                         </template>
                     </el-sub-menu>
@@ -45,7 +45,7 @@
                         <el-icon>
                             <component :is="item.icon"></component>
                         </el-icon>
-                        <template #title>{{ item.title }}</template>
+                        <template #title>{{ titleOf(item) }}</template>
                     </el-menu-item>
                 </template>
             </template>
@@ -55,9 +55,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSidebarStore } from '../store/sidebar';
 import { useRoute, useRouter } from 'vue-router';
 import { menuData } from '@/components/menu';
+
+const { t } = useI18n();
+const titleOf = (item: { title?: string; titleKey?: string }) =>
+    (item.titleKey ? t(item.titleKey) : '') || item.title || '';
 
 const route = useRoute();
 const router = useRouter();
