@@ -17,12 +17,11 @@ export const menuData: Menus[] = [
         icon: 'Box',
         children: [
             { id: '101', pid: '100', index: '/Parcels/List', title: '包裹查询' },
-            { id: '102', pid: '100', index: '/parcel/cancel', title: '取消列表' },
-            { id: '103', pid: '100', index: '/Parcels/RefundList', title: '退款列表' },
-            { id: '115', pid: '100', index: '/Parcels/Single', title: '单票下单' },
-            { id: '116', pid: '100', index: '/Parcels/Import', title: '包裹导入' },
+            { id: '115', pid: '100', index: '/Parcels/Single', title: '单笔创建' },
+            { id: '116', pid: '100', index: '/Parcels/Import', title: '批量创建' },
             { id: '117', pid: '100', index: '/Parcels/Batchcalculation', title: '批量试算' },
-            { id: '118', pid: '100', index: '/PostingToLastMiler/Import', title: '推送末段' },
+            { id: '103', pid: '100', index: '/Parcels/RefundList', title: '退款列表' },
+            { id: '118', pid: '100', index: '/PostingToLastMiler/Import', title: '推送入网' },
         ],
     },
     {
@@ -44,7 +43,6 @@ export const menuData: Menus[] = [
             { id: '112', pid: '110', index: '/Accountings/Xacts', title: '交易记录' },
             { id: '107', pid: '110', index: '/Accountings/AR/LedgerList', title: '账本流水' },
             { id: '109', pid: '110', index: '/Accountings/Invoices/List', title: '周期账单' },
-            { id: '105', pid: '110', index: '/accounting/statements', title: '应收运费' },
         ],
     },
     {
@@ -66,8 +64,6 @@ export const menuData: Menus[] = [
         icon: 'Warning',
         children: [
             { id: '131', pid: '130', index: '/Exceptions/LastMilerRejected', title: '获取面单失败' },
-            { id: '132', pid: '130', index: '/exception/brokerRejected', title: '清关推送失败' },
-            { id: '133', pid: '130', index: '/exception/import', title: '异常导入' },
         ],
     },
     {
@@ -81,17 +77,6 @@ export const menuData: Menus[] = [
         title: '追踪',
         index: '/Tools/Tracking',
         icon: 'Search',
-    },
-    {
-        id: '180',
-        title: '工具',
-        index: '180',
-        icon: 'Tools',
-        children: [
-            { id: '119', pid: '180', index: '/overlabel/list', title: '换单列表' },
-            { id: '121', pid: '180', index: '/overlabel/import', title: '换单导入' },
-            { id: '171', pid: '180', index: '/printing', title: '面单打印' },
-        ],
     },
     {
         id: '170',

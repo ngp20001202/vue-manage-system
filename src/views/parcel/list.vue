@@ -534,7 +534,7 @@ const downloads = (id: string | number) => {
 };
 
 const downpacking = async (id: string | number) => {
-	const href = `${window.location.origin}/api1/api/download/parcels/${id}/file`;
+	const href = `${window.location.origin}/api/download/parcels/${id}/file`;
 	const res: any = await SackMftsign({ url: href });
 	if (res?.result?.token || res?.token) {
 		const token = res?.result?.token ?? res?.token;

@@ -1,0 +1,25 @@
+branch:
+  - reg: "master"
+    buttons:
+      - name: 编译并发布
+        description: 编译并发布
+        event: web_trigger_build_and_release
+        env:
+          ARTIFACT_NAME: shipping-test
+          CI_COMMIT_BRANCH: master
+  - reg: "release"
+    buttons:
+      - name: 编译并发布
+        description: 编译并发布
+        event: web_trigger_build_and_release
+        env:
+          ARTIFACT_NAME: shipping-release
+          CI_COMMIT_BRANCH: release
+  - reg: "feature/build"
+    buttons:
+      - name: 编译并发布
+        description: 编译并发布
+        event: web_trigger_build_and_release
+        env:
+          ARTIFACT_NAME: shipping-test
+          CI_COMMIT_BRANCH: feature/build

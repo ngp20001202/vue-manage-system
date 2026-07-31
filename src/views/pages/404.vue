@@ -4,7 +4,7 @@
             <div class="error-code">404</div>
             <div class="error-desc">啊哦~ 你所访问的页面不存在</div>
             <div class="error-handle">
-                <router-link to="/">
+                <router-link to="/home">
                     <el-button type="primary" size="large">返回首页</el-button>
                 </router-link>
                 <el-button class="error-btn" size="large" @click="goBack">返回上一页</el-button>
