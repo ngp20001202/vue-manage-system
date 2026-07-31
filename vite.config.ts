@@ -32,7 +32,29 @@ export default defineConfig(({ mode }) => ({
 		})
 	],
 	optimizeDeps: {
-		include: ['schart.js']
+		include: [
+			'schart.js',
+			'element-plus',
+			'element-plus/es/locale/lang/zh-cn',
+			'echarts',
+			'echarts-wordcloud',
+			'vue-echarts',
+			'@wangeditor/editor',
+			'@wangeditor/editor-for-vue',
+			'md-editor-v3',
+			'vue-cropper',
+			'xlsx',
+			'file-saver',
+			'moment',
+			'countup.js',
+		],
+	},
+	css: {
+		preprocessorOptions: {
+			scss: {
+				silenceDeprecations: ['legacy-js-api', 'import'],
+			},
+		},
 	},
 	resolve: {
 		alias: {

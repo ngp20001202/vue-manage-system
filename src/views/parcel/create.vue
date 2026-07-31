@@ -10,10 +10,12 @@
 			</div>
 		</el-card>
 
-		<!-- Shipper section -->
+		<!-- Shipper + Consignee (split panel: left 1/3, right 2/3) -->
 		<el-card shadow="never" class="section-card">
-			<div class="section-header">
-				<h2>{{ t('pages.Shipper') || '寄件人' }}</h2>
+			<div class="address-split">
+				<div class="address-split-left">
+					<div class="section-header">
+						<h2>{{ t('pages.Shipper') || '寄件人' }}</h2>
 				<el-button type="primary" link @click="openShipperEdit('')">
 					<el-icon><Plus /></el-icon>
 					{{ t('pages.Parcels.create.NewAddress') || '新增地址' }}
@@ -76,12 +78,11 @@
 					{{ t('pages.Parcels.create.Edit') || '编辑' }}
 				</el-button>
 			</div>
-		</el-card>
+				</div>
 
-		<!-- Consignee section -->
-		<el-card shadow="never" class="section-card">
-			<div class="section-header">
-				<h2>{{ t('pages.Consignee') || '收件人' }}</h2>
+				<div class="address-split-right">
+					<div class="section-header">
+						<h2>{{ t('pages.Consignee') || '收件人' }}</h2>
 				<el-button type="primary" link @click="addressBookVisible = true">
 					<el-icon><Notebook /></el-icon>
 					{{ t('pages.SelectAddress') || '选择地址簿' }}
@@ -141,7 +142,9 @@
 						<el-radio :label="1">{{ t('pages.yes') || '是' }}</el-radio>
 					</el-radio-group>
 				</el-form-item>
-			</el-form>
+				</el-form>
+				</div>
+			</div>
 		</el-card>
 
 		<!-- Parcel declarations (multiple packages) -->
@@ -331,28 +334,6 @@
 			</div>
 		</el-card>
 
-		<!-- Return address -->
-		<el-card shadow="never" class="section-card">
-			<div class="section-header">
-				<h2>{{ t('pages.ReturnAddress') || '退回地址' }}</h2>
-				<el-button type="primary" link @click="returnDialogVisible = true">
-					{{ returnAddress?.contact?.name ? '修改退回地址' : '选择退回地址' }}
-				</el-button>
-			</div>
-			<div v-if="returnAddress?.contact?.name" class="selected-address">
-				<p>
-					<span class="bolder">{{ returnAddress.contact.name }}</span>
-					<span class="ml-8">{{ returnAddress.contact.phone }}</span>
-				</p>
-				<p class="address-line">
-					{{ returnAddress.contact.street1 }}<br />
-					{{ returnAddress.contact.city }}, {{ returnAddress.contact.province }}<br />
-					{{ returnAddress.contact.postalCode }}
-				</p>
-			</div>
-			<div v-else class="empty-tip">未选择退回地址</div>
-		</el-card>
-
 		<!-- Service selection & rate preview -->
 		<el-card v-if="ratePreview.length" shadow="never" class="section-card">
 			<div class="section-header">
@@ -415,43 +396,6 @@
 				{{ t('pages.Submit') || '提交下单' }}
 			</el-button>
 		</div>
-
-		<!-- Return address dialog -->
-		<el-dialog
-			v-model="returnDialogVisible"
-			:title="t('pages.ReturnAddress') || '退回地址'"
-			width="50%"
-		>
-			<div class="address-selector">
-				<el-input
-					v-model="returnSearch"
-					placeholder="搜索..."
-					clearable
-					class="address-search"
-				/>
-				<ul class="address-list">
-					<li
-						v-for="(item, idx) in filteredReturnAddresses"
-						:key="idx"
-						class="address-item"
-						@click="selectReturnAddress(item)"
-					>
-						<div class="address-name">{{ item.contact?.name }}</div>
-						<div class="address-sub">
-							{{ item.contact?.street1 }}, {{ item.contact?.city }}
-						</div>
-					</li>
-				</ul>
-			</div>
-			<template #footer>
-				<el-button @click="returnDialogVisible = false">
-					{{ t('pages.Cancel') || '取消' }}
-				</el-button>
-				<el-button type="primary" @click="confirmReturn">
-					{{ t('pages.Submit') || '确定' }}
-				</el-button>
-			</template>
-		</el-dialog>
 
 		<!-- Address book dialog (Amazon recipients) -->
 		<el-dialog
@@ -660,20 +604,6 @@ const shipperDropdown = ref(false);
 const shipperSearch = ref('');
 const filteredShippers = computed(() => {
 	const kw = shipperSearch.value?.toLowerCase() || '';
-	return shipperList.value.filter((item) => {
-		if (!item.contact) return false;
-		return Object.values(item.contact).some((v) =>
-			String(v ?? '').toLowerCase().includes(kw),
-		);
-	});
-});
-
-// Return address
-const returnAddress = ref<AddressItem>({});
-const returnDialogVisible = ref(false);
-const returnSearch = ref('');
-const filteredReturnAddresses = computed(() => {
-	const kw = returnSearch.value?.toLowerCase() || '';
 	return shipperList.value.filter((item) => {
 		if (!item.contact) return false;
 		return Object.values(item.contact).some((v) =>
@@ -931,13 +861,6 @@ const fetchShippers = async () => {
 const selectShipper = (item: AddressItem) => {
 	shipper.value = item;
 	shipperDropdown.value = false;
-};
-
-const selectReturnAddress = (item: AddressItem) => {
-	returnAddress.value = item;
-};
-const confirmReturn = () => {
-	returnDialogVisible.value = false;
 };
 
 const openShipperEdit = async (id: string | number | '') => {
@@ -1214,19 +1137,6 @@ const buildPayload = (svcId?: string | number, lastMilerID?: string | number) =>
 			CmdyID: it.CmdyID,
 		})),
 	),
-	...(returnAddress.value?.contact?.name
-		? {
-				ReturnAddress: {
-					Name: returnAddress.value.contact.name,
-					Phone: returnAddress.value.contact.phone,
-					Street1: returnAddress.value.contact.street1,
-					City: returnAddress.value.contact.city,
-					Province: returnAddress.value.contact.province,
-					PostalCode: returnAddress.value.contact.postalCode,
-					CountryCode: returnAddress.value.contact.countryCode,
-				},
-			}
-		: {}),
 	LastMilerID: lastMilerID,
 });
 
@@ -1331,6 +1241,47 @@ onMounted(async () => {
 
 .section-card {
 	background: #fff;
+}
+.address-split {
+	display: flex;
+	gap: 20px;
+}
+.address-split-left {
+	flex: 0 0 33.3333%;
+	min-width: 0;
+}
+.address-split-right {
+	flex: 1;
+	min-width: 0;
+	border-left: 1px solid #ebeef5;
+	padding-left: 20px;
+}
+.address-split-right .inline-form {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 0 16px;
+}
+.address-split-right .inline-form .el-form-item {
+	margin-right: 0;
+}
+@media (max-width: 1100px) {
+	.address-split-right .inline-form {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+@media (max-width: 720px) {
+	.address-split {
+		flex-direction: column;
+	}
+	.address-split-right {
+		border-left: none;
+		padding-left: 0;
+		border-top: 1px solid #ebeef5;
+		padding-top: 16px;
+	}
+	.address-split-right .inline-form {
+		grid-template-columns: 1fr;
+	}
 }
 
 .section-header {
