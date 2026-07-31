@@ -143,6 +143,11 @@
 					</el-radio-group>
 				</el-form-item>
 				</el-form>
+				<div class="address-actions">
+					<el-button @click="validateConsignee">
+						{{ t('pages.Vaidate') || '验证' }}
+					</el-button>
+				</div>
 				</div>
 			</div>
 		</el-card>
@@ -1164,6 +1169,15 @@ const confirmOrder = async (row: RateRow) => {
 	}
 };
 
+const validateConsignee = async () => {
+	const valid = await cneeFormRef.value?.validate().catch(() => false);
+	if (valid) {
+		ElMessage.success(t('pages.SaveSuccess') || '保存成功');
+	} else {
+		ElMessage.error(t('pages.ValidateFailed') || '验证失败');
+	}
+};
+
 const validateAllParcels = async (): Promise<boolean> => {
 	// validate packages
 	for (let i = 0; i < parcels.value.length; i++) {
@@ -1270,6 +1284,14 @@ watch(addressBookVisible, (visible) => {
 }
 .address-split-right .inline-form .el-form-item {
 	margin-right: 0;
+}
+
+.address-actions {
+	display: flex;
+	justify-content: flex-end;
+	padding: 8px 0 4px;
+	border-top: 1px solid #ebeef5;
+	margin-top: 8px;
 }
 @media (max-width: 1100px) {
 	.address-split-right .inline-form {

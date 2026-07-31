@@ -354,13 +354,14 @@ export default { name: 'tracking-index' };
 }
 
 .w {
-    width: 85%;
-    min-width: calc(365px * 85%);
-    max-width: 1800px;
+    width: 65%;
+    min-width: 360px;
+    max-width: 900px;
     padding: 15px 25px;
 
     .sub {
         width: 40px !important;
+        height: 40px !important;
         margin-left: -3px;
         padding-left: 10px;
         color: white;

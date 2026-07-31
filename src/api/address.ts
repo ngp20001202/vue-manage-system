@@ -23,27 +23,31 @@ export const addressdetail = (id: string | number): Promise<ApiResponse> =>
 	request({ url: `/api/address/info/${id}`, method: 'GET' });
 
 // 创建地址
-export interface AddressBody {
+export interface AddressContact {
 	name: string;
-	contact?: string;
 	phone?: string;
 	email?: string;
 	company?: string;
-	countryCode?: string;
-	state?: string;
-	city?: string;
+	street1?: string;
+	street2?: string;
+	street3?: string;
 	district?: string;
-	streetLine1?: string;
-	streetLine2?: string;
-	streetLine3?: string;
-	zipPostalCode?: string;
+	city?: string;
+	province?: string;
+	postalCode?: string;
+	countryCode?: string;
+}
+
+export interface AddressBody {
 	type: string | number;
+	contact: AddressContact;
 	isDefault?: boolean;
 }
+
 export const addresscreate = (body: AddressBody): Promise<ApiResponse> =>
 	request({ url: '/api/address/Create', method: 'POST', data: body });
 
-// 更新地址（shippingspa: PUT /api/address/Edit）
+// 更新地址（shippingspa: PUT /api/address/Edit，ID 走 body）
 export const addressupdate = (body: AddressBody & { id: string | number }): Promise<ApiResponse> =>
 	request({ url: '/api/address/Edit', method: 'PUT', data: body });
 
@@ -51,6 +55,6 @@ export const addressupdate = (body: AddressBody & { id: string | number }): Prom
 export const addresssetdefault = (id: string | number): Promise<ApiResponse> =>
 	request({ url: `/api/address/setDefault/${id}`, method: 'POST' });
 
-// 删除地址（shippingspa: POST /api/address/remove）
-export const addressdelete = (body: { id: string | number }): Promise<ApiResponse> =>
+// 删除地址（shippingspa: POST /api/address/remove，body: { IDS: [id] }）
+export const addressdelete = (body: { IDS: (string | number)[] }): Promise<ApiResponse> =>
 	request({ url: '/api/address/remove', method: 'POST', data: body });

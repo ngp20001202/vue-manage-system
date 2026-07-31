@@ -95,88 +95,52 @@
 				:data="routeData"
 				style="width: 100%"
 				border
+				size="small"
 				@selection-change="handleSelectionChange"
 			>
 				<el-table-column type="selection" width="55" />
-				<el-table-column :label="t('pages.ID')" width="150">
+				<el-table-column :label="t('pages.ID')" width="100">
 					<template #default="scope">
 						<span class="cyan" @click="() => setid('detail', scope.row.id)">
-							<el-icon><InfoFilled /></el-icon>
-							{{ scope.row.id }}
+							<el-icon><Warning /></el-icon>{{ scope.row.id }}
 						</span>
 					</template>
 				</el-table-column>
-				<el-table-column min-width="150">
-					<template #header>
-						<span class="copy-header" @click="() => copy('clientRefNbr')">
-							{{ t('pages.order') }}
-							<el-icon><DocumentCopy /></el-icon>
-						</span>
-					</template>
-					<template #default="scope">
-						{{ scope.row.clientRefNbr }}
-					</template>
-				</el-table-column>
-				<el-table-column min-width="150">
-					<template #header>
-						<span class="copy-header" @click="() => copy('lastMilerNbr')">
-							{{ t('pages.lastmiler') }}
-							<el-icon><DocumentCopy /></el-icon>
-						</span>
-					</template>
-					<template #default="scope">
-						{{ scope.row.lastMilerNbr }}
-					</template>
-				</el-table-column>
+				<el-table-column
+					property="clientRefNbr"
+					:label="t('pages.Parcels.list.order')"
+					width="170"
+				/>
 				<el-table-column
 					property="svcName"
 					:label="t('pages.servertype')"
-					width="150"
+					width="120"
 				/>
 				<el-table-column
-					property="stageText"
-					:label="t('pages.Stage')"
-					width="150"
-				/>
-				<el-table-column :label="t('pages.PostedOn')" width="180">
+					:label="t('pages.Issuedon')"
+					width="160"
+				>
 					<template #default="scope">
-						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
+						<span>{{ formatPosted(scope.row) }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column
-					property="reasonText"
-					:label="t('pages.Reason')"
-					min-width="200"
+					property="supplement"
+					:label="t('pages.Supplement')"
+					min-width="180"
+					show-overflow-tooltip
 				/>
-				<el-table-column :label="t('pages.Action')" width="320" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="160" align="center" fixed="right">
 					<template #default="scope">
-						<div class="action-cell">
-							<el-button
-								type="primary"
-								size="small"
-								:icon="Edit"
-								@click="() => openEdit(scope.row)"
-							>
-								{{ t('pages.Edit') }}
-							</el-button>
-							<el-button
-								type="warning"
-								size="small"
-								:icon="RefreshRight"
-								:loading="resending === scope.row.id"
-								@click="() => resend(scope.row)"
-							>
-								{{ t('pages.LastMilerRejection.EditandResend') }}
-							</el-button>
-							<el-button
-								type="danger"
-								size="small"
-								:icon="Delete"
-								@click="() => cancel(false, scope.row.id)"
-							>
-								{{ t('pages.cancelparcel') }}
-							</el-button>
-						</div>
+						<el-button
+							type="warning"
+							size="small"
+							:icon="RefreshRight"
+							:loading="resending === scope.row.id"
+							@click="() => resend(scope.row)"
+						>
+							{{ t('pages.LastMilerRejection.EditandResend') }}
+						</el-button>
 					</template>
 				</el-table-column>
 				<template #empty>
@@ -333,11 +297,9 @@ import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 import {
 	Search,
 	Refresh,
-	DocumentCopy,
 	RefreshRight,
 	Delete,
-	InfoFilled,
-	Edit,
+	Warning,
 } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { formatParagraphtext } from '@/utils/format';
@@ -357,11 +319,10 @@ const { t } = useI18n();
 interface RejectionRow extends Record<string, any> {
 	id: string | number;
 	clientRefNbr?: string;
-	lastMilerNbr?: string;
 	svcName?: string;
-	stageText?: string;
+	issuedOn?: string;
+	supplement?: string;
 	postedStamp?: { utcTime: string };
-	reasonText?: string;
 }
 
 interface AddressForm {
@@ -418,9 +379,10 @@ const editForm = ref<EditForm>({
 	consignee: emptyAddress(),
 });
 
-const formatPosted = (utc: string | undefined) => {
+const formatPosted = (row: RejectionRow) => {
+	const utc = row?.issuedOn ?? row?.postedStamp?.utcTime;
 	if (!utc) return '';
-	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
+	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm');
 };
 
 const copy = (key: string) => {
