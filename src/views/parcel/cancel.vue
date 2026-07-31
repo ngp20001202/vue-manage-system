@@ -234,14 +234,14 @@ const show = (row: ParcelRow) =>
 const copy = (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
-		ElMessage.warning('当前页没有可复制的数据');
+		ElMessage.warning(t('pages.noCopyData'));
 		return;
 	}
 	try {
 		navigator.clipboard.writeText(text);
-		ElMessage.success('复制成功');
+		ElMessage.success(t('pages.copySuccess'));
 	} catch {
-		ElMessage.error('复制失败');
+		ElMessage.error(t('pages.copyFailed'));
 	}
 };
 
@@ -341,10 +341,10 @@ const undo = async (isBatch: boolean, id?: string | number) => {
 		? selectarr.value.map((r) => r.id)
 		: [id as string | number];
 	ElMessageBox.confirm(
-		'撤销后该包裹将恢复正常状态',
-		'确认撤销该包裹?',
+		t('pages.undoWarning'),
+		t('pages.undoConfirm'),
 		{
-			confirmButtonText: '确认撤销',
+			confirmButtonText: t('pages.undoConfirmBtn'),
 			cancelButtonText: t('pages.Cancel'),
 			type: 'warning',
 			center: true,
@@ -353,7 +353,7 @@ const undo = async (isBatch: boolean, id?: string | number) => {
 		.then(async () => {
 			const res: ApiResponse<any> = await parcelUndo({ ids: list });
 			if (res?.isSuccess) {
-				ElMessage.success('撤销成功');
+				ElMessage.success(t('pages.undoSuccess'));
 				getdata();
 			} else {
 				ElMessage.error(res?.message || t('pages.Failed'));

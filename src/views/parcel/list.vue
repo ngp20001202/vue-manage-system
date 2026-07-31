@@ -118,7 +118,7 @@
 							<el-icon><Delete /></el-icon>
 						</el-button>
 					</el-tooltip>
-					<el-tooltip content="导出包裹信息" placement="top" :enterable="false">
+					<el-tooltip :content="t('pages.Parcels.list.exportInfo')" placement="top" :enterable="false">
 						<el-button
 							type="success"
 							class="export"
@@ -358,14 +358,14 @@ const formatPosted = (utc: string | undefined) => {
 const copy = (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
-		ElMessage.warning('当前页没有可复制的数据');
+		ElMessage.warning(t('pages.noCopyData'));
 		return;
 	}
 	try {
 		navigator.clipboard.writeText(text);
-		ElMessage.success('复制成功');
+		ElMessage.success(t('pages.copySuccess'));
 	} catch {
-		ElMessage.error('复制失败');
+		ElMessage.error(t('pages.copyFailed'));
 	}
 };
 
@@ -496,7 +496,7 @@ const postdata = async () => {
 
 const parcelsexport = async () => {
 	if (availcnt.value > 20000) {
-		ElMessage.error('导出文件过大，调整一下查询条件');
+		ElMessage.error(t('pages.Parcels.list.exportTooLarge'));
 		return;
 	}
 	try {
@@ -547,10 +547,10 @@ const cancell = async (isBatch: boolean, id?: string | number) => {
 		? selectarr.value.map((r) => r.id)
 		: [id as string | number];
 	ElMessageBox.confirm(
-		'取消后无法撤销该包裹',
-		'确认取消该包裹?',
+		t('pages.cancelWarning'),
+		t('pages.cancelConfirm'),
 		{
-			confirmButtonText: '确认取消',
+			confirmButtonText: t('pages.confirmCancel'),
 			cancelButtonText: t('pages.Cancel'),
 			type: 'warning',
 			center: true,
@@ -559,7 +559,7 @@ const cancell = async (isBatch: boolean, id?: string | number) => {
 		.then(async () => {
 			const res: ApiResponse<any> = await parcelcancel({ ids: list as any });
 			if (res?.isSuccess) {
-				ElMessage.success('取消成功');
+				ElMessage.success(t('pages.cancelSuccess'));
 				getdata();
 			} else {
 				ElMessage.error(res?.message || t('pages.Failed'));
