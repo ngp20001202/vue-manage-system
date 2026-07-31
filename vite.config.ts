@@ -6,7 +6,7 @@ import Components from 'unplugin-vue-components/vite';
 import { DEV_TARGET } from './src/utils/devTarget.js';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 export default defineConfig(({ mode }) => ({
-	base: mode === 'production' ? './' : '/',
+	base: '/',
 	server: {
 		host: '0.0.0.0',
 		port: 5173,
