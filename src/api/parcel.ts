@@ -230,3 +230,18 @@ export const postingfile = (data: FormData): Promise<ApiResponse> =>
 // 推送入网导入结果确认（shippingspa: CfmPosting）
 export const CfmPosting = (fileid: string | number): Promise<ApiResponse> =>
 	request({ url: `/api/Parcels/postingToLastMiler/${fileid}/confirm`, method: 'POST' });
+
+// ========================= 批量试算 =========================
+
+// 批量试算导入（shippingspa: parcelrateimport）
+export const parcelrateimport = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Parcels/rate/import',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
+// 批量试算结果确认（shippingspa: parcelrateCfmImport）
+export const parcelrateCfmImport = (fileid: string | number): Promise<ApiResponse> =>
+	request({ url: `/api/Parcels/rate/import/${fileid}/confirm`, method: 'POST' });

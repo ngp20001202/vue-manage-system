@@ -1,522 +1,439 @@
 <template>
-	<div class="batch-calculation">
-		<el-page-header :icon="ArrowLeft" @back="goBack">
-			<template #content>
-				<span class="page-title">
-					{{ t('title.Batchcalculation') || '包裹 - 批量试算' }}
-				</span>
-			</template>
-		</el-page-header>
-
-		<!-- 寄件人 / 收件人 / 服务 -->
-		<el-card shadow="never" class="content-card">
-			<el-form :inline="true" class="filter-form" label-position="top">
-				<el-form-item :label="t('pages.parcel_import.Shipper') || '寄件人'">
-					<el-select
-						v-model="shipperId"
-						class="wide-select"
-						filterable
-						:placeholder="t('pages.parcel_import.Shipper') || '寄件人'"
-					>
-						<el-option
-							v-for="item in shipperList"
-							:key="item.id"
-							:label="addressLabel(item.contact)"
-							:value="item.id as string | number"
-						/>
-					</el-select>
-				</el-form-item>
-				<el-form-item :label="t('pages.parcel_import.Consigne') || '收件人'">
-					<el-select
-						v-model="cneeIndex"
-						class="wide-select"
-						filterable
-						:placeholder="t('pages.parcel_import.Consigne') || '收件人'"
-					>
-						<el-option
-							v-for="(item, idx) in cneeList"
-							:key="item.name ?? idx"
-							:label="`${item.name} - ${addressLabel(item.code)}`"
-							:value="idx"
-						/>
-					</el-select>
-				</el-form-item>
-				<el-form-item :label="t('pages.servertype') || '服务类型'">
-					<el-select
-						v-model="svcIds"
-						class="wide-select"
-						multiple
-						collapse-tags
-						collapse-tags-tooltip
-						:placeholder="t('pages.servertype') || '服务类型'"
-					>
-						<el-option
-							v-for="item in svcOptions"
-							:key="item.id"
-							:label="item.name"
-							:value="item.id"
-						/>
-					</el-select>
-				</el-form-item>
-				<el-form-item :label="t('pages.IsSign') || '是否签名'">
-					<el-switch v-model="isSign" />
-				</el-form-item>
-			</el-form>
-
-			<el-descriptions v-if="cnee" :column="2" border size="small" class="cnee-desc">
-				<el-descriptions-item :label="t('pages.parcel_import.ConsigneName') || '收件人姓名'">
-					{{ cnee.name }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.parcel_import.ConsigneePhone') || '收件人电话'">
-					{{ cnee.phone }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.parcel_import.AddresseeStreetLine1') || '收件地址栏一'">
-					{{ cnee.street1 }}
-				</el-descriptions-item>
-				<el-descriptions-item :label="t('pages.parcel_import.AddresseeCity') || '收件城市'">
-					{{ cnee.city }} / {{ cnee.province }} / {{ cnee.postalCode }} /
-					{{ cnee.countryCode }}
-				</el-descriptions-item>
-			</el-descriptions>
-		</el-card>
-
-		<!-- 包裹明细 -->
-		<el-card shadow="never" class="content-card">
-			<div class="card-head">
-				<span class="card-title">{{ t('pages.Parcel') || '包裹' }}</span>
-				<el-button type="primary" plain :icon="Plus" size="small" @click="addRow">
-					{{ t('pages.Parcels.create.NewPackage') || '添加包裹' }}
-				</el-button>
-			</div>
-
-			<el-table :data="parcels" style="width: 100%" border size="small">
-				<el-table-column type="index" width="50" />
-				<el-table-column :label="t('pages.Weight') || '重量'" min-width="190">
-					<template #default="scope">
-						<div class="cell-inline">
-							<el-input v-model="scope.row.weight" class="num-input" />
-							<el-select v-model="scope.row.weightUnit" class="unit-select">
-								<el-option
-									v-for="item in weightOptions"
-									:key="item.value"
-									:label="item.label"
-									:value="item.value"
-								/>
-							</el-select>
-						</div>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.parcel_import.ParcelLength') || '包裹长度'" width="110">
-					<template #default="scope">
-						<el-input v-model="scope.row.length" />
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.parcel_import.ParcelWidth') || '包裹宽度'" width="110">
-					<template #default="scope">
-						<el-input v-model="scope.row.width" />
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.parcel_import.ParcelHeigth') || '包裹高度'" width="110">
-					<template #default="scope">
-						<el-input v-model="scope.row.height" />
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.parcel_import.DimensionUnit') || '长度单位'" width="100">
-					<template #default="scope">
-						<el-select v-model="scope.row.dimUnit" class="unit-select">
+	<div class="control">
+		<div class="content import">
+			<div>
+				<div class="header_left">
+					<div class="select_box">
+						<el-select
+							v-model="value"
+							class="m-4 import_select"
+							:placeholder="t('pages.servertype') || '请选择服务'"
+							size="large"
+						>
 							<el-option
-								v-for="item in dimOptions"
+								v-for="item in options"
 								:key="item.value"
 								:label="item.label"
 								:value="item.value"
 							/>
 						</el-select>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.parcel_import.ParcelCount') || '包裹数量'" width="110">
-					<template #default="scope">
-						<el-input v-model="scope.row.count" />
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.Action') || '操作'" width="90" align="center">
-					<template #default="scope">
+						<span :class="req ? 'req_block' : 'req_none'">
+							{{ t('pages.Required') || '必填项,请填写' }}
+						</span>
+					</div>
+					<div class="upload mt">
+						<div class="input-group">
+							<div class="custom-file">
+								<input
+									id="BatchCalc_File"
+									ref="ipt"
+									accept=".xls,.xlsx"
+									class="custom-file-input"
+									name="Input.File"
+									type="file"
+									@change="onFilePick"
+								>
+								<label
+									:class="isCyan ? 'custom-file-label cyans' : 'custom-file-label'"
+									for="BatchCalc_File"
+								>{{ filename || t('pages.placechoose') }}</label>
+							</div>
+							<button class="input_btn" @click="onUploadClick">
+								<el-icon><UploadFilled /></el-icon>
+							</button>
+						</div>
+					</div>
+					<el-row class="mb-4">
 						<el-button
-							type="danger"
-							size="small"
-							:icon="Delete"
-							:disabled="parcels.length === 1"
-							@click="removeRow(scope.$index)"
+							type="success"
+							class="import_btn"
+							:loading="loading"
+							@click="submit"
+						>
+							{{ t('pages.Batchobtainquotes') || '批量获取报价' }}
+						</el-button>
+					</el-row>
+					<el-button v-if="fileId" type="warning" @click="confirmOrder">
+						{{ t('pages.Orderconfirmation') || '确认下单' }}
+					</el-button>
+				</div>
+				<div class="download font_18">
+					<a href="/templates/Parcel_Template.xlsx">
+						<el-icon><Download /></el-icon>
+						{{ t('pages.Download') || '下载模板' }}
+					</a>
+				</div>
+				<div style="width: 100%">
+					<el-table
+						v-loading="loading"
+						:data="data"
+						style="width: 100%; margin-bottom: 15px"
+						size="small"
+						:empty-text="t('pages.NoData') || '暂无数据'"
+					>
+						<el-table-column type="index" width="50" />
+						<el-table-column :label="t('pages.Errors')">
+							<template #default="scope">
+								<span class="size">{{ scope.row.error }}</span>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="orderNbr"
+							:label="t('pages.lastorder') || '订单 #'"
 						/>
-					</template>
-				</el-table-column>
-			</el-table>
-
-			<div class="actions">
-				<el-button type="success" :loading="rateLoading" @click="calculate">
-					{{ t('pages.Batchobtainquotes') || '批量获取报价' }}
-				</el-button>
-				<el-button @click="reset">{{ t('pages.Reset') || '重置' }}</el-button>
+						<el-table-column :label="t('pages.Weight') || '重量'">
+							<template #default="scope">
+								<span class="size">
+									{{ scope.row.weight?.value }}{{ scope.row.weight?.unit }}
+								</span>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="shipper.name"
+							:label="t('pages.parcel_import.Shipper') || '寄件人'"
+						/>
+						<el-table-column :label="t('pages.parcel_import.Consigne') || '收件人'">
+							<template #default="scope">
+								<div>
+									<p>{{ scope.row.consignee?.name }}</p>
+									<p>{{ scope.row.consignee?.phone }}</p>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="consignee.province"
+							:label="t('pages.parcel_import.AddresseeState') || '州/省'"
+						/>
+						<el-table-column
+							property="consignee.city"
+							:label="t('pages.parcel_import.AddresseeCity') || '城市'"
+						/>
+						<el-table-column
+							property="consignee.postalCode"
+							:label="t('pages.parcel_import.AddresseePostalCode') || '邮编'"
+						>
+							<template #default="scope">
+								<div>
+									<p>{{ scope.row.consignee?.postalCode }}</p>
+									<p>{{ scope.row.consignee?.countryCode }}</p>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="consignee.street1"
+							:label="t('pages.parcel_import.AddresseeStreetLine1') || '街道'"
+						/>
+						<el-table-column
+							property="totalCharge"
+							:label="t('pages.Quote') || '报价'"
+						/>
+						<template #empty>
+							<el-empty :description="t('pages.NoData') || '暂无数据'" />
+						</template>
+					</el-table>
+				</div>
 			</div>
-		</el-card>
-
-		<!-- 试算结果 -->
-		<el-card v-if="rateRows.length" shadow="never" class="content-card">
-			<el-table
-				v-loading="rateLoading"
-				:data="rateRows"
-				style="width: 100%"
-				border
-				size="small"
-			>
-				<el-table-column type="index" width="50" />
-				<el-table-column
-					property="name"
-					:label="t('pages.servertype') || '服务类型'"
-					min-width="180"
-				/>
-				<el-table-column :label="t('pages.Quote') || '报价'" min-width="150">
-					<template #default="scope">
-						<span :class="scope.row.show ? 'ok' : 'fail'">{{ scope.row.quote }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.TotalPieces') || '总件数'" width="110">
-					<template #default>{{ totalCount }}</template>
-				</el-table-column>
-				<template #empty>
-					<el-empty :description="t('pages.NoData') || '暂无数据'" />
-				</template>
-			</el-table>
-		</el-card>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="parcel-batch-calculation">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { ArrowLeft, Plus, Delete } from '@element-plus/icons-vue';
-import { getservices, parcelsender, getAmazon, postrate } from '@/api/parcel';
+import { Download, UploadFilled } from '@element-plus/icons-vue';
+import {
+	getservices,
+	parcelCfmImport,
+	parcelrateimport,
+	parcelrateCfmImport,
+} from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 
-const router = useRouter();
 const { t } = useI18n();
 
-interface Contact {
-	name?: string;
-	phone?: string;
-	email?: string;
-	company?: string;
-	street1?: string;
-	street2?: string;
-	street3?: string;
-	district?: string;
-	city?: string;
-	province?: string;
-	postalCode?: string;
-	countryCode?: string;
-}
-
-interface AddressItem {
-	id?: string | number;
-	type?: string | number;
-	isDefault?: boolean;
-	contact?: Contact;
-}
-
-interface AmazonItem {
-	name?: string;
-	code?: Contact;
-}
-
-interface SvcItem {
-	id: string | number;
-	name: string;
-	lastMilerID?: string | number;
-}
-
-interface ParcelRow {
-	weight: string | number;
-	weightUnit: number;
-	length: string | number;
-	width: string | number;
-	height: string | number;
-	dimUnit: number;
-	count: string | number;
-}
-
 interface RateRow {
-	id: string | number;
-	name: string;
-	show: boolean;
-	quote: string;
+	error?: string;
+	orderNbr?: string;
+	weight?: { value?: number | string; unit?: string | number };
+	shipper?: { name?: string };
+	consignee?: {
+		name?: string;
+		phone?: string;
+		province?: string;
+		city?: string;
+		postalCode?: string;
+		countryCode?: string;
+		street1?: string;
+	};
+	totalCharge?: string | number;
 }
 
-const weightOptions = [
-	{ label: 'KG', value: 2 },
-	{ label: 'LB', value: 3 },
-];
-const dimOptions = [
-	{ label: 'CM', value: 1 },
-	{ label: 'IN', value: 2 },
-];
+const ipt = ref<HTMLInputElement | null>(null);
+const isCyan = ref(false);
+const fileId = ref('');
+const updateFile = ref<FormData | null>(null);
+const filename = ref('');
+const loading = ref(false);
+const data = ref<RateRow[]>([]);
 
-const shipperList = ref<AddressItem[]>([]);
-const shipperId = ref<string | number | undefined>(undefined);
-const cneeList = ref<AmazonItem[]>([]);
-const cneeIndex = ref<number | undefined>(undefined);
-const svcOptions = ref<SvcItem[]>([]);
-const svcIds = ref<Array<string | number>>([]);
-const isSign = ref(false);
-const rateLoading = ref(false);
-const rateRows = ref<RateRow[]>([]);
+const value = ref(0);
+const entry = ref(0);
+const req = ref(false);
 
-const newRow = (): ParcelRow => ({
-	weight: '',
-	weightUnit: 2,
-	length: '',
-	width: '',
-	height: '',
-	dimUnit: 1,
-	count: 1,
+const options = ref<{ value: number; label: string; entry: number }[]>([]);
+
+watch(value, (newValue) => {
+	req.value = !(newValue * 1);
+	options.value.forEach((item) => {
+		if (item.value === newValue) entry.value = item.entry;
+	});
 });
-const parcels = ref<ParcelRow[]>([newRow()]);
 
-const shipper = computed(
-	() => shipperList.value.find((item) => item.id === shipperId.value)?.contact,
-);
-const cnee = computed(() =>
-	cneeIndex.value === undefined ? undefined : cneeList.value[cneeIndex.value]?.code,
-);
-const totalCount = computed(() =>
-	parcels.value.reduce((acc, item) => acc + (Number(item.count) || 0), 0),
-);
+watch(filename, () => {
+	if (filename.value) isCyan.value = false;
+});
 
-const addressLabel = (contact?: Contact) => {
-	if (!contact) return '';
-	return [contact.name, contact.street1, contact.city, contact.province, contact.postalCode]
-		.filter(Boolean)
-		.join(', ');
-};
-
-const addRow = () => {
-	parcels.value.push(newRow());
-};
-
-const removeRow = (index: number) => {
-	if (parcels.value.length === 1) return;
-	parcels.value.splice(index, 1);
-};
-
-const fetchShippers = async () => {
-	const res: ApiResponse<AddressItem[]> = await parcelsender();
-	if (res?.isSuccess && Array.isArray(res.result)) {
-		const list = res.result.filter(
-			(item) => item.type === 'Shipping' || item.type === 2,
-		);
-		shipperList.value = list;
-		const def = list.find((item) => item.isDefault) ?? list[0];
-		if (def) shipperId.value = def.id;
-	}
-};
-
-const fetchCneeList = async () => {
-	const res: ApiResponse<AmazonItem[]> = await getAmazon();
-	if (res?.isSuccess && Array.isArray(res.result)) {
-		cneeList.value = res.result;
-	}
-};
-
-const fetchServices = async () => {
-	const res: ApiResponse<SvcItem[]> = await getservices();
-	if (res?.isSuccess && Array.isArray(res.result)) {
-		svcOptions.value = res.result;
-		svcIds.value = res.result.map((item) => item.id);
-	}
-};
-
-const buildPackages = () =>
-	parcels.value.map((item) => ({
-		Count: Number(item.count) || 1,
-		Weight: {
-			Value: Number(item.weight) || 0,
-			Unit: item.weightUnit,
+const getserviceslist = async () => {
+	options.value = [
+		{
+			value: 0,
+			label: `~ ${t('pages.servertype') || '服务类型'} ~`,
+			entry: 0,
 		},
-		Dimension: {
-			Length: Number(item.length) || 0,
-			Width: Number(item.width) || 0,
-			Height: Number(item.height) || 0,
-			Unit: item.dimUnit,
-		},
-	}));
-
-const rateForService = async (svc: SvcItem) => {
-	try {
-		const res: ApiResponse<any> = await postrate({
-			Id: svc.id,
-			LastMilerID: svc.lastMilerID,
-			ServiceOptions: { deliveryConfirmation: isSign.value },
-			Shipper: {
-				name: shipper.value?.name,
-				phone: shipper.value?.phone,
-				email: '',
-				company: shipper.value?.company,
-				street1: shipper.value?.street1,
-				street2: shipper.value?.street2 || '',
-				street3: shipper.value?.street3 || '',
-				city: shipper.value?.city,
-				province: shipper.value?.province,
-				postalCode: shipper.value?.postalCode,
-				countryCode: shipper.value?.countryCode,
-			},
-			Consignee: {
-				name: cnee.value?.name,
-				phone: cnee.value?.phone,
-				company: cnee.value?.company || null,
-				street1: cnee.value?.street1,
-				city: cnee.value?.city,
-				province: cnee.value?.province,
-				postalCode: cnee.value?.postalCode,
-				countryCode: cnee.value?.countryCode,
-			},
-			Packages: buildPackages(),
+	];
+	const res: ApiResponse<{ id: number | string; name: string; svcEntryID?: number }[]> =
+		await getservices();
+	if (res?.isSuccess && Array.isArray(res.result)) {
+		res.result.forEach((item) => {
+			options.value.push({
+				value: Number(item.id),
+				label: item.name,
+				entry: Number(item.svcEntryID ?? 0),
+			});
 		});
-		if (res?.isSuccess) {
-			if (res.result?.totalCharge) {
-				return { show: true, quote: String(res.result.totalCharge) };
-			}
-			return { show: false, quote: res.result?.remarks || (t('pages.NoData') || '不可用') };
-		}
-		return { show: false, quote: res?.message || '获取报价失败' };
-	} catch {
-		return { show: false, quote: '获取报价失败' };
 	}
 };
 
-const validate = () => {
-	if (!shipper.value?.name) {
-		ElMessage.error('请先选择寄件人');
-		return false;
+const confirmimport = async (fileid: string | number) => {
+	const res: ApiResponse<RateRow[]> = await parcelrateCfmImport(fileid);
+	loading.value = false;
+	if (res?.isSuccess) {
+		data.value = Array.isArray(res.result) ? res.result : [];
+	} else {
+		ElMessage.error(res?.message || t('pages.Failed') || '失败');
 	}
-	if (!cnee.value?.name) {
-		ElMessage.error('请先选择收件人');
-		return false;
+};
+
+const confirmOrder = async () => {
+	const res: ApiResponse = await parcelCfmImport(fileId.value);
+	if (res?.isSuccess) {
+		ElMessage.success(res.message || t('pages.Success') || '成功');
+		value.value = 0;
+		filename.value = '';
+		updateFile.value = new FormData();
+		data.value = [];
+	} else {
+		ElMessage.error(res?.message || t('pages.Failed') || '失败');
 	}
-	if (!svcIds.value.length) {
+};
+
+const submit = async () => {
+	if (!filename.value) isCyan.value = true;
+	if (!value.value) {
 		ElMessage.error(t('pages.Serviceisrequired') || '服务是必填项');
-		return false;
+		return;
 	}
-	const invalid = parcels.value.some(
-		(item) => !Number(item.weight) || !Number(item.count),
-	);
-	if (invalid) {
-		ElMessage.error('请填写包裹重量和数量');
-		return false;
-	}
-	return true;
-};
-
-const calculate = async () => {
-	if (!validate()) return;
-	rateLoading.value = true;
-	rateRows.value = [];
-	try {
-		const services = svcOptions.value.filter((svc) => svcIds.value.includes(svc.id));
-		for (const svc of services) {
-			const r = await rateForService(svc);
-			rateRows.value = [
-				...rateRows.value,
-				{ id: svc.id, name: svc.name, show: r.show, quote: r.quote },
-			];
-		}
-		rateRows.value.sort((a, b) => (a.show === b.show ? 0 : a.show ? -1 : 1));
-	} finally {
-		rateLoading.value = false;
+	if (!updateFile.value) return;
+	loading.value = true;
+	updateFile.value.delete('RootSvcID');
+	updateFile.value.delete('SvcEntry');
+	updateFile.value.append('RootSvcID', String(value.value));
+	updateFile.value.append('SvcEntry', String(entry.value));
+	const res: ApiResponse<{ fileId: string }> = await parcelrateimport(updateFile.value);
+	if (res?.isSuccess) {
+		fileId.value = res.result?.fileId ?? '';
+		await confirmimport(fileId.value);
+	} else {
+		loading.value = false;
+		ElMessage.error(res?.message || t('pages.Failed') || '失败');
 	}
 };
 
-const reset = () => {
-	parcels.value = [newRow()];
-	rateRows.value = [];
-	cneeIndex.value = undefined;
+const onUploadClick = () => {
+	if (!filename.value) isCyan.value = true;
 };
 
-const goBack = () => {
-	router.push('/parcel/list');
+const onFilePick = (e: Event) => {
+	const target = e.target as HTMLInputElement;
+	const file = target.files?.[0];
+	if (!file) return;
+	filename.value = file.name;
+	const form = new FormData();
+	form.append('file', file);
+	updateFile.value = form;
+	target.value = '';
 };
 
 onMounted(() => {
-	fetchShippers();
-	fetchCneeList();
-	fetchServices();
+	getserviceslist();
 });
 </script>
 
 <style lang="scss" scoped>
-.batch-calculation {
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
+.control {
+	width: 100%;
 }
-.page-title {
-	font-size: 16px;
-	font-weight: 500;
+.content {
+	min-height: calc(100vh - 60px - 60px - 60px);
+	background-color: #ffffff;
 }
-.content-card {
-	background: #fff;
+.import {
+	padding-top: 15px;
+	padding-right: 25px;
+	padding-left: 25px;
+
+	.red {
+		color: #e0355d;
+	}
+
+	.download {
+		margin-top: 30px;
+		margin-bottom: 12px;
+		padding-right: 35px;
+		text-align: right;
+
+		a {
+			color: #007bff;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+	}
 }
-.filter-form {
+.header_left {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
-}
-.filter-form :deep(.el-form-item) {
-	margin-right: 0;
-	margin-bottom: 0;
-}
-.wide-select {
-	width: 260px;
-}
-.cnee-desc {
-	margin-top: 12px;
-}
-.card-head {
-	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 12px;
-}
-.card-title {
-	font-size: 15px;
-	font-weight: 500;
-}
-.cell-inline {
-	display: flex;
-	gap: 4px;
-	align-items: center;
-}
-.num-input {
-	flex: 1;
-	min-width: 80px;
-}
-.unit-select {
-	width: 90px;
-}
-.actions {
-	margin-top: 16px;
-	display: flex;
-	gap: 8px;
-}
-.ok {
-	color: #2ba745;
-}
-.fail {
-	color: #f56c6c;
-}
-@media (max-width: 768px) {
-	.wide-select {
-		width: 100%;
+
+	.select_box {
+		position: relative;
+		flex: 0 0 33%;
+		margin-right: 25px;
+		min-width: 240px;
+
+		.import_select {
+			width: 100%;
+		}
 	}
+
+	.upload {
+		flex: 0 0 33%;
+		margin-right: 25px;
+		min-width: 240px;
+	}
+}
+.req_block {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	display: block;
+	color: #dc3747;
+	font-size: 12px;
+}
+.req_none {
+	display: none;
+}
+.input-group {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	width: 100%;
+	height: 40px;
+	margin-left: 0;
+	border-top-left-radius: 8px;
+
+	.custom-file {
+		position: relative;
+		flex: 1 1 0%;
+		min-width: 0;
+		margin-bottom: 0;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+	}
+
+	.custom-file-input {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.custom-file-label {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		z-index: 1;
+		height: 100%;
+		padding: 0;
+		color: #495057;
+		font-size: 15px;
+		line-height: 38px;
+		text-indent: 1em;
+		border: 1px solid #ced4da;
+		border-right: transparent;
+		border-top-left-radius: 4px;
+		border-bottom-left-radius: 4px;
+		background-color: #fff;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.input_btn {
+		padding: 0 12px;
+		border: 1px solid #ced4da;
+		border-left: 1px solid #ced4da;
+		border-radius: 0 5px 5px 0;
+		background: #fff;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.input_btn:hover,
+	.input_btn:active {
+		background-color: #e9ecef;
+		border: 1px solid #ced4da;
+	}
+}
+.import_btn {
+	height: 40px;
+	margin-right: 25px;
+	margin-left: 0;
+}
+.mb-4 {
+	margin-bottom: 16px;
+}
+.mt {
+	margin-top: 0;
+}
+.cyans {
+	border-color: #80bdff !important;
+}
+.size {
+	font-size: 14px;
+}
+.size p {
+	margin: 0;
+	line-height: 1.4;
 }
 </style>

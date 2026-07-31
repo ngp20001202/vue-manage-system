@@ -1,202 +1,115 @@
 <template>
-	<div class="parcel-import">
-		<el-page-header :icon="ArrowLeft" @back="goBack">
-			<template #content>
-				<span class="page-title">{{ t('title.ParcelImport') || '包裹 - 批量导入' }}</span>
-			</template>
-		</el-page-header>
-
-		<el-card shadow="never" class="content-card">
-			<div class="upload-row">
-				<el-select
-					v-model="svcId"
-					class="svc-select"
-					:placeholder="t('pages.servertype') || '服务类型'"
-				>
-					<el-option
-						v-for="item in svcOptions"
-						:key="item.value"
-						:label="item.label"
-						:value="item.value"
-					/>
-				</el-select>
-				<el-upload
-					class="upload-inline"
-					action="#"
-					:auto-upload="false"
-					:show-file-list="false"
-					:on-change="onFileChange"
-					accept=".xls,.xlsx,.csv"
-				>
-					<el-input
-						:model-value="filename || t('pages.placechoose')"
-						readonly
-						:class="['file-name', { 'is-empty': !filename, 'is-error': isError }]"
-					>
-						<template #append>
-							<el-icon><UploadFilled /></el-icon>
-						</template>
-					</el-input>
-				</el-upload>
-				<el-button
-					type="success"
-					:loading="submitting"
-					:disabled="!file"
-					@click="submitImport"
-				>
-					{{ t('pages.Import') || '批量导入' }}
-				</el-button>
-				<el-button v-if="fileId" @click="reset">
-					{{ t('pages.Reset') || '重置' }}
-				</el-button>
-			</div>
-			<div class="download-row">
-				<a href="/templates/Parcel_Template.xlsx" download>
-					<el-icon><Download /></el-icon>
-					<span>{{ t('pages.Download') || '下载模板' }}</span>
-				</a>
-			</div>
-
-			<!-- 导入结果预览 -->
-			<div v-if="fileId" class="preview">
-				<div class="preview-head">
-					<h3 class="summary">
-						{{ t('pages.Total') || '总计' }}: {{ summary.sum }}
-						<span class="ok">{{ t('pages.Success') || '成功' }}: {{ summary.success }}</span>
-						<span class="fail">{{ t('pages.Failed') || '失败' }}: {{ summary.error }}</span>
-					</h3>
-					<div class="preview-actions">
-						<el-button type="warning" :loading="confirming" @click="confirmImport">
-							{{ t('pages.CfmImport') || '确认导入' }}
-						</el-button>
+	<div class="control">
+		<div class="content import">
+			<div>
+				<div class="header_left">
+					<div class="select_box">
+						<el-select
+							v-model="value"
+							class="m-4 import_select"
+							:placeholder="t('pages.servertype') || '服务类型'"
+							size="large"
+						>
+							<el-option
+								v-for="item in options"
+								:key="item.value"
+								:label="item.label"
+								:value="item.value"
+							/>
+						</el-select>
+						<span :class="req ? 'req_block' : 'req_none'">
+							{{ t('pages.Required') || '必填项,请填写' }}
+						</span>
 					</div>
+					<div class="upload mt">
+						<div class="input-group">
+							<div class="custom-file">
+								<input
+									id="ParcelImport_File"
+									ref="ipt"
+									accept=".xls,.xlsx"
+									class="custom-file-input"
+									name="Input.File"
+									type="file"
+									@change="onFilePick"
+								>
+								<label
+									:class="isCyan ? 'custom-file-label cyans' : 'custom-file-label'"
+									for="ParcelImport_File"
+								>{{ filename || t('pages.placechoose') }}</label>
+							</div>
+							<button class="input_btn" @click="onUploadClick">
+								<el-icon><UploadFilled /></el-icon>
+							</button>
+						</div>
+					</div>
+					<el-row class="mb-4">
+						<el-button
+							type="success"
+							class="import_btn"
+							:loading="loading"
+							@click="submit"
+						>
+							{{ t('pages.Import') || '批量导入' }}
+						</el-button>
+					</el-row>
 				</div>
-
-				<el-table
-					v-loading="previewLoading"
-					:data="previewList"
-					style="width: 100%"
-					border
-					size="small"
-				>
-					<el-table-column type="index" width="50" />
-					<el-table-column :label="t('pages.Errors') || '错误信息'" min-width="180">
-						<template #default="scope">
-							<span class="fail">{{ scope.row.error }}</span>
-						</template>
-					</el-table-column>
-					<el-table-column
-						property="orderNbr"
-						:label="t('pages.lastorder') || '订单 #'"
-						min-width="150"
-					/>
-					<el-table-column :label="t('pages.Weight') || '重量'" width="100">
-						<template #default="scope">
-							<span>{{ scope.row.weight?.value }}{{ scope.row.weight?.unit }}</span>
-						</template>
-					</el-table-column>
-					<el-table-column
-						property="shipper.name"
-						:label="t('pages.parcel_import.Shipper') || '寄件人'"
-						min-width="130"
-					/>
-					<el-table-column
-						:label="t('pages.parcel_import.Consigne') || '收件人'"
-						min-width="140"
+				<div class="download font_18">
+					<a href="/templates/Parcel_Template.xlsx">
+						<el-icon><Download /></el-icon>
+						{{ t('pages.Download') || '下载模板' }}
+					</a>
+				</div>
+				<div style="width: 100%">
+					<el-table
+						:data="columns"
+						style="width: 100%; margin-bottom: 15px"
+						size="small"
 					>
-						<template #default="scope">
-							<div>
-								<p>{{ scope.row.consignee?.name }}</p>
-								<p>{{ scope.row.consignee?.phone }}</p>
-							</div>
+						<el-table-column :label="t('pages.ColumnName') || '列名'">
+							<template #default="scope">
+								<span class="red">{{ scope.row.columnsname }}</span>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="required"
+							:label="t('pages.Requiredtrue') || '是否必填'"
+						>
+							<template #default="scope">
+								<div :class="scope.row.required ? 'display' : 'none'">
+									<el-icon class="check-icon"><CircleCheck /></el-icon>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="desc"
+							:label="t('pages.Description') || '描述'"
+						/>
+						<el-table-column
+							property="sl"
+							:label="t('pages.Example') || '示例'"
+						/>
+						<template #empty>
+							<el-empty :description="t('pages.NoData') || '暂无数据'" />
 						</template>
-					</el-table-column>
-					<el-table-column
-						property="consignee.province"
-						:label="t('pages.parcel_import.AddresseeState') || '收件省/州'"
-						width="120"
-					/>
-					<el-table-column
-						property="consignee.city"
-						:label="t('pages.parcel_import.AddresseeCity') || '收件城市'"
-						width="120"
-					/>
-					<el-table-column
-						:label="t('pages.parcel_import.AddresseePostalCode') || '收件邮编'"
-						width="110"
-					>
-						<template #default="scope">
-							<div>
-								<p>{{ scope.row.consignee?.postalCode }}</p>
-								<p>{{ scope.row.consignee?.countryCode }}</p>
-							</div>
-						</template>
-					</el-table-column>
-					<el-table-column
-						property="consignee.street1"
-						:label="t('pages.parcel_import.AddresseeStreetLine1') || '收件地址栏一'"
-						min-width="180"
-					/>
-					<template #empty>
-						<el-empty :description="t('pages.NoData') || '暂无数据'" />
-					</template>
-				</el-table>
+					</el-table>
+				</div>
 			</div>
-
-			<!-- 模板列说明 -->
-			<el-table v-else :data="columns" style="width: 100%" border size="small">
-				<el-table-column :label="t('pages.ColumnName') || '列名'" min-width="160">
-					<template #default="scope">
-						<span class="red">{{ scope.row.columnsname }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.Requiredtrue') || '是否必填'" width="160">
-					<template #default="scope">
-						<el-icon v-if="scope.row.required" class="check-icon"><CircleCheck /></el-icon>
-					</template>
-				</el-table-column>
-				<el-table-column
-					property="desc"
-					:label="t('pages.Description') || '描述'"
-					min-width="240"
-				/>
-				<el-table-column
-					property="sl"
-					:label="t('pages.Example') || '示例'"
-					min-width="200"
-				/>
-			</el-table>
-		</el-card>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="parcel-import">
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, type UploadFile } from 'element-plus';
-import {
-	ArrowLeft,
-	Download,
-	CircleCheck,
-	UploadFilled,
-} from '@element-plus/icons-vue';
-import {
-	getservices,
-	parcelImportfile,
-	parcelDetailImport,
-	parcelCfmImport,
-} from '@/api/parcel';
+import { ElMessage } from 'element-plus';
+import { Download, UploadFilled, CircleCheck } from '@element-plus/icons-vue';
+import { getservices, parcelImportfile } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 
 const router = useRouter();
 const { t } = useI18n();
-
-interface SvcOption {
-	value: number | string;
-	label: string;
-	entry: number | string;
-}
 
 interface ColumnItem {
 	columnsname: string;
@@ -205,142 +118,92 @@ interface ColumnItem {
 	sl: string;
 }
 
-interface PreviewRow extends Record<string, any> {
-	error?: string;
-	orderNbr?: string;
-	weight?: { value?: number | string; unit?: string };
-	shipper?: Record<string, any>;
-	consignee?: Record<string, any>;
+interface SvcItem {
+	id: number | string;
+	name: string;
+	svcEntryID?: number | string;
 }
 
-const file = ref<File | null>(null);
+const ipt = ref<HTMLInputElement | null>(null);
+const isCyan = ref(false);
+const updateFile = ref<FormData | null>(null);
 const filename = ref('');
-const isError = ref(false);
-const submitting = ref(false);
-const confirming = ref(false);
-const previewLoading = ref(false);
+const loading = ref(false);
 
-const svcId = ref<number | string>(0);
-const svcEntry = ref<number | string>(0);
-const svcOptions = ref<SvcOption[]>([]);
+const value = ref(0);
+const entry = ref(0);
+const req = ref(false);
 
-const fileId = ref('');
-const previewList = ref<PreviewRow[]>([]);
-const summary = reactive({ sum: 0, success: 0, error: 0 });
+const options = ref<{ value: number; label: string; entry: number }[]>([]);
 
-watch(svcId, (val) => {
-	const hit = svcOptions.value.find((item) => item.value === val);
-	svcEntry.value = hit?.entry ?? 0;
+watch(value, (newValue) => {
+	req.value = !(newValue * 1);
+	options.value.forEach((item) => {
+		if (item.value === newValue) entry.value = item.entry;
+	});
 });
 
-watch(filename, (val) => {
-	if (val) isError.value = false;
+watch(filename, () => {
+	if (filename.value) isCyan.value = false;
 });
 
-const fetchServices = async () => {
-	const base: SvcOption = {
-		value: 0,
-		label: `~ ${t('pages.servertype') || '服务类型'} ~`,
-		entry: 0,
-	};
-	svcOptions.value = [base];
-	const res: ApiResponse<any[]> = await getservices();
+const getserviceslist = async () => {
+	options.value = [
+		{
+			value: 0,
+			label: `~ ${t('pages.servertype') || '服务类型'} ~`,
+			entry: 0,
+		},
+	];
+	const res: ApiResponse<SvcItem[]> = await getservices();
 	if (res?.isSuccess && Array.isArray(res.result)) {
-		svcOptions.value = [
-			base,
-			...res.result.map((item: any) => ({
-				value: item.id,
+		res.result.forEach((item) => {
+			options.value.push({
+				value: Number(item.id),
 				label: item.name,
-				entry: item.svcEntryID,
-			})),
-		];
+				entry: Number(item.svcEntryID ?? 0),
+			});
+		});
 	}
 };
 
-const onFileChange = (uploadFile: UploadFile) => {
-	if (!uploadFile.raw) return;
-	file.value = uploadFile.raw;
-	filename.value = uploadFile.name;
-};
-
-const loadPreview = async (id: string) => {
-	previewLoading.value = true;
-	try {
-		const res: ApiResponse<PreviewRow[]> = await parcelDetailImport(id);
-		if (res?.isSuccess && Array.isArray(res.result)) {
-			previewList.value = res.result;
-			summary.sum = res.result.length;
-			summary.error = res.result.filter((item) => item.error).length;
-			summary.success = summary.sum - summary.error;
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} finally {
-		previewLoading.value = false;
-	}
-};
-
-const submitImport = async () => {
-	if (!file.value) {
-		isError.value = true;
-		ElMessage.warning(t('pages.placechoose') || '请选择文件');
-		return;
-	}
-	if (!Number(svcId.value)) {
+const submit = async () => {
+	if (!filename.value) isCyan.value = true;
+	if (!value.value) {
 		ElMessage.error(t('pages.Serviceisrequired') || '服务是必填项');
 		return;
 	}
-	submitting.value = true;
-	try {
-		const form = new FormData();
-		form.append('file', file.value);
-		form.append('RootSvcID', String(svcId.value));
-		form.append('SvcEntry', String(svcEntry.value));
-		const res: ApiResponse<any> = await parcelImportfile(form);
-		if (res?.isSuccess && res.result?.fileId) {
-			fileId.value = String(res.result.fileId);
-			await loadPreview(fileId.value);
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed') || '失败');
-	} finally {
-		submitting.value = false;
+	if (!updateFile.value) return;
+	loading.value = true;
+	updateFile.value.append('RootSvcID', String(value.value));
+	updateFile.value.append('SvcEntry', String(entry.value));
+	const res: ApiResponse<{ fileId: string }> = await parcelImportfile(updateFile.value);
+	loading.value = false;
+	if (res?.isSuccess) {
+		filename.value = '';
+		updateFile.value = new FormData();
+		router.push({
+			path: '/Parcels/Import/Preview',
+			query: { fileid: res.result?.fileId ?? '' },
+		});
+	} else {
+		ElMessage.error(res?.message || t('pages.Failed') || '失败');
 	}
 };
 
-const confirmImport = async () => {
-	if (!fileId.value) return;
-	confirming.value = true;
-	try {
-		const res: ApiResponse<any> = await parcelCfmImport(fileId.value);
-		if (res?.isSuccess) {
-			ElMessage.success(res.message || t('pages.Success') || '成功');
-			reset();
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed') || '失败');
-	} finally {
-		confirming.value = false;
-	}
+const onUploadClick = () => {
+	if (!filename.value) isCyan.value = true;
 };
 
-const reset = () => {
-	file.value = null;
-	filename.value = '';
-	fileId.value = '';
-	previewList.value = [];
-	summary.sum = 0;
-	summary.success = 0;
-	summary.error = 0;
-	svcId.value = 0;
-};
-
-const goBack = () => {
-	router.push('/parcel/list');
+const onFilePick = (e: Event) => {
+	const target = e.target as HTMLInputElement;
+	const file = target.files?.[0];
+	if (!file) return;
+	filename.value = file.name;
+	const form = new FormData();
+	form.append('file', file);
+	updateFile.value = form;
+	target.value = '';
 };
 
 const columns = ref<ColumnItem[]>([
@@ -388,97 +251,170 @@ const columns = ref<ColumnItem[]>([
 ]);
 
 onMounted(() => {
-	fetchServices();
+	getserviceslist();
 });
 </script>
 
 <style lang="scss" scoped>
-.parcel-import {
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-.page-title {
-	font-size: 16px;
-	font-weight: 500;
-}
-.content-card {
-	background: #fff;
-}
-.upload-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	align-items: center;
-	margin-bottom: 12px;
-}
-.svc-select {
-	width: 240px;
-}
-.upload-inline {
-	flex: 1;
-	min-width: 240px;
-}
-.upload-inline :deep(.el-upload) {
+.control {
 	width: 100%;
 }
-.file-name.is-empty :deep(.el-input__inner) {
-	color: #a8abb2;
+.content {
+	min-height: calc(100vh - 60px - 60px - 60px);
+	background-color: #ffffff;
 }
-.file-name.is-error :deep(.el-input__inner) {
-	color: #f56c6c;
+.import {
+	padding-top: 15px;
+	padding-right: 25px;
+	padding-left: 25px;
+
+	.red {
+		color: #e0355d;
+	}
+
+	.download {
+		margin-top: 30px;
+		margin-bottom: 12px;
+		padding-right: 35px;
+		text-align: right;
+
+		a {
+			color: #007bff;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+	}
 }
-.download-row {
-	margin: 4px 0 16px;
-}
-.download-row a {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	color: #409eff;
-	text-decoration: none;
-}
-.download-row a:hover {
-	text-decoration: underline;
-}
-.preview-head {
+.header_left {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
 	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 12px;
+
+	.select_box {
+		position: relative;
+		flex: 0 0 30%;
+		margin-right: 30px;
+		min-width: 240px;
+
+		.import_select {
+			width: 100%;
+		}
+	}
+
+	.upload {
+		flex: 0 0 30%;
+		margin-right: 25px;
+		min-width: 240px;
+	}
 }
-.summary {
-	font-size: 16px;
-	font-weight: 500;
-	margin: 0;
+.req_block {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	display: block;
+	color: #dc3747;
+	font-size: 12px;
+}
+.req_none {
+	display: none;
+}
+.input-group {
+	position: relative;
 	display: flex;
-	gap: 16px;
-	align-items: center;
+	align-items: stretch;
+	width: 100%;
+	height: 40px;
+	margin-left: 0;
+	border-top-left-radius: 8px;
+
+	.custom-file {
+		position: relative;
+		flex: 1 1 0%;
+		min-width: 0;
+		margin-bottom: 0;
+		display: flex;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+	}
+
+	.custom-file-input {
+		position: relative;
+		z-index: 2;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: pointer;
+	}
+
+	.custom-file-label {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 0;
+		z-index: 1;
+		height: 100%;
+		padding: 0;
+		color: #495057;
+		font-size: 15px;
+		line-height: 38px;
+		text-indent: 1em;
+		border: 1px solid #ced4da;
+		border-right: transparent;
+		border-top-left-radius: 4px;
+		border-bottom-left-radius: 4px;
+		background-color: #fff;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.input_btn {
+		padding: 0 12px;
+		border: 1px solid #ced4da;
+		border-left: 1px solid #ced4da;
+		border-radius: 0 5px 5px 0;
+		background: #fff;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.input_btn:hover,
+	.input_btn:active {
+		background-color: #e9ecef;
+		border: 1px solid #ced4da;
+	}
 }
-.preview-actions {
-	display: flex;
-	gap: 8px;
+.import_btn {
+	height: 40px;
+	margin-right: 25px;
+	margin-left: 0;
 }
-.ok {
-	color: #2ba745;
+.mb-4 {
+	margin-bottom: 16px;
 }
-.fail {
-	color: #f56c6c;
+.mt {
+	margin-top: 0;
 }
-.red {
-	color: #f56c6c;
+.cyans {
+	border-color: #80bdff !important;
+}
+.display {
+	display: block;
+}
+.none {
+	display: none;
 }
 .check-icon {
 	color: #2ba745;
 	font-size: 20px;
 }
-@media (max-width: 768px) {
-	.svc-select,
-	.upload-inline {
-		width: 100%;
-	}
+.font_18 {
+	font-size: 18px !important;
 }
 </style>

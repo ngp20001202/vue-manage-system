@@ -339,21 +339,15 @@
 			</div>
 		</el-card>
 
-		<!-- Service selection & rate preview -->
-		<el-card v-if="ratePreview.length" shadow="never" class="section-card">
-			<div class="section-header">
-				<h2>{{ t('pages.services') || '服务与报价' }}</h2>
-				<el-button
-					:loading="rateLoading"
-					type="primary"
-					plain
-					@click="fetchRates"
-				>
-					<el-icon><Refresh /></el-icon>
-					{{ t('pages.refreshrate') || '刷新报价' }}
-				</el-button>
-			</div>
-			<el-table :data="ratePreview" v-loading="rateLoading" border>
+		<!-- Service selection & rate preview (dialog) -->
+		<el-dialog
+			v-model="rateDialogVisible"
+			:title="t('pages.services') || '服务'"
+			width="50%"
+			:close-on-click-modal="false"
+			@close="onRateDialogClose"
+		>
+			<el-table :data="ratePreview" v-loading="rateLoading" style="width: 100%">
 				<el-table-column
 					:label="t('pages.Channelname') || '渠道'"
 					prop="name"
@@ -371,7 +365,7 @@
 						<el-button
 							v-if="scope.row.show"
 							type="primary"
-							size="small"
+							plain
 							:loading="payLoading"
 							@click="confirmOrder(scope.row)"
 						>
@@ -380,7 +374,21 @@
 					</template>
 				</el-table-column>
 			</el-table>
-		</el-card>
+			<template #footer>
+				<el-button @click="rateDialogVisible = false">
+					{{ t('pages.Cancel') || '取消' }}
+				</el-button>
+				<el-button
+					type="primary"
+					plain
+					:loading="rateLoading"
+					@click="fetchRates"
+				>
+					<el-icon><Refresh /></el-icon>
+					{{ t('pages.refreshrate') || '刷新报价' }}
+				</el-button>
+			</template>
+		</el-dialog>
 
 		<!-- Submit actions -->
 		<div class="actions-bar">
@@ -835,6 +843,11 @@ const ratePreview = ref<RateRow[]>([]);
 const rateLoading = ref(false);
 const payLoading = ref(false);
 const submitLoading = ref(false);
+const rateDialogVisible = ref(false);
+
+const onRateDialogClose = () => {
+	rateDialogVisible.value = false;
+};
 
 // ------- API helpers -------
 
@@ -1046,6 +1059,7 @@ const fetchRates = async () => {
 	// Validate packages and line items before fetching rates
 	const parcelsOk = await validateAllParcels();
 	if (!parcelsOk) return;
+	rateDialogVisible.value = true;
 	rateLoading.value = true;
 	ratePreview.value = [];
 	try {
@@ -1148,6 +1162,7 @@ const confirmOrder = async (row: RateRow) => {
 		const res: ApiResponse<any> = await createparcel(payload);
 		if (res?.isSuccess) {
 			ElMessage.success(t('pages.CreateSuccess'));
+			rateDialogVisible.value = false;
 			setTimeout(() => {
 				router.push('/parcel/list').catch(() => {
 					router.go(0);

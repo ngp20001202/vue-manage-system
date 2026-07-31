@@ -1,137 +1,108 @@
 <template>
-	<div class="posting-lastmiler">
-		<el-page-header :icon="ArrowLeft" @back="goBack">
-			<template #content>
-				<span class="page-title">
-					{{ t('title.PostingtoLastMilerImport') || '推送入网 - 批量导入' }}
-				</span>
-			</template>
-		</el-page-header>
+	<div class="control">
+		<div class="content import">
+			<div>
+				<div class="flex wrap flex_start alignitems">
+					<div class="mt">
+						<div class="input-group">
+							<div class="custom-file">
+								<input
+									id="Input_File"
+									accept=".xls,.xlsx"
+									class="custom-file-input"
+									name="Input.File"
+									type="file"
+									@change="onFilePick"
+								>
+								<label
+									:class="isCyan ? 'custom-file-label cyans' : 'custom-file-label'"
+									for="Input_File"
+								>{{ filename || t('pages.placechoose') }}</label>
+							</div>
+							<button class="input_btn" @click="submit">
+								<el-icon><UploadFilled /></el-icon>
+							</button>
+						</div>
+					</div>
+					<el-row class="mb-4 mt">
+						<el-button
+							type="success"
+							class="import_btn"
+							:loading="loading"
+							@click="submit"
+						>
+							{{ t('pages.Import') }}
+						</el-button>
+					</el-row>
+					<div class="download font_18 marginleft20">
+						<a href="/templates/PostingToLastMiler_Template.xlsx">
+							<el-icon><Download /></el-icon>
+							{{ t('pages.Download') }}
+						</a>
+					</div>
+				</div>
 
-		<el-card shadow="never" class="content-card">
-			<el-radio-group v-model="mode" class="mode-group">
-				<el-radio-button value="text">{{ t('pages.tracking') || '运单号或者订单号' }}</el-radio-button>
-				<el-radio-button value="file">{{ t('pages.Template') || '文件' }}</el-radio-button>
-			</el-radio-group>
-
-			<div v-if="mode === 'text'" class="text-block">
-				<el-input
-					v-model="textarea"
-					class="tracking-input"
-					type="textarea"
-					:rows="6"
-					:placeholder="t('pages.trackplace') || '一行一个运单号或订单号'"
-				/>
-			</div>
-
-			<div v-else class="upload-row">
-				<el-upload
-					class="upload-inline"
-					action="#"
-					:auto-upload="false"
-					:show-file-list="false"
-					:on-change="onFileChange"
-					accept=".xls,.xlsx,.csv"
-				>
-					<el-input
-						:model-value="filename || t('pages.placechoose')"
-						readonly
-						:class="['file-name', { 'is-empty': !filename, 'is-error': isError }]"
-					>
-						<template #append>
-							<el-icon><UploadFilled /></el-icon>
+				<div v-if="prevList.length > 0" style="width: 100%">
+					<div class="flex jus_con">
+						<h1>
+							{{ t('pages.Total') }}:&nbsp;{{ sum }}&emsp;
+							<span>{{ t('pages.Success') }}:&nbsp;{{ success }}&emsp;</span>
+							<span>{{ t('pages.Failed') }}:&nbsp;{{ error }}</span>
+						</h1>
+					</div>
+					<el-table :data="prevList" style="width: 100%; margin-bottom: 15px" size="small">
+						<el-table-column type="index" width="50" />
+						<el-table-column :label="t('pages.Errors')">
+							<template #default="scope">
+								<span class="size">{{ scope.row.errors?.join() }}</span>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="trackingNbr"
+							:label="t('pages.lastorder')"
+						/>
+						<template #empty>
+							<el-empty :description="t('pages.NoData')" />
 						</template>
-					</el-input>
-				</el-upload>
+					</el-table>
+				</div>
+				<div v-else style="width: 100%">
+					<el-table :data="columns" style="width: 100%; margin-bottom: 15px" size="small">
+						<el-table-column :label="t('pages.ColumnName')">
+							<template #default="scope">
+								<span class="red">{{ scope.row.columnsname }}</span>
+							</template>
+						</el-table-column>
+						<el-table-column :label="t('pages.Required')">
+							<template #default="scope">
+								<div :class="scope.row.required ? 'display' : 'none'">
+									<el-icon class="check-icon"><CircleCheck /></el-icon>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column
+							property="desc"
+							:label="t('pages.Description')"
+						/>
+						<el-table-column
+							property="sl"
+							:label="t('pages.Example')"
+						/>
+					</el-table>
+				</div>
 			</div>
-
-			<div class="actions">
-				<el-button type="success" :loading="submitting" @click="submitImport">
-					{{ t('pages.Import') || '批量导入' }}
-				</el-button>
-				<el-button v-if="fileId" type="warning" :loading="confirming" @click="confirmImport">
-					{{ t('pages.CfmImport') || '确认导入' }}
-				</el-button>
-				<el-button @click="reset">{{ t('pages.Reset') || '重置' }}</el-button>
-				<a class="download-link" href="/templates/PostingToLastMiler_Template.xlsx" download>
-					<el-icon><Download /></el-icon>
-					<span>{{ t('pages.Download') || '下载模板' }}</span>
-				</a>
-			</div>
-
-			<!-- 导入结果 -->
-			<div v-if="resultList.length" class="preview">
-				<h3 class="summary">
-					{{ t('pages.Total') || '总计' }}: {{ sum }}
-					<span class="ok">{{ t('pages.Success') || '成功' }}: {{ success }}</span>
-					<span class="fail">{{ t('pages.Failed') || '失败' }}: {{ failed }}</span>
-				</h3>
-				<el-table
-					v-loading="resultLoading"
-					:data="resultList"
-					style="width: 100%"
-					border
-					size="small"
-				>
-					<el-table-column type="index" width="50" />
-					<el-table-column :label="t('pages.Errors') || '错误信息'" min-width="240">
-						<template #default="scope">
-							<span class="fail">{{ scope.row.errors?.join('，') }}</span>
-						</template>
-					</el-table-column>
-					<el-table-column
-						property="trackingNbr"
-						:label="t('pages.lastorder') || '订单 #'"
-						min-width="180"
-					/>
-					<template #empty>
-						<el-empty :description="t('pages.NoData') || '暂无数据'" />
-					</template>
-				</el-table>
-			</div>
-
-			<!-- 模板列说明 -->
-			<el-table v-else :data="columns" style="width: 100%" border size="small">
-				<el-table-column :label="t('pages.ColumnName') || '列名'" min-width="180">
-					<template #default="scope">
-						<span class="red">{{ scope.row.columnsname }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.Required') || '是否必填'" width="120">
-					<template #default="scope">
-						<el-icon v-if="scope.row.required" class="check-icon"><CircleCheck /></el-icon>
-					</template>
-				</el-table-column>
-				<el-table-column
-					property="desc"
-					:label="t('pages.Description') || '描述'"
-					min-width="240"
-				/>
-				<el-table-column
-					property="sl"
-					:label="t('pages.Example') || '示例'"
-					min-width="200"
-				/>
-			</el-table>
-		</el-card>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="parcel-postingtolastmiler">
 import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, type UploadFile } from 'element-plus';
-import {
-	ArrowLeft,
-	Download,
-	CircleCheck,
-	UploadFilled,
-} from '@element-plus/icons-vue';
-import { postingfile, CfmPosting } from '@/api/parcel';
+import { ElMessage } from 'element-plus';
+import { Download, CircleCheck, UploadFilled } from '@element-plus/icons-vue';
+import { CfmPosting, postingfile } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 
-const router = useRouter();
 const { t } = useI18n();
 
 interface ColumnItem {
@@ -146,221 +117,241 @@ interface ResultRow {
 	errors?: string[];
 }
 
-const mode = ref<'text' | 'file'>('text');
-const textarea = ref('');
-const file = ref<File | null>(null);
+const isCyan = ref(false);
+const loading = ref(false);
+const updateFile = ref<FormData | null>(null);
 const filename = ref('');
-const isError = ref(false);
-const submitting = ref(false);
-const confirming = ref(false);
-const resultLoading = ref(false);
-const fileId = ref('');
-const resultList = ref<ResultRow[]>([]);
+const prevList = ref<ResultRow[]>([]);
 
 const columns = ref<ColumnItem[]>([
 	{
 		columnsname: 'Tracking# or Order#',
 		required: true,
-		desc: t('pages.tracking') || '运单号或者订单号',
+		desc: t('pages.tracking'),
 		sl: '9261290986237901819419',
 	},
 ]);
 
-const sum = computed(() => resultList.value.length);
-const failed = computed(
-	() => resultList.value.filter((item) => item.errors && item.errors.length > 0).length,
-);
-const success = computed(() => sum.value - failed.value);
-
-watch(filename, (val) => {
-	if (val) isError.value = false;
-});
-
-const onFileChange = (uploadFile: UploadFile) => {
-	if (!uploadFile.raw) return;
-	file.value = uploadFile.raw;
-	filename.value = uploadFile.name;
-};
-
-const trackingNbrs = computed(() =>
-	textarea.value
-		.split(/[\n,;\s]+/)
-		.map((s) => s.trim())
-		.filter((s) => s !== ''),
+watch(
+	() => filename.value,
+	() => {
+		if (filename.value) isCyan.value = false;
+	},
 );
 
-// 文本模式下把运单号拼成一个 csv 文件提交，复用同一个导入接口
-const buildTextFile = () => {
-	const content = `Tracking# or Order#\n${trackingNbrs.value.join('\n')}\n`;
-	return new File([content], 'postingToLastMiler.csv', { type: 'text/csv' });
-};
+const sum = computed(() => prevList.value.length);
+const success = computed(() =>
+	prevList.value.reduce((acc, item) => {
+		if (!item.errors || item.errors.length === 0) acc += 1;
+		return acc;
+	}, 0),
+);
+const error = computed(() =>
+	prevList.value.reduce((acc, item) => {
+		if (item.errors && item.errors.length > 0) acc += 1;
+		return acc;
+	}, 0),
+);
 
-const loadResult = async (id: string) => {
-	resultLoading.value = true;
-	try {
-		const res: ApiResponse<ResultRow[]> = await CfmPosting(id);
-		if (res?.isSuccess && Array.isArray(res.result)) {
-			resultList.value = res.result;
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} finally {
-		resultLoading.value = false;
-	}
-};
-
-const submitImport = async () => {
-	let payloadFile: File | null = null;
-	if (mode.value === 'file') {
-		if (!file.value) {
-			isError.value = true;
-			ElMessage.warning(t('pages.placechoose') || '请选择文件');
-			return;
-		}
-		payloadFile = file.value;
+const loadDetail = async (fileId: string) => {
+	const res: ApiResponse<ResultRow[]> = await CfmPosting(fileId);
+	loading.value = false;
+	if (res?.isSuccess) {
+		prevList.value = Array.isArray(res.result) ? res.result : [];
 	} else {
-		if (!trackingNbrs.value.length) {
-			ElMessage.warning(t('pages.trackplace') || '请输入运单号或订单号');
-			return;
-		}
-		payloadFile = buildTextFile();
-	}
-	submitting.value = true;
-	try {
-		const form = new FormData();
-		form.append('file', payloadFile);
-		const res: ApiResponse<any> = await postingfile(form);
-		if (res?.isSuccess && res.result?.fileId) {
-			fileId.value = String(res.result.fileId);
-			await loadResult(fileId.value);
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed') || '失败');
-	} finally {
-		submitting.value = false;
+		ElMessage.error(res?.message || t('pages.Failed'));
 	}
 };
 
-const confirmImport = async () => {
-	if (!fileId.value) return;
-	confirming.value = true;
-	try {
-		const res: ApiResponse<ResultRow[]> = await CfmPosting(fileId.value);
-		if (res?.isSuccess) {
-			resultList.value = Array.isArray(res.result) ? res.result : resultList.value;
-			ElMessage.success(res.message || t('pages.Success') || '成功');
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed') || '失败');
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed') || '失败');
-	} finally {
-		confirming.value = false;
+const submit = async () => {
+	if (!filename.value) isCyan.value = true;
+	if (!updateFile.value) return;
+	loading.value = true;
+	const res: ApiResponse<{ fileId: string }> = await postingfile(updateFile.value);
+	if (res?.isSuccess) {
+		filename.value = '';
+		updateFile.value = null;
+		await loadDetail(res.result?.fileId ?? '');
+	} else {
+		loading.value = false;
+		ElMessage.error(res?.message || t('pages.Failed'));
 	}
 };
 
-const reset = () => {
-	textarea.value = '';
-	file.value = null;
-	filename.value = '';
-	fileId.value = '';
-	resultList.value = [];
-};
-
-const goBack = () => {
-	router.push('/parcel/list');
+const onFilePick = (e: Event) => {
+	const target = e.target as HTMLInputElement;
+	const file = target.files?.[0];
+	if (!file) return;
+	filename.value = file.name;
+	const form = new FormData();
+	form.append('file', file);
+	updateFile.value = form;
 };
 </script>
 
 <style lang="scss" scoped>
-.posting-lastmiler {
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-.page-title {
-	font-size: 16px;
-	font-weight: 500;
-}
-.content-card {
-	background: #fff;
-}
-.mode-group {
-	margin-bottom: 12px;
-}
-.text-block {
-	margin-bottom: 12px;
-}
-.tracking-input {
-	width: 100%;
-	max-width: 640px;
-}
-.upload-row {
-	display: flex;
-	gap: 8px;
-	align-items: center;
-	margin-bottom: 12px;
-}
-.upload-inline {
-	flex: 1;
-	max-width: 640px;
-}
-.upload-inline :deep(.el-upload) {
+.control {
 	width: 100%;
 }
-.file-name.is-empty :deep(.el-input__inner) {
-	color: #a8abb2;
+.content {
+	min-height: calc(100vh - 60px - 60px - 60px);
+	background-color: #ffffff;
 }
-.file-name.is-error :deep(.el-input__inner) {
-	color: #f56c6c;
+.import {
+	padding-top: 15px;
+	padding-right: 25px;
+	padding-left: 25px;
+
+	.red {
+		color: #e0355d;
+	}
+
+	.download {
+		margin-top: 0;
+		margin-bottom: 12px;
+		padding-right: 35px;
+		text-align: right;
+
+		a {
+			color: #007bff;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+		}
+	}
+
+	.input-group {
+		position: relative;
+		display: flex;
+		align-items: stretch;
+		width: 100%;
+		height: 35px;
+		margin-left: 0;
+		border-top-left-radius: 8px;
+
+		.custom-file {
+			position: relative;
+			flex: 1 1 0%;
+			min-width: 0;
+			margin-bottom: 0;
+			display: flex;
+			align-items: center;
+			width: 100%;
+			height: 100%;
+		}
+
+		.custom-file-input {
+			position: relative;
+			z-index: 2;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			opacity: 0;
+			cursor: pointer;
+		}
+
+		.custom-file-label {
+			position: absolute;
+			top: 0;
+			right: 0;
+			left: 0;
+			z-index: 1;
+			height: 100%;
+			padding: 0;
+			color: #495057;
+			font-size: 15px;
+			line-height: 33px;
+			text-indent: 1em;
+			border: 1px solid #ced4da;
+			border-right: transparent;
+			border-top-left-radius: 4px;
+			border-bottom-left-radius: 4px;
+			background-color: #fff;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+		.input_btn {
+			padding: 0 12px;
+			border: 1px solid #ced4da;
+			border-left: 1px solid #ced4da;
+			border-radius: 0 5px 5px 0;
+			background: #fff;
+			cursor: pointer;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.input_btn:hover,
+		.input_btn:active {
+			background-color: #e9ecef;
+			border: 1px solid #ced4da;
+		}
+	}
+
+	.import_btn {
+		width: 150px;
+		height: 30px;
+		min-height: 36px;
+		margin-left: 25px;
+		font-size: 16px;
+		line-height: 0;
+		background-color: #28a745;
+		border-color: #28a745;
+	}
+
+	.import_btn:hover {
+		background-color: #218838 !important;
+		border-color: #218838 !important;
+	}
 }
-.actions {
+.flex {
 	display: flex;
+}
+.wrap {
 	flex-wrap: wrap;
-	gap: 8px;
+}
+.flex_start {
+	justify-content: flex-start !important;
+}
+.alignitems {
 	align-items: center;
+}
+.justify-between {
+	justify-content: space-between;
+}
+.marginleft20 {
+	margin-left: 20px;
+}
+.font_18 {
+	font-size: 18px !important;
+}
+.mt {
+	margin-bottom: 8px;
+}
+.mb-4 {
 	margin-bottom: 16px;
 }
-.download-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	margin-left: 8px;
-	color: #409eff;
-	text-decoration: none;
+.jus_con {
+	justify-content: space-between;
 }
-.download-link:hover {
-	text-decoration: underline;
+.cyans {
+	border-color: #80bdff !important;
 }
-.summary {
-	font-size: 16px;
-	font-weight: 500;
-	margin: 0 0 12px;
-	display: flex;
-	gap: 16px;
-	align-items: center;
+.display {
+	display: block;
 }
-.ok {
-	color: #2ba745;
+.none {
+	display: none;
 }
-.fail {
-	color: #f56c6c;
-}
-.red {
-	color: #f56c6c;
+.size {
+	font-size: 14px;
 }
 .check-icon {
-	color: #2ba745;
 	font-size: 20px;
-}
-@media (max-width: 768px) {
-	.tracking-input,
-	.upload-inline {
-		width: 100%;
-		max-width: none;
-	}
+	color: #2ba745;
 }
 </style>

@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "parcel-import" */ '../views/parcel/import.vue'),
             },
             {
+                path: '/Parcels/Import/Preview',
+                name: 'shippingspa-parcel-import-preview',
+                meta: { title: '导入预览', permiss: '100', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "parcel-preview" */ '../views/parcel/previewPage.vue'),
+            },
+            {
                 path: '/Parcels/Batchcalculation',
                 name: 'shippingspa-parcel-batchCalculation',
                 meta: { title: '批量试算', permiss: '100', hideInMenu: true },
