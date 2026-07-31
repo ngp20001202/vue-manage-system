@@ -118,7 +118,7 @@
 			>
 				<el-table-column :label="t('pages.ID')" width="150">
 					<template #default="scope">
-						<span class="cyan">
+						<span class="id-text">
 							<el-icon><InfoFilled /></el-icon>
 							{{ scope.row.id }}
 						</span>
@@ -534,9 +534,8 @@ onMounted(() => {
 .upload {
 	background-color: #17a2b8;
 }
-.cyan {
-	color: #17a2b8;
-	cursor: pointer;
+.id-text {
+	color: #606266;
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;

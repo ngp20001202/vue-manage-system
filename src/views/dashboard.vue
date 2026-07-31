@@ -38,15 +38,16 @@
 			</el-col>
 		</el-row>
 		<el-empty v-if="!loading && !cardData.length" :description="t('pages.NoData')" />
+		<RechargeDialog v-model="rechargeVisible" :card="rechargeCard" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/store/user';
 import { getBalance } from '@/api/accounting';
+import RechargeDialog from '@/components/RechargeDialog.vue';
 
 const { t } = useI18n();
 const user = useUserStore();
@@ -63,6 +64,8 @@ interface BalanceCard {
 
 const cardData = ref<BalanceCard[]>([]);
 const loading = ref(false);
+const rechargeVisible = ref(false);
+const rechargeCard = ref<BalanceCard | null>(null);
 
 const loadBalance = async () => {
 	loading.value = true;
@@ -80,8 +83,9 @@ const loadBalance = async () => {
 	}
 };
 
-const onRecharge = (_card: BalanceCard) => {
-	ElMessage.info(t('pages.Recharge.Recharge') + ' - ' + (_card.currencyText || ''));
+const onRecharge = (card: BalanceCard) => {
+	rechargeCard.value = card;
+	rechargeVisible.value = true;
 };
 
 // 免密登录（URL 上带 ?token=）已经在 router.beforeEach 里完成，

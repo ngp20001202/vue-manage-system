@@ -209,6 +209,7 @@ const onReset = () => {
 };
 
 const onTabChange = () => {
+	routeData.value = [];
 	if (activeTab.value === 'all') {
 		dates.value = defaultRange();
 		chargeID.value = 0;
