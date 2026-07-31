@@ -130,14 +130,13 @@
 					min-width="180"
 					show-overflow-tooltip
 				/>
-				<el-table-column :label="t('pages.Action')" width="160" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="160" align="left" fixed="right">
 					<template #default="scope">
 						<el-button
 							type="warning"
 							size="small"
 							:icon="RefreshRight"
-							:loading="resending === scope.row.id"
-							@click="() => resend(scope.row)"
+							@click="() => openEdit(scope.row)"
 						>
 							{{ t('pages.LastMilerRejection.EditandResend') }}
 						</el-button>
@@ -164,136 +163,14 @@
 
 		<ParcelDetail :id="parcelDetail.id" @changestatus="changestatus" />
 
-		<el-dialog
-			v-model="editVisible"
-			:title="t('pages.LastMilerRejection.EditandResend')"
-			width="860px"
-			destroy-on-close
-			:close-on-click-modal="false"
-			@close="closeEdit"
-		>
-			<el-form
-				ref="editFormRef"
-				v-loading="editLoading"
-				:model="editForm"
-				label-width="120px"
-				class="edit-form"
-			>
-				<el-row :gutter="16">
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.servertype')">
-							<el-input v-model="editForm.svcName" disabled />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.order')">
-							<el-input v-model="editForm.clientRefNbr" disabled />
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-divider />
-				<h4>{{ t('pages.Shipper') }}</h4>
-				<el-row :gutter="16">
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.Name')">
-							<el-input v-model="editForm.shipper.name" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.Phone')">
-							<el-input v-model="editForm.shipper.phone" />
-						</el-form-item>
-					</el-col>
-					<el-col :span="24">
-						<el-form-item :label="t('pages.StreetLine1')">
-							<el-input v-model="editForm.shipper.addressLine1" />
-						</el-form-item>
-					</el-col>
-					<el-col :span="24">
-						<el-form-item :label="t('pages.StreetLine2')">
-							<el-input v-model="editForm.shipper.addressLine2" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.City')">
-							<el-input v-model="editForm.shipper.city" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.ProvinceState')">
-							<el-input v-model="editForm.shipper.state" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.ZipPostalCode')">
-							<el-input v-model="editForm.shipper.postalCode" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.CountryCode')">
-							<el-input v-model="editForm.shipper.countryCode" />
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-divider />
-				<h4>{{ t('pages.Consignee') }}</h4>
-				<el-row :gutter="16">
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.Name')">
-							<el-input v-model="editForm.consignee.name" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.Phone')">
-							<el-input v-model="editForm.consignee.phone" />
-						</el-form-item>
-					</el-col>
-					<el-col :span="24">
-						<el-form-item :label="t('pages.StreetLine1')">
-							<el-input v-model="editForm.consignee.addressLine1" />
-						</el-form-item>
-					</el-col>
-					<el-col :span="24">
-						<el-form-item :label="t('pages.StreetLine2')">
-							<el-input v-model="editForm.consignee.addressLine2" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.City')">
-							<el-input v-model="editForm.consignee.city" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.ProvinceState')">
-							<el-input v-model="editForm.consignee.state" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="8">
-						<el-form-item :label="t('pages.ZipPostalCode')">
-							<el-input v-model="editForm.consignee.postalCode" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :md="12">
-						<el-form-item :label="t('pages.CountryCode')">
-							<el-input v-model="editForm.consignee.countryCode" />
-						</el-form-item>
-					</el-col>
-				</el-row>
-			</el-form>
-			<template #footer>
-				<el-button @click="closeEdit">{{ t('pages.Cancel') }}</el-button>
-				<el-button type="primary" :loading="editSaving" @click="submitEdit">
-					{{ t('pages.Save') }}
-				</el-button>
-			</template>
-		</el-dialog>
+		<LastMilerEditDialog v-model="editVisible" :id="editId" @success="getdata" />
 	</div>
 </template>
 
 <script setup lang="ts" name="lastmiler-rejected">
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import {
 	Search,
 	Refresh,
@@ -305,14 +182,12 @@ import moment from 'moment';
 import { formatParagraphtext } from '@/utils/format';
 import {
 	lastMilerRejectedlist,
-	lastMilerRejectedSearch,
 	lastMilerRequeue,
 	lastMilerCancel,
-	lastMilerEdit,
 } from '@/api/rejection';
-import { parcellistdetail } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from '@/views/parcel/detail.vue';
+import LastMilerEditDialog from './components/LastMilerEditDialog.vue';
 
 const { t } = useI18n();
 
@@ -325,25 +200,6 @@ interface RejectionRow extends Record<string, any> {
 	postedStamp?: { utcTime: string };
 }
 
-interface AddressForm {
-	name: string;
-	phone: string;
-	addressLine1: string;
-	addressLine2: string;
-	city: string;
-	state: string;
-	postalCode: string;
-	countryCode: string;
-}
-
-interface EditForm {
-	id: string | number;
-	clientRefNbr?: string;
-	svcName?: string;
-	shipper: AddressForm;
-	consignee: AddressForm;
-}
-
 const activeName = ref('0');
 const dates = ref<[string, string] | null>(null);
 const textarea = ref('');
@@ -352,7 +208,6 @@ const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
-const resending = ref<string | number | null>(null);
 const requeueing = ref(false);
 const selectarr = ref<RejectionRow[]>([]);
 const multipleTableRef = ref();
@@ -360,24 +215,7 @@ const multipleTableRef = ref();
 const parcelDetail = reactive({ id: '' });
 
 const editVisible = ref(false);
-const editLoading = ref(false);
-const editSaving = ref(false);
-const editFormRef = ref<FormInstance>();
-const emptyAddress = (): AddressForm => ({
-	name: '',
-	phone: '',
-	addressLine1: '',
-	addressLine2: '',
-	city: '',
-	state: '',
-	postalCode: '',
-	countryCode: '',
-});
-const editForm = ref<EditForm>({
-	id: '',
-	shipper: emptyAddress(),
-	consignee: emptyAddress(),
-});
+const editId = ref<string | number>('');
 
 const formatPosted = (row: RejectionRow) => {
 	const utc = row?.issuedOn ?? row?.postedStamp?.utcTime;
@@ -417,11 +255,7 @@ const onReset = () => {
 
 const onSearch = () => {
 	pagecurrent.value = 1;
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
-	}
+	getdata();
 };
 
 const setid = (name: 'detail', id: string | number) => {
@@ -450,27 +284,14 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
+	const isTracking = activeName.value === 'tracking';
+	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await lastMilerRejectedlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
-	});
-	if (res?.isSuccess) {
-		routeData.value = res.result ?? [];
-		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
-	}
-	loading.value = false;
-};
-
-const postdata = async () => {
-	loading.value = true;
-	const res: ApiResponse<any> = await lastMilerRejectedSearch({
-		pageIndex: pagecurrent.value - 1,
-		pageSize: count.value,
-		trackingNbrs: textarea.value
-			.split(/[\n,]+/)
-			.filter((s) => s.trim() !== ''),
+		PeriodMin: !isTracking ? dates.value?.[0] : undefined,
+		PeriodMax: !isTracking ? dates.value?.[1] : undefined,
+		IsUseTrackingNbr: isTracking ? encodeURIComponent(textarea.value) : undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -512,37 +333,6 @@ const batchRequeue = async () => {
 	}
 };
 
-const resend = async (row: RejectionRow) => {
-	try {
-		await ElMessageBox.confirm(
-			'重推后将重新获取面单，是否继续？',
-			'确认重推',
-			{
-				confirmButtonText: '确认',
-				cancelButtonText: t('pages.Cancel'),
-				type: 'warning',
-				center: true,
-			},
-		);
-	} catch {
-		return;
-	}
-	resending.value = row.id;
-	try {
-		const res: ApiResponse<any> = await lastMilerRequeue({ ids: [row.id] });
-		if (res?.isSuccess) {
-			ElMessage.success('重推成功');
-			getdata();
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed'));
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed'));
-	} finally {
-		resending.value = null;
-	}
-};
-
 const cancel = async (isBatch: boolean, id?: string | number) => {
 	const list = isBatch
 		? selectarr.value.map((r) => r.id)
@@ -571,73 +361,13 @@ const cancel = async (isBatch: boolean, id?: string | number) => {
 		});
 };
 
-const openEdit = async (row: RejectionRow) => {
+const openEdit = (row: RejectionRow) => {
+	editId.value = row.id;
 	editVisible.value = true;
-	editLoading.value = true;
-	try {
-		const res: ApiResponse<any> = await parcellistdetail({ id: String(row.id) });
-		if (res?.isSuccess && res.result) {
-			const detail = res.result;
-			editForm.value = {
-				id: row.id,
-				clientRefNbr: detail.clientRefNbr || '',
-				svcName: detail.svcName || '',
-				shipper: { ...emptyAddress(), ...detail.shipper },
-				consignee: { ...emptyAddress(), ...detail.consignee },
-			};
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed'));
-		}
-	} catch (e: any) {
-		ElMessage.error(e?.message || t('pages.Failed'));
-	} finally {
-		editLoading.value = false;
-	}
-};
-
-const closeEdit = () => {
-	editVisible.value = false;
-	editForm.value = {
-		id: '',
-		clientRefNbr: '',
-		svcName: '',
-		shipper: emptyAddress(),
-		consignee: emptyAddress(),
-	};
-};
-
-const submitEdit = async () => {
-	if (!editFormRef.value) return;
-	editFormRef.value.validate(async (valid) => {
-		if (!valid) return;
-		editSaving.value = true;
-		try {
-			const res: ApiResponse<any> = await lastMilerEdit({
-				id: editForm.value.id,
-				shipper: editForm.value.shipper,
-				consignee: editForm.value.consignee,
-			});
-			if (res?.isSuccess) {
-				ElMessage.success('编辑提交成功');
-				closeEdit();
-				getdata();
-			} else {
-				ElMessage.error(res?.message || t('pages.Failed'));
-			}
-		} catch (e: any) {
-			ElMessage.error(e?.message || t('pages.Failed'));
-		} finally {
-			editSaving.value = false;
-		}
-	});
 };
 
 watch([count, pagecurrent], () => {
-	if (activeName.value === 'tracking') {
-		postdata();
-	} else {
-		getdata();
-	}
+	getdata();
 });
 
 onMounted(() => {
@@ -737,7 +467,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

@@ -4,7 +4,7 @@
             <el-tab-pane
                 v-for="item in tabs.list"
                 :key="item.path"
-                :label="item.title"
+                :label="labelOf(item)"
                 :name="item.path"
                 @click="setTags(item)"
             ></el-tab-pane>
@@ -12,16 +12,16 @@
         <div class="Tabs-close-box">
             <el-dropdown @command="handleTags">
                 <el-button size="small" type="primary" plain>
-                    标签选项
+                    {{ t('tabs.actions') }}
                     <el-icon class="el-icon--right">
                         <arrow-down />
                     </el-icon>
                 </el-button>
                 <template #dropdown>
                     <el-dropdown-menu size="small">
-                        <el-dropdown-item command="other">关闭其他</el-dropdown-item>
-                        <el-dropdown-item command="current">关闭当前</el-dropdown-item>
-                        <el-dropdown-item command="all">关闭所有</el-dropdown-item>
+                        <el-dropdown-item command="other">{{ t('tabs.closeOther') }}</el-dropdown-item>
+                        <el-dropdown-item command="current">{{ t('tabs.closeCurrent') }}</el-dropdown-item>
+                        <el-dropdown-item command="all">{{ t('tabs.closeAll') }}</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
             </el-dropdown>
@@ -31,13 +31,19 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTabsStore } from '../store/tabs';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const activePath = ref(route.fullPath);
 const tabs = useTabsStore();
+
+const labelOf = (item: { title?: string; titleKey?: string }) =>
+    (item.titleKey ? t(item.titleKey) : '') || item.title || '';
+
 // 设置标签
 const setTags = (route: any) => {
     const isExist = tabs.list.some((item) => {
@@ -47,6 +53,7 @@ const setTags = (route: any) => {
         tabs.setTabsItem({
             name: route.name,
             title: route.meta.title,
+            titleKey: route.meta.titleKey,
             path: route.fullPath,
         });
     }

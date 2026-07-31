@@ -1,10 +1,6 @@
 import request from '@/utils/request';
 import type { ApiResponse } from './types';
 
-// 清单列表（下拉框选项 / 看板 tab）
-export const sackMftstage = (): Promise<ApiResponse> =>
-	request({ url: '/api/SackMfts/stage', method: 'GET' });
-
 // 看板 tab 数据
 export const getSackMftdashtab = (): Promise<ApiResponse> =>
 	request({ url: '/api/SackMfts/dashtab', method: 'GET' });

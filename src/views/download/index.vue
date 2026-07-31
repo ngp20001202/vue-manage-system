@@ -89,7 +89,7 @@
 						<span>{{ formatCreated(scope.row.createdOn) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="320" align="center">
+				<el-table-column :label="t('pages.Action')" width="320" align="left">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -146,6 +146,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Delete, Search, Refresh } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { saveAs } from 'file-saver';
+import { getoriginurl } from '@/utils/originurl';
 import { downloadlist, DELETEDownload, Downloadpdf } from '@/api/download';
 import { SackMftsign } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
@@ -261,11 +262,10 @@ const deleteitem = (id: string | number) => {
 		});
 };
 
-const downloads = async (url: string) => {
-	if (!url) return;
-	const origin = window.location.origin;
-	const href = `${origin}${url}`;
-	const res: any = await SackMftsign({ url: href });
+const downloads = async (fileurl: string) => {
+	if (!fileurl) return;
+	const href = new URL(fileurl, getoriginurl());
+	const res: any = await SackMftsign({ url: href.toString() });
 	const token = res?.result?.token ?? res?.token;
 	if (token) {
 		window.open(`${href}?token=${token}`, '_blank');
@@ -363,7 +363,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

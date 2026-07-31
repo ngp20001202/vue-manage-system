@@ -16,6 +16,7 @@
 			ref="formRef"
 			:inline="true"
 			:model="form"
+			:rules="rules"
 			label-position="top"
 			label-width="80px"
 			class="sender-form"
@@ -84,9 +85,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
+import { ElMessage, type FormRules } from 'element-plus';
 import moment from 'moment';
 import { sackMftScanform } from '@/api/sackMft';
+import { parcelsender } from '@/api/parcel';
+import type { ApiResponse } from '@/api/types';
 import { countryOptions } from '@/utils/country';
 import SenderSearchDialog, { type SenderAddress } from './SenderSearchDialog.vue';
 
@@ -98,22 +101,43 @@ const visible = ref(false);
 const loading = ref(false);
 const senderSearchVisible = ref(false);
 const formRef = ref();
+const emptyContact = () => ({
+	Name: '',
+	Phone: '',
+	Company: '',
+	Street1: '',
+	Street2: '',
+	Street3: '',
+	District: '',
+	City: '',
+	Province: '',
+	PostalCode: '',
+	CountryCode: '',
+});
 const form = ref({
-	Contact: {
-		Name: '',
-		Phone: '',
-		Company: '',
-		Street1: '',
-		Street2: '',
-		Street3: '',
-		District: '',
-		City: '',
-		Province: '',
-		PostalCode: '',
-		CountryCode: '',
-	},
+	Contact: emptyContact(),
 	mailingDate: '',
 });
+
+const rules: FormRules = {
+	'Contact.Name': [{ required: true, message: '姓名不能为空', trigger: 'change' }],
+	'Contact.Phone': [{ required: true, message: '手机号码不能为空', trigger: 'change' }],
+	'Contact.Street1': [{ required: true, message: '街址1不能为空', trigger: 'change' }],
+	'Contact.City': [{ required: true, message: '城市不能为空', trigger: 'change' }],
+	'Contact.Province': [{ required: true, message: '省/州不能为空', trigger: 'change' }],
+	'Contact.PostalCode': [{ required: true, message: '邮编不能为空', trigger: 'change' }],
+	'Contact.CountryCode': [{ required: true, message: '国家/区域不能不选', trigger: 'change' }],
+};
+
+// 打开时自动带出默认（或唯一的）发件地址
+const prefillSender = async () => {
+	const res: ApiResponse<any[]> = await parcelsender();
+	if (!res?.isSuccess || !Array.isArray(res.result)) return;
+	const list = res.result.filter((item: any) => item.type === 'Shipping' || item.type === 2);
+	if (list.length === 0) return;
+	const picked = list.length === 1 ? list[0] : list.find((item: any) => item.isDefault);
+	if (picked) applySender(picked);
+};
 
 watch(
 	() => props.modelValue,
@@ -121,21 +145,11 @@ watch(
 		visible.value = v;
 		if (v) {
 			form.value = {
-				Contact: {
-					Name: '',
-					Phone: '',
-					Company: '',
-					Street1: '',
-					Street2: '',
-					Street3: '',
-					District: '',
-					City: '',
-					Province: '',
-					PostalCode: '',
-					CountryCode: '',
-				},
+				Contact: emptyContact(),
 				mailingDate: moment().format('YYYY-MM-DD'),
 			};
+			formRef.value?.clearValidate();
+			prefillSender();
 		}
 	},
 );
@@ -165,9 +179,25 @@ const applySender = (row: SenderAddress) => {
 };
 
 const submit = async () => {
+	const valid = await formRef.value?.validate().catch(() => false);
+	if (!valid) return;
 	loading.value = true;
+	const c = form.value.Contact;
 	const body = {
-		shipper: form.value.Contact,
+		shipper: {
+			name: c.Name,
+			phone: c.Phone,
+			email: '',
+			company: c.Company || '',
+			street1: c.Street1,
+			street2: c.Street2 || '',
+			street3: c.Street3 || '',
+			district: c.District || '',
+			city: c.City,
+			province: c.Province,
+			postalCode: c.PostalCode,
+			countryCode: c.CountryCode,
+		},
 		submissionID: '',
 		mailingDate: form.value.mailingDate,
 	};

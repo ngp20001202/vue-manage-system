@@ -56,7 +56,7 @@
         </el-table-column>
         <el-table-column :label="t('pages.type')" width="120">
           <template #default="scope">
-            {{ formatType(scope.row.Type ?? scope.row.type) }}
+            {{ formatType(scope.row.type) }}
           </template>
         </el-table-column>
         <el-table-column
@@ -134,7 +134,7 @@
         <el-table-column
           :label="t('pages.Action')"
           width="100"
-          align="center"
+          align="left"
           fixed="right"
         >
           <template #default="scope">
@@ -316,6 +316,7 @@ import {
   addressdelete,
 } from "@/api/address";
 import type { ApiResponse } from "@/api/types";
+import { countryOptions } from "@/utils/country";
 
 const { t } = useI18n();
 
@@ -336,9 +337,8 @@ interface ContactBody {
 
 interface AddressRow extends Record<string, any> {
   id: string | number;
-  Type: string | number;
-  IsDefault?: boolean;
-  Contact?: ContactBody;
+  type: string;
+  isDefault?: boolean;
 }
 
 interface AddressFormState {
@@ -371,27 +371,7 @@ const formatType = (value?: string | number) => {
   return found?.label || String(value || "");
 };
 
-const countries = ref<Array<{ value: string; label: string }>>([
-  { value: "CN", label: "中国 (CN)" },
-  { value: "US", label: "美国 (US)" },
-  { value: "CA", label: "加拿大 (CA)" },
-  { value: "GB", label: "英国 (GB)" },
-  { value: "DE", label: "德国 (DE)" },
-  { value: "FR", label: "法国 (FR)" },
-  { value: "JP", label: "日本 (JP)" },
-  { value: "KR", label: "韩国 (KR)" },
-  { value: "AU", label: "澳大利亚 (AU)" },
-  { value: "SG", label: "新加坡 (SG)" },
-  { value: "HK", label: "中国香港 (HK)" },
-  { value: "TW", label: "中国台湾 (TW)" },
-  { value: "MY", label: "马来西亚 (MY)" },
-  { value: "TH", label: "泰国 (TH)" },
-  { value: "IT", label: "意大利 (IT)" },
-  { value: "ES", label: "西班牙 (ES)" },
-  { value: "NL", label: "荷兰 (NL)" },
-  { value: "MX", label: "墨西哥 (MX)" },
-  { value: "BR", label: "巴西 (BR)" },
-]);
+const countries = countryOptions;
 
 const type = ref<string | number>(0);
 const routeData = ref<AddressRow[]>([]);
@@ -426,8 +406,9 @@ const emptyForm = (): AddressFormState => ({
 
 const form = reactive<AddressFormState>(emptyForm());
 
-// 表头 prop 兼容旧接口（contact.name / Contact.Name 等）
-const addressProp = (field: string) => `Contact.${field}`;
+// 列表接口返回的 contact 为小驼峰
+const addressProp = (field: string) =>
+  `contact.${field.charAt(0).toLowerCase()}${field.slice(1)}`;
 
 const validateEmail = (
   _rule: any,
@@ -510,36 +491,28 @@ const openCreate = () => {
 
 const openEdit = async (row: AddressRow) => {
   dialogMode.value = "edit";
-  Object.assign(form, emptyForm(), {
-    id: row.id,
-    Type: row.Type,
-    IsDefault: !!row.IsDefault,
-  });
+  Object.assign(form, emptyForm(), { id: row.id });
   try {
     const res: ApiResponse<any> = await addressdetail(row.id);
     if (res?.isSuccess && res.result) {
-      const c = res.result.contact ?? res.result.Contact ?? {};
-      const numericType =
-        typeof res.result.Type === "string"
-          ? typeKeyMap[res.result.Type] ?? res.result.Type
-          : res.result.Type ?? row.Type;
+      const c = res.result.contact ?? {};
       Object.assign(form, {
         id: row.id,
-        Type: numericType,
-        IsDefault: !!(res.result.IsDefault ?? res.result.isDefault),
+        Type: typeKeyMap[res.result.type] ?? res.result.type,
+        IsDefault: !!res.result.isDefault,
         Contact: {
-          Name: c.Name ?? c.name ?? "",
-          Phone: c.Phone ?? c.phone ?? "",
-          Email: c.Email ?? c.email ?? "",
-          Company: c.Company ?? c.company ?? "",
-          Street1: c.Street1 ?? c.street1 ?? "",
-          Street2: c.Street2 ?? c.street2 ?? "",
-          Street3: c.Street3 ?? c.street3 ?? "",
-          District: c.District ?? c.district ?? "",
-          City: c.City ?? c.city ?? "",
-          Province: c.Province ?? c.province ?? "",
-          PostalCode: c.PostalCode ?? c.postalCode ?? "",
-          CountryCode: c.CountryCode ?? c.countryCode ?? "",
+          Name: c.name ?? "",
+          Phone: c.phone ?? "",
+          Email: c.email ?? "",
+          Company: c.company ?? "",
+          Street1: c.street1 ?? "",
+          Street2: c.street2 ?? "",
+          Street3: c.street3 ?? "",
+          District: c.district ?? "",
+          City: c.city ?? "",
+          Province: c.province ?? "",
+          PostalCode: c.postalCode ?? "",
+          CountryCode: c.countryCode ?? "",
         },
       });
     }
@@ -638,7 +611,7 @@ onMounted(() => {
 .action-cell {
   display: flex;
   flex-wrap: nowrap;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   gap: 4px;
   padding: 0;

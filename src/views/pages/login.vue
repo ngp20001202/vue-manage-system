@@ -2,8 +2,7 @@
 	<div class="login-bg">
 		<div class="login-container">
 			<div class="login-header">
-				<img class="logo mr10" src="../../assets/img/logo.svg" alt="" />
-				<div class="login-title">{{ appTitle }}</div>
+				<div class="login-title">{{ t('menu.Login') }}</div>
 			</div>
 			<el-form :model="param" :rules="rules" ref="loginForm" size="large">
 				<el-form-item prop="username">

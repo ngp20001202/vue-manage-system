@@ -4,6 +4,10 @@ import request from '@/utils/request';
 export const gettoken = (data: { username?: string; password?: string; token?: string }) =>
 	request({ url: '/api/Tokens', method: 'POST', data });
 
+// 用 URL 上的 token 换取 accessToken（shippingspa: GET /api/Tokens/{token}）
+export const gettokens = (token: string) =>
+	request({ url: `/api/Tokens/${token}`, method: 'GET' });
+
 export const getuser = () =>
 	request({ url: '/api/Users/me', method: 'GET' });
 

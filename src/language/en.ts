@@ -681,5 +681,12 @@ export default {
     Recharge: "Recharge",
     CancelList: "Undo List",
     RefundList: "Refund List",
+    ParcelCreate: "Parcel - Create",
+  },
+  tabs: {
+    actions: "Tab actions",
+    closeOther: "Close others",
+    closeCurrent: "Close current",
+    closeAll: "Close all",
   },
 };

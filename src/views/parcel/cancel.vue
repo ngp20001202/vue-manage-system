@@ -140,7 +140,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="200" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="200" align="left" fixed="right">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -304,14 +304,16 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
+	const isTracking = activeName.value === 'tracking';
+	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
 		size: count.value,
 		StageMin: 10005,
 		StageMax: 10005,
-		PeriodMin: datatoutc(dates.value?.[0]),
-		PeriodMax: datatoutc(dates.value?.[1]),
-		IsUseTrackingNbr: encodeURIComponent(textarea.value),
+		PeriodMin: !isTracking ? datatoutc(dates.value?.[0]) : undefined,
+		PeriodMax: !isTracking ? datatoutc(dates.value?.[1]) : undefined,
+		IsUseTrackingNbr: isTracking ? encodeURIComponent(textarea.value) : undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -462,7 +464,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

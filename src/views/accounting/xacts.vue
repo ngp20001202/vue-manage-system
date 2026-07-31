@@ -260,6 +260,7 @@ onMounted(() => {
 	width: 100%;
 	max-width: 320px;
 	min-width: 0;
+	margin-right: 30px;
 }
 .date-picker :deep(.el-date-editor) {
 	width: 100%;
@@ -270,7 +271,7 @@ onMounted(() => {
 	align-items: center;
 	margin-bottom: 12px;
 	flex-wrap: wrap;
-	justify-content: flex-end;
+	justify-content: space-between;
 }
 .op-row-left {
 	display: flex;

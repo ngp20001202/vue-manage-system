@@ -159,7 +159,7 @@
 						<span>{{ formatStamp(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="280" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" fixed="right">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button type="danger" size="small" :icon="Delete">
@@ -322,15 +322,16 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
-	const encodedText = activeName.value === 'f' ? encodeURIComponent(textarea.value) : '';
+	const isTracking = activeName.value === 'f';
+	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await overlabellist({
 		index: pagecurrent.value - 1,
 		size: count.value,
 		StageMin: startstage.value as number,
 		StageMax: endStage.value as number,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
-		IsUseTrackingNbr: encodedText,
+		PeriodMin: !isTracking ? dates.value?.[0] : undefined,
+		PeriodMax: !isTracking ? dates.value?.[1] : undefined,
+		IsUseTrackingNbr: isTracking ? encodeURIComponent(textarea.value) : '',
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -459,7 +460,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

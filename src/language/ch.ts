@@ -667,5 +667,12 @@ export default {
     Recharge: "充值",
     CancelList: "撤销列表",
     RefundList: "退款列表",
+    ParcelCreate: "包裹 - 单笔创建",
+  },
+  tabs: {
+    actions: "标签选项",
+    closeOther: "关闭其他",
+    closeCurrent: "关闭当前",
+    closeAll: "关闭所有",
   },
 };

@@ -48,7 +48,6 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useUserStore } from '@/store/user';
 import { getBalance } from '@/api/accounting';
-import { gettoken } from '@/api/auth';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -90,12 +89,7 @@ const onRecharge = (_card: BalanceCard) => {
 onMounted(async () => {
 	const tokenInQuery = route.query.token as string | undefined;
 	if (tokenInQuery) {
-		const res: any = await gettoken({ token: tokenInQuery });
-		const accessToken = res?.result?.accessToken ?? res?.result?.token;
-		if (accessToken) {
-			user.setToken(accessToken);
-			localStorage.setItem('vuems_name', res?.result?.userName || 'admin');
-		}
+		await user.loginByToken(tokenInQuery);
 	}
 	await loadBalance();
 });

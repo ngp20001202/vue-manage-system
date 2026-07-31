@@ -137,18 +137,6 @@ export const getAmazon = () =>
 export const getInvoice = (id: string, invoiceID: string) =>
 	request({ url: `/api/accounting/xacts/${id}/Invoices/${invoiceID}`, method: 'GET' });
 
-// 地址详情
-export const addressdetail = (id: string) =>
-	request({ url: `/api/address/${id}`, method: 'GET' });
-
-// 新建地址
-export const addresscreate = (data: any) =>
-	request({ url: `/api/address/create`, method: 'POST', data });
-
-// 编辑地址
-export const addressedit = (data: any) =>
-	request({ url: `/api/address/edit`, method: 'POST', data });
-
 // ========================= Overlabel =========================
 
 // 换单列表（shippingspa: /api/Parcels/overlabel/list）

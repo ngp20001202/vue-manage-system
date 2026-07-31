@@ -23,7 +23,6 @@
 					</el-tab-pane>
 					<el-tab-pane :label="t('pages.MawbMbl')" name="tracking" />
 				</el-tabs>
-				<el-button type="primary" class="tab-search" :icon="Search" @click="onSearch" />
 			</div>
 
 			<div class="tabs-content">
@@ -158,7 +157,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="380" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="380" align="left" fixed="right">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -180,7 +179,7 @@
 								:key="code"
 								:type="actionType(code)"
 								size="small"
-								@click="handleRoledAction(code, scope.row.id)"
+								@click="handleRoledAction()"
 							>
 								{{ actionTitle(code) }}
 							</el-button>
@@ -214,7 +213,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import {
 	Upload,
 	Search,
@@ -225,14 +224,10 @@ import {
 import moment from 'moment';
 import {
 	sackMftlist,
-	sackMftstage,
-	sackMftCfmOutgated,
-	sackMftCfmFlightDeparted,
-	sackMftCfmFlightArrived,
-	sackMftCfmPickup,
 	sackMftsign,
 	getSackMftdashtab,
 } from '@/api/sackMft';
+import { parcelstage } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import { getoriginurl } from '@/utils/originurl';
 import SackMftUpload from './components/SackMftUpload.vue';
@@ -366,11 +361,11 @@ const tabs = async () => {
 };
 
 const stages = async () => {
-	const res: ApiResponse<any[]> = await sackMftstage();
+	const res: ApiResponse<any[]> = await parcelstage();
 	if (res?.isSuccess && Array.isArray(res.result)) {
 		const mapped = res.result.map((item: any) => ({
-			value: item.stage ?? item.value ?? 0,
-			label: item.label ?? item.text ?? String(item.stage ?? item.value ?? ''),
+			value: item.value ?? item.stage ?? item.id,
+			label: item.text ?? item.label ?? String(item.value ?? ''),
 		}));
 		startOptions.value = [{ value: 0, label: t('pages.fromstage') }, ...mapped];
 		endOptions.value = [{ value: 0, label: t('pages.tostage') }, ...mapped];
@@ -418,39 +413,9 @@ const actionType = (code: number | string) => {
 	return map[code] ?? 'primary';
 };
 
-const handleRoledAction = async (code: number | string, id: string | number) => {
-	const apiMap: Record<number | string, (body: { ids: (string | number)[] }) => Promise<ApiResponse>> = {
-		27100: sackMftCfmOutgated,
-		31300: sackMftCfmFlightDeparted,
-		31400: sackMftCfmFlightArrived,
-		31900: sackMftCfmPickup,
-	};
-	if (code === 31100) {
-		ElMessage.error(t('pages.SackMfts.Error'));
-		return;
-	}
-	const api = apiMap[code];
-	if (!api) {
-		ElMessage.error(t('pages.SackMfts.Error'));
-		return;
-	}
-	try {
-		await ElMessageBox.confirm(actionTitle(code), t('pages.attention') as string, {
-			confirmButtonText: t('pages.address.create.confirm') as string,
-			cancelButtonText: t('pages.Cancel') as string,
-			type: 'warning',
-			center: true,
-		});
-		const res = await api({ ids: [id] });
-		if (res?.isSuccess) {
-			ElMessage.success(t('pages.Success'));
-			getdata();
-		} else {
-			ElMessage.error(res?.message || t('pages.Failed'));
-		}
-	} catch {
-		// cancelled
-	}
+const handleRoledAction = () => {
+	// shippingspa 侧这些角色动作均未开发，统一给出同样的提示
+	ElMessage.error(t('pages.SackMfts.Error'));
 };
 
 watch([count, pagecurrent], () => {
@@ -502,6 +467,7 @@ onMounted(() => {
 	width: 100%;
 	max-width: 320px;
 	min-width: 0;
+	margin-right: 20px;
 }
 .date-picker :deep(.el-date-editor) {
 	width: 100%;
@@ -574,7 +540,7 @@ onMounted(() => {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
-	justify-content: center;
+	justify-content: left;
 }
 .pager {
 	margin-top: 16px;

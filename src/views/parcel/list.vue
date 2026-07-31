@@ -202,7 +202,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="360" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="360" align="left" fixed="right">
 					<template #default="scope">
 						<div v-if="showoption(scope.row)" class="action-cell">
 							<el-button
@@ -296,6 +296,7 @@ import {
 	parcelSearchlist,
 	downloadlabel,
 } from '@/api/parcel';
+import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from './detail.vue';
 import ParcelTracking from './tracking.vue';
@@ -461,16 +462,17 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
+	const isTracking = activeName.value === 'tracking';
+	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
 		size: count.value,
 		Stage: Stage.value as any,
 		StageMin: startstage.value as any,
 		StageMax: endStage.value as any,
-		PeriodMin: datatoutc(dates.value?.[0]),
-		PeriodMax: datatoutc(dates.value?.[1]),
-		IsUseTrackingNbr:
-			activeName.value === 'tracking' ? encodeURIComponent(textarea.value) : undefined,
+		PeriodMin: !isTracking ? datatoutc(dates.value?.[0]) : undefined,
+		PeriodMax: !isTracking ? datatoutc(dates.value?.[1]) : undefined,
+		IsUseTrackingNbr: isTracking ? encodeURIComponent(textarea.value) : undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -535,11 +537,11 @@ const downloads = (id: string | number) => {
 };
 
 const downpacking = async (id: string | number) => {
-	const href = `${window.location.origin}/api/download/parcels/${id}/file`;
-	const res: any = await SackMftsign({ url: href });
+	const url = new URL(`/api/download/parcels/${id}/file`, getoriginurl());
+	const res: any = await SackMftsign({ url: url.toString() });
 	if (res?.result?.token || res?.token) {
 		const token = res?.result?.token ?? res?.token;
-		window.open(`${href}?token=${token}`, '_blank');
+		window.open(`${url}?token=${token}`, '_blank');
 	}
 };
 
@@ -728,7 +730,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

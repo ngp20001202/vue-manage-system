@@ -293,6 +293,7 @@ onMounted(() => {
 	width: 100%;
 	max-width: 320px;
 	min-width: 0;
+	margin-right: 20px;
 }
 .date-picker :deep(.el-date-editor) {
 	width: 100%;

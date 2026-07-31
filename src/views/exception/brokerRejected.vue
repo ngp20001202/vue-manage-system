@@ -176,7 +176,7 @@
 						<span>{{ formatPosted(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="280" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" fixed="right">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -348,15 +348,16 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async () => {
 	loading.value = true;
-	const encodedText = encodeURIComponent(textarea.value);
+	const isMawb = activeName.value === 'mawb';
+	// MAWB 搜索时不带日期范围（与 shippingspa 一致：切到 mawb 页签会清空 dates）
 	const res: ApiResponse<any> = await brokerRejectedlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
 		StageMin: startstage.value || undefined,
 		StageMax: endStage.value || undefined,
-		PeriodMin: dates.value?.[0],
-		PeriodMax: dates.value?.[1],
-		MawbNbr: activeName.value === 'mawb' ? encodedText : undefined,
+		PeriodMin: !isMawb ? dates.value?.[0] : undefined,
+		PeriodMax: !isMawb ? dates.value?.[1] : undefined,
+		MawbNbr: isMawb ? encodeURIComponent(textarea.value) : undefined,
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -545,7 +546,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;

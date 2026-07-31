@@ -24,7 +24,7 @@
 							</button>
 						</div>
 					</div>
-					<el-row class="mb-4 mt">
+					<el-row class="mt">
 						<el-button
 							type="success"
 							class="import_btn"
@@ -208,7 +208,6 @@ const onFilePick = (e: Event) => {
 
 	.download {
 		margin-top: 0;
-		margin-bottom: 12px;
 		padding-right: 35px;
 		text-align: right;
 
@@ -257,7 +256,7 @@ const onFilePick = (e: Event) => {
 			right: 0;
 			left: 0;
 			z-index: 1;
-			height: 100%;
+			height: 96%;
 			padding: 0;
 			color: #495057;
 			font-size: 15px;

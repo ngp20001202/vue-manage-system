@@ -129,7 +129,7 @@
 				<el-form-item :label="t('pages.countrycode') || '国家/区域'" prop="CountryCode">
 					<el-select v-model="cnee.CountryCode" filterable>
 						<el-option
-							v-for="item in countries"
+							v-for="item in countryOptions"
 							:key="item.value"
 							:label="item.label"
 							:value="item.value"
@@ -384,7 +384,7 @@
 						<span v-else class="rate-error">{{ scope.row.quote }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="center">
+				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="left">
 					<template #default="scope">
 						<el-button
 							v-if="scope.row.show"
@@ -454,23 +454,13 @@
 				:rules="shipperEditRules"
 				label-position="top"
 				inline
-				class="inline-form"
+				class="inline-form shipper-edit-form"
 			>
 				<el-form-item :label="t('pages.Name') || '姓名'" prop="Name">
 					<el-input v-model="shipperEditForm.Name" />
 				</el-form-item>
 				<el-form-item :label="t('pages.Phone') || '电话'" prop="Phone">
 					<el-input v-model="shipperEditForm.Phone" maxlength="20" />
-				</el-form-item>
-				<el-form-item :label="t('pages.countrycode') || '国家/区域'" prop="CountryCode">
-					<el-select v-model="shipperEditForm.CountryCode" filterable>
-						<el-option
-							v-for="item in countries"
-							:key="item.value"
-							:label="item.label"
-							:value="item.value"
-						/>
-					</el-select>
 				</el-form-item>
 				<el-form-item :label="t('pages.StreetLine1') || '地址行1'" prop="Street1">
 					<el-input v-model="shipperEditForm.Street1" maxlength="35" />
@@ -481,14 +471,24 @@
 				<el-form-item :label="t('pages.StreetLine3') || '地址行3'">
 					<el-input v-model="shipperEditForm.Street3" maxlength="35" />
 				</el-form-item>
-				<el-form-item :label="t('pages.City') || '城市'" prop="City">
-					<el-input v-model="shipperEditForm.City" maxlength="35" />
+				<el-form-item :label="t('pages.countrycode') || '国家/区域'" prop="CountryCode">
+					<el-select v-model="shipperEditForm.CountryCode" filterable>
+						<el-option
+							v-for="item in countryOptions"
+							:key="item.value"
+							:label="item.label"
+							:value="item.value"
+						/>
+					</el-select>
+				</el-form-item>
+				<el-form-item :label="t('pages.ZipPostalCode') || '邮编'" prop="PostalCode">
+					<el-input v-model="shipperEditForm.PostalCode" maxlength="10" />
 				</el-form-item>
 				<el-form-item :label="t('pages.ProvinceState') || '省/州'" prop="Province">
 					<el-input v-model="shipperEditForm.Province" maxlength="20" />
 				</el-form-item>
-				<el-form-item :label="t('pages.ZipPostalCode') || '邮编'" prop="PostalCode">
-					<el-input v-model="shipperEditForm.PostalCode" maxlength="10" />
+				<el-form-item :label="t('pages.City') || '城市'" prop="City">
+					<el-input v-model="shipperEditForm.City" maxlength="35" />
 				</el-form-item>
 				<el-form-item :label="t('pages.district') || '区'">
 					<el-input v-model="shipperEditForm.District" maxlength="20" />
@@ -502,7 +502,7 @@
 					{{ t('pages.Cancel') || '取消' }}
 				</el-button>
 				<el-button type="primary" :loading="shipperEditLoading" @click="saveShipper">
-					{{ t('pages.Submit') || '保存' }}
+					{{ t('pages.submit') }}
 				</el-button>
 			</template>
 		</el-dialog>
@@ -533,10 +533,9 @@ import {
 	parcelsender,
 	getservices,
 	getAmazon,
-	addressdetail,
-	addresscreate,
-	addressedit,
 } from '@/api/parcel';
+import { addressdetail, addresscreate, addressupdate } from '@/api/address';
+import { countryOptions } from '@/utils/country';
 import type { ApiResponse } from '@/api/types';
 import { useCreateParcelStore } from '@/store/createparcel';
 
@@ -544,28 +543,6 @@ const { t } = useI18n();
 const router = useRouter();
 const createParcelStore = useCreateParcelStore();
 
-// Country list (a static subset; full list provided via dropdown)
-const countries = ref<Array<{ value: string; label: string }>>([
-	{ value: 'CN', label: '中国 (CN)' },
-	{ value: 'US', label: '美国 (US)' },
-	{ value: 'CA', label: '加拿大 (CA)' },
-	{ value: 'GB', label: '英国 (GB)' },
-	{ value: 'DE', label: '德国 (DE)' },
-	{ value: 'FR', label: '法国 (FR)' },
-	{ value: 'JP', label: '日本 (JP)' },
-	{ value: 'KR', label: '韩国 (KR)' },
-	{ value: 'AU', label: '澳大利亚 (AU)' },
-	{ value: 'SG', label: '新加坡 (SG)' },
-	{ value: 'HK', label: '中国香港 (HK)' },
-	{ value: 'TW', label: '中国台湾 (TW)' },
-	{ value: 'MY', label: '马来西亚 (MY)' },
-	{ value: 'TH', label: '泰国 (TH)' },
-	{ value: 'IT', label: '意大利 (IT)' },
-	{ value: 'ES', label: '西班牙 (ES)' },
-	{ value: 'NL', label: '荷兰 (NL)' },
-	{ value: 'MX', label: '墨西哥 (MX)' },
-	{ value: 'BR', label: '巴西 (BR)' },
-]);
 
 const weightOptions = [
 	{ label: 'KG', value: 2 },
@@ -959,12 +936,17 @@ const saveShipper = () => {
 				IsDefault: shipperEditForm.isDefault,
 			};
 			const res: ApiResponse<any> = shipperEditId.value
-				? await addressedit({ ID: shipperEditId.value, ...payload })
+				? await addressupdate({ ID: shipperEditId.value, ...payload })
 				: await addresscreate(payload);
 			if (res?.isSuccess) {
 				ElMessage.success(shipperEditId.value ? t('pages.UpdateSuccess') : t('pages.CreateSuccess'));
 				shipperEditVisible.value = false;
+				const editedId = shipperEditId.value;
 				await fetchShippers();
+				if (editedId) {
+					const updated = shipperList.value.find((it) => String(it.id) === editedId);
+					if (updated) shipper.value = updated;
+				}
 			} else {
 				ElMessage.error(res?.message || '操作失败');
 			}
@@ -1067,20 +1049,8 @@ const fetchRateForService = async (svc: any) => {
 	}
 };
 
-const fetchRates = async () => {
-	// Validate consignee + shipper
-	if (!shipper.value?.contact?.name) {
-		ElMessage.error(t('pages.selectShipperFirst'));
-		return;
-	}
-	const validCnee = await cneeFormRef.value?.validate().catch(() => false);
-	if (!validCnee) {
-		ElMessage.error(t('pages.completeConsigneeInfo'));
-		return;
-	}
-	// Validate packages and line items before fetching rates
-	const parcelsOk = await validateAllParcels();
-	if (!parcelsOk) return;
+const fetchRates = async (skipValidate = false) => {
+	if (!skipValidate && !(await validateBeforeQuote())) return;
 	rateDialogVisible.value = true;
 	rateLoading.value = true;
 	ratePreview.value = [];
@@ -1212,46 +1182,36 @@ const validateConsignee = async () => {
 const validateAllParcels = async (): Promise<boolean> => {
 	// 等下一帧确保所有 el-form 实例已挂载
 	await nextTick();
-	// validate packages
+	// 与 shippingspa 一致：不提前返回，逐个触发校验让所有必填项都亮出提示
+	const results: boolean[] = [];
 	for (let i = 0; i < parcels.value.length; i++) {
 		const form = pkgForms.value[i];
-		if (!form) {
-			ElMessage.error(`包裹 ${i + 1} 表单未就绪`);
-			return false;
-		}
-		const ok = await form.validate().catch(() => false);
-		if (!ok) {
-			ElMessage.error(`包裹 ${i + 1} 信息不完整`);
-			return false;
-		}
+		results.push(form ? await form.validate().catch(() => false) : false);
 		for (let j = 0; j < parcels.value[i].LineInfos.length; j++) {
 			const itemForm = itemForms.value[`${i}_${j}`];
-			if (!itemForm) {
-				ElMessage.error(`包裹 ${i + 1} 品项 ${j + 1} 表单未就绪`);
-				return false;
-			}
-			const okItem = await itemForm.validate().catch(() => false);
-			if (!okItem) {
-				ElMessage.error(`包裹 ${i + 1} 品项 ${j + 1} 信息不完整`);
-				return false;
-			}
+			results.push(itemForm ? await itemForm.validate().catch(() => false) : false);
 		}
+	}
+	return results.every(Boolean);
+};
+
+// 报价/下单前的整体校验：收件人 + 所有包裹 + 所有品项同时校验
+const validateBeforeQuote = async (): Promise<boolean> => {
+	if (!shipper.value?.contact?.name) {
+		ElMessage.error(t('pages.selectShipperFirst'));
+		return false;
+	}
+	const cneeOk = await (cneeFormRef.value?.validate().catch(() => false) ?? false);
+	const parcelsOk = await validateAllParcels();
+	if (!cneeOk || !parcelsOk) {
+		ElMessage.error(t('pages.Thedataisincorrect'));
+		return false;
 	}
 	return true;
 };
 
 const onSubmit = async () => {
-	if (!shipper.value?.contact?.name) {
-		ElMessage.error(t('pages.selectShipperFirst'));
-		return;
-	}
-	const validCnee = await cneeFormRef.value?.validate().catch(() => false);
-	if (!validCnee) {
-		ElMessage.error(t('pages.completeConsigneeInfo'));
-		return;
-	}
-	const parcelsOk = await validateAllParcels();
-	if (!parcelsOk) return;
+	if (!(await validateBeforeQuote())) return;
 
 	submitLoading.value = true;
 	try {
@@ -1259,7 +1219,7 @@ const onSubmit = async () => {
 		// Otherwise, fetch rates then submit the first available.
 		let svc = ratePreview.value.find((r) => r.show);
 		if (!svc) {
-			await fetchRates();
+			await fetchRates(true);
 			svc = ratePreview.value.find((r) => r.show);
 		}
 		if (!svc) {
@@ -1352,6 +1312,10 @@ watch(isSign, (val) => {
 }
 .address-split-right .inline-form .el-form-item {
 	margin-right: 0;
+}
+.address-split-right .inline-form :deep(.el-select),
+.address-split-right .inline-form :deep(.el-input) {
+	width: 100%;
 }
 
 .address-actions {
@@ -1510,6 +1474,19 @@ watch(isSign, (val) => {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
+}
+
+.shipper-edit-form {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0 16px;
+	.el-form-item {
+		margin-right: 0;
+	}
+	:deep(.el-select),
+	:deep(.el-input) {
+		width: 100%;
+	}
 }
 
 .parcel-block {

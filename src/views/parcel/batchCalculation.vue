@@ -43,7 +43,7 @@
 							</button>
 						</div>
 					</div>
-					<el-row class="mb-4">
+					<el-row>
 						<el-button
 							type="success"
 							class="import_btn"
@@ -381,7 +381,7 @@ onMounted(() => {
 		right: 0;
 		left: 0;
 		z-index: 1;
-		height: 100%;
+		height: 96%;
 		padding: 0;
 		color: #495057;
 		font-size: 15px;

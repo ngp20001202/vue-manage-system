@@ -12,9 +12,9 @@
 						<el-option :label="t('pages.config.user.Site')" :value="0" />
 						<el-option
 							v-for="s in siteOptions"
-							:key="s.id"
-							:label="s.alias"
-							:value="s.id"
+							:key="s.value"
+							:label="s.label"
+							:value="s.value"
 						/>
 					</el-select>
 				</el-form-item>
@@ -81,7 +81,7 @@
 				<el-table-column
 					:label="t('pages.Action')"
 					width="280"
-					align="center"
+					align="left"
 					fixed="right"
 				>
 					<template #default="scope">
@@ -159,101 +159,108 @@
 						filterable
 						style="width: 100%"
 					>
+						<el-option v-if="isEdit" label=" " :value="'0'" />
 						<el-option
 							v-for="s in siteOptions"
-							:key="s.id"
-							:label="s.alias"
-							:value="s.id"
+							:key="s.value"
+							:label="s.label"
+							:value="s.value"
 						/>
 					</el-select>
 				</el-form-item>
 
-				<h4 class="form-section">
-					{{ t('pages.config.user.LoginInformation') }}
-				</h4>
-				<hr class="section-divider" />
-				<el-form-item :label="t('pages.Username')" prop="loginName">
-					<el-input
-						v-model="form.loginName"
-						:placeholder="t('pages.Username')"
-					/>
-				</el-form-item>
-				<el-form-item
-					:label="t('pages.config.user.Password')"
-					prop="password"
-				>
-					<el-input
-						v-model="form.password"
-						type="password"
-						show-password
-						:placeholder="t('pages.config.user.Password')"
-					/>
-				</el-form-item>
-				<el-form-item
-					v-if="form.password"
-					label=""
-				>
-					<div class="pwd-strength">
-						<div class="pwd-strength__segments">
-							<div
-								v-for="i in 5"
-								:key="i"
-								class="pwd-strength__segment"
-								:class="{ active: i <= pwdStrength.level }"
-								:style="{
-									backgroundColor:
-										i <= pwdStrength.level ? pwdStrength.color : '#e0e0e0',
-								}"
-							/>
+				<template v-if="!isEdit">
+					<h4 class="form-section">
+						{{ t('pages.config.user.LoginInformation') }}
+					</h4>
+					<hr class="section-divider" />
+					<el-form-item :label="t('pages.Username')" prop="loginName">
+						<el-input
+							v-model="form.loginName"
+							:placeholder="t('pages.Username')"
+						/>
+					</el-form-item>
+					<el-form-item
+						:label="t('pages.config.user.Password')"
+						prop="password"
+					>
+						<el-input
+							v-model="form.password"
+							type="password"
+							show-password
+							:placeholder="t('pages.config.user.Password')"
+						/>
+					</el-form-item>
+					<el-form-item
+						v-if="form.password"
+						label=""
+					>
+						<div class="pwd-strength">
+							<div class="pwd-strength__segments">
+								<div
+									v-for="i in 5"
+									:key="i"
+									class="pwd-strength__segment"
+									:class="{ active: i <= pwdStrength.level }"
+									:style="{
+										backgroundColor:
+											i <= pwdStrength.level ? pwdStrength.color : '#e0e0e0',
+									}"
+								/>
+							</div>
+							<span
+								class="pwd-strength__label"
+								:style="{ color: pwdStrength.color }"
+							>
+								{{ pwdStrength.label }}
+							</span>
 						</div>
-						<span
-							class="pwd-strength__label"
-							:style="{ color: pwdStrength.color }"
-						>
-							{{ pwdStrength.label }}
-						</span>
-					</div>
-				</el-form-item>
-				<el-form-item
-					:label="t('pages.config.user.VerifyPassword')"
-					prop="cfmpassword"
-				>
-					<el-input
-						v-model="form.cfmpassword"
-						type="password"
-						show-password
-						:placeholder="t('pages.config.user.VerifyPasswordplace')"
-					/>
-				</el-form-item>
+					</el-form-item>
+					<el-form-item
+						:label="t('pages.config.user.VerifyPassword')"
+						prop="cfmpassword"
+					>
+						<el-input
+							v-model="form.cfmpassword"
+							type="password"
+							show-password
+							:placeholder="t('pages.config.user.VerifyPasswordplace')"
+						/>
+					</el-form-item>
 
-				<h4 class="form-section">
-					{{ t('pages.config.user.UserInformation') }}
-				</h4>
-				<hr class="section-divider" />
+					<h4 class="form-section">
+						{{ t('pages.config.user.UserInformation') }}
+					</h4>
+					<hr class="section-divider" />
+				</template>
+
 				<el-form-item :label="t('pages.Alias')" prop="userAlias">
 					<el-input
 						v-model="form.userAlias"
 						:placeholder="t('pages.config.user.Aliasplace')"
 					/>
 				</el-form-item>
-				<el-form-item :label="t('pages.Email')" prop="email">
-					<el-input
-						v-model="form.email"
-						:placeholder="t('pages.emailplace')"
-						maxlength="50"
-					/>
-				</el-form-item>
-				<el-form-item :label="t('pages.Role')" prop="roleIds">
-					<el-checkbox-group v-model="form.roleIds">
-						<el-checkbox
-							v-for="r in roleOptions"
-							:key="r.value"
-							:label="r.value"
-						>
-							{{ r.label }}
-						</el-checkbox>
-					</el-checkbox-group>
-				</el-form-item>
+
+				<template v-if="!isEdit">
+					<el-form-item :label="t('pages.Email')" prop="email">
+						<el-input
+							v-model="form.email"
+							:placeholder="t('pages.emailplace')"
+							maxlength="50"
+						/>
+					</el-form-item>
+					<el-form-item :label="t('pages.Role')" prop="roleIds">
+						<el-checkbox-group v-model="form.roleIds">
+							<el-checkbox
+								v-for="r in roleOptions"
+								:key="r.value"
+								:value="r.value"
+							>
+								{{ r.label }}
+							</el-checkbox>
+						</el-checkbox-group>
+					</el-form-item>
+				</template>
 			</el-form>
 			<template #footer>
 				<el-button @click="closeDialog">{{ t('pages.Cancel') }}</el-button>
@@ -334,19 +341,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { Search, Refresh, Plus, Edit, Key, Lock, Unlock } from '@element-plus/icons-vue';
 import {
 	userlist,
+	userdetail,
 	usercreate,
 	userupdate,
 	userdisable,
 	userresetpwd,
 	usersitelist,
-	userroleslist,
+	userRole,
 } from '@/api/userlist';
 import type { ApiResponse } from '@/api/types';
 import { passwordLevel, passwordStrengthValidator } from '@/utils/password-strength';
@@ -368,9 +376,9 @@ interface UserRow extends Record<string, any> {
 }
 
 const alias = ref('');
-const siteId = ref(0);
-const siteOptions = ref<Array<{ id: string | number; alias: string }>>([]);
-const roleOptions = ref<Array<{ value: string; label: string }>>([]);
+const siteId = ref<string | number>(0);
+const siteOptions = ref<Array<{ value: string | number; label: string }>>([]);
+const roleOptions = ref<Array<{ value: string | number; label: string }>>([]);
 const routeData = ref<UserRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
@@ -384,13 +392,13 @@ const formRef = ref<FormInstance>();
 
 const defaultForm = () => ({
 	id: '' as string | number,
-	siteId: undefined as number | undefined,
+	siteId: undefined as string | number | undefined,
 	loginName: '',
 	password: '',
 	cfmpassword: '',
 	userAlias: '',
 	email: '',
-	roleIds: [] as string[],
+	roleIds: [] as Array<string | number>,
 });
 
 const form = reactive(defaultForm());
@@ -403,50 +411,67 @@ watch(
 	},
 );
 
-const rules = reactive<FormRules>({
-	siteId: [{ required: true, message: t('pages.required'), trigger: 'change' }],
-	loginName: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	password: [
-		{ required: true, message: t('pages.required'), trigger: 'blur' },
-		{
-			validator: (_r, value, cb) => {
-				if (!value) {
-					cb(new Error(t('pages.required')));
-					return;
-				}
-				const result = passwordStrengthValidator(value, 3);
-				if (result === true) cb();
-				else cb(new Error(result));
+const rules = computed<FormRules>(() => {
+	// 编辑态只允许改操作点和别名，其余字段不参与校验
+	if (isEdit.value) {
+		return {
+			siteId: [
+				{
+					validator: (_r: any, value: any, cb: any) => {
+						if (!value || value === '0') cb(new Error(t('pages.required')));
+						else cb();
+					},
+					trigger: 'change',
+				},
+			],
+			userAlias: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
+		};
+	}
+	return {
+		siteId: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+		loginName: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
+		password: [
+			{ required: true, message: t('pages.required'), trigger: 'blur' },
+			{
+				validator: (_r, value, cb) => {
+					if (!value) {
+						cb(new Error(t('pages.required')));
+						return;
+					}
+					const result = passwordStrengthValidator(value, 3);
+					if (result === true) cb();
+					else cb(new Error(result));
+				},
+				trigger: 'blur',
 			},
-			trigger: 'blur',
-		},
-	],
-	cfmpassword: [
-		{ required: true, message: t('pages.required'), trigger: 'blur' },
-		{
-			validator: (_r, value, cb) => {
-				if (value !== form.password) {
-					cb(new Error(t('pages.passwordMismatch') || '两次密码不一致'));
-				} else {
-					cb();
-				}
+		],
+		cfmpassword: [
+			{ required: true, message: t('pages.required'), trigger: 'blur' },
+			{
+				validator: (_r, value, cb) => {
+					if (value !== form.password) {
+						cb(new Error(t('pages.passwordMismatch') || '两次密码不一致'));
+					} else {
+						cb();
+					}
+				},
+				trigger: 'blur',
 			},
-			trigger: 'blur',
-		},
-	],
-	userAlias: [{ required: false }],
-	email: [
-		{ required: true, message: t('pages.required'), trigger: 'blur' },
-		{
-			validator: (_r, value, cb) => {
-				const mailReg = /^([a-zA-Z0-9_.\-])+\@(([a-zA-Z0-9_.\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-				if (value && mailReg.test(value)) cb();
-				else cb(new Error(t('pages.invalidEmail') || '邮箱格式不正确'));
+		],
+		userAlias: [{ required: false }],
+		email: [
+			{ required: true, message: t('pages.required'), trigger: 'blur' },
+			{
+				validator: (_r, value, cb) => {
+					const mailReg = /^([a-zA-Z0-9_.\-])+\@(([a-zA-Z0-9_.\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+					if (value && mailReg.test(value)) cb();
+					else cb(new Error(t('pages.invalidEmail') || '邮箱格式不正确'));
+				},
+				trigger: 'blur',
 			},
-			trigger: 'blur',
-		},
-	],
-	roleIds: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+		],
+		roleIds: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+	};
 });
 
 const onSearch = () => {
@@ -461,22 +486,24 @@ const onReset = () => {
 	getdata();
 };
 
+// 接口返回 { value, text }
 const loadSites = async () => {
 	const res: ApiResponse<any[]> = await usersitelist();
 	if (res?.isSuccess && Array.isArray(res.result)) {
 		siteOptions.value = res.result.map((s: any) => ({
-			id: s.id ?? s.siteId,
-			alias: s.alias ?? s.name ?? s.text ?? String(s.id ?? ''),
+			value: s.value,
+			label: s.text,
 		}));
 	}
 };
 
+// 接口返回 { id, name }，勾选项的值为角色 id
 const loadRoles = async () => {
-	const res: ApiResponse<any[]> = await userroleslist();
+	const res: ApiResponse<any[]> = await userRole();
 	if (res?.isSuccess && Array.isArray(res.result)) {
 		roleOptions.value = res.result.map((r: any) => ({
-			value: String(r.value ?? r.id ?? r.name ?? ''),
-			label: r.label ?? r.text ?? r.name ?? String(r.id ?? ''),
+			value: r.id,
+			label: r.name,
 		}));
 	}
 };
@@ -499,22 +526,21 @@ const getdata = async () => {
 const onCreate = () => {
 	Object.assign(form, defaultForm());
 	if (siteOptions.value.length) {
-		form.siteId = siteOptions.value[0].id as number;
+		form.siteId = siteOptions.value[0].value;
 	}
 	isEdit.value = false;
 	dialogVisible.value = true;
 };
 
-const onEdit = (row: UserRow) => {
-	Object.assign(form, defaultForm(), {
-		id: row.id,
-		loginName: row.loginName || '',
-		userAlias: row.userAlias || '',
-		email: row.email || '',
-		roleIds: row.roleIds || (row.role ? [String(row.role)] : []),
-	});
+const onEdit = async (row: UserRow) => {
+	Object.assign(form, defaultForm(), { id: row.id });
 	isEdit.value = true;
 	dialogVisible.value = true;
+	const res: ApiResponse<any> = await userdetail(row.id);
+	if (res?.isSuccess && res.result) {
+		form.siteId = String(res.result.siteID);
+		form.userAlias = res.result.userAlias || '';
+	}
 };
 
 const closeDialog = () => {
@@ -528,21 +554,20 @@ const onSubmit = async () => {
 	const valid = await formRef.value.validate().catch(() => false);
 	if (!valid) return;
 
-	const body: Record<string, any> = {
-		loginName: form.loginName,
-		userAlias: form.userAlias || form.loginName,
-		email: form.email,
-		SiteID: form.siteId || 0,
-		RoleIds: form.roleIds,
-	};
-	if (!isEdit.value) {
-		body.password = { value: form.password };
-	}
-
 	submitting.value = true;
 	const res: ApiResponse<any> = isEdit.value
-		? await userupdate({ id: form.id, ...body } as any)
-		: await usercreate(body);
+		? await userupdate(form.id, {
+				siteID: form.siteId,
+				userAlias: form.userAlias,
+			})
+		: await usercreate({
+				email: form.email,
+				loginName: form.loginName,
+				userAlias: form.userAlias || form.loginName,
+				siteID: form.siteId || 0,
+				password: { value: form.password },
+				RoleIds: form.roleIds || [],
+			});
 	submitting.value = false;
 
 	if (res?.isSuccess) {
@@ -701,7 +726,7 @@ onMounted(() => {
 .action-cell {
 	display: flex;
 	flex-wrap: nowrap;
-	justify-content: center;
+	justify-content: left;
 	align-items: center;
 	gap: 4px;
 	padding: 0;
