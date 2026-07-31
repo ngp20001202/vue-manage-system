@@ -11,16 +11,18 @@
 11.账户余额列表  金额单位为Nil 只显示金额 [已修复]
 12.交易记录的详情弹窗内容与shippingspa不一致 [已修复]
 13.账本流水列表页  表格列名与shippingspa不一致 表格的扣费类别没有显示出来  查询条件扣费类别数据跟shippingspa不一致 [已修复]
-14.账本流水的导出 需要人工调试 [已对齐shippingspa参数，待人工验证]
-15.表格的上下都要有分页
-16.周期账单应该没有详情弹窗 
-17.清单列表的操作没有放出来 创建Scan Form 的弹窗效果与shippingspa不一致 确认出库的效果与shippingspa不一致 上传弹窗的效果与shippingspa不一致
+14.账本流水的导出 需要人工调试 [已修复]
+15.表格的上下都要有分页 [已修复]
+16.周期账单应该没有详情弹窗  [已修复]
+17.清单列表的操作没有放出来 创建Scan Form 的弹窗效果与shippingspa不一致 确认出库的效果与shippingspa不一致 上传弹窗的效果与shippingspa不一致 [已修复]
 18.推送入网页面效果与shippingspa不一致
 19.批量试算页面效果与shippingspa不一致
 20.批量导入页面效果与shippingspa不一致
 21.单笔创建获取报价是一个弹窗 
 22.单笔创建 收件人验证的提示语是 pages.SaveSuccess  中文的时候应该是保存成功 而不是pages.SaveSuccess [已修复]
-23.包裹查询  表格的操作 语言为英文的时候  显示的pages.downloadlabel pages.downloadpackinglist pages.cancelparcel  而不是对应的英文单词 [已修复]
+23.包裹查询  表格的操作 语言为英文的时候  显示的pages.downloadlabel pages.downloadpackinglist pages.cancelparcel  而不是对应的英文单词 [已修复]  
 
 
-24.收件地址列表  新建地址 {"type":"Shipping","isDefault":false,"contact":{"name":"测试","phone":"12451524512","email":"","company":"","street1":"上海201","street2":"","street3":"","district":"","city":"上海","province":"上海","postalCode":"21500","countryCode":"CN"}} 这是当前项目的参数  {"Type":2,"Contact":{"Name":"测试","Phone":"12451524512","Email":"","Company":"","Street1":"上海201","Street2":"","Street3":"","District":"","City":"上海","Province":"上海","PostalCode":"21500","CountryCode":"CN"},"IsDefault":false} 这是shippingspa的参数 这两个一样吗？ 编辑地址也不一样
+24.收件地址列表  新建地址 {"type":"Shipping","isDefault":false,"contact":{"name":"测试","phone":"12451524512","email":"","company":"","street1":"上海201","street2":"","street3":"","district":"","city":"上海","province":"上海","postalCode":"21500","countryCode":"CN"}} 这是当前项目的参数  {"Type":2,"Contact":{"Name":"测试","Phone":"12451524512","Email":"","Company":"","Street1":"上海201","Street2":"","Street3":"","District":"","City":"上海","Province":"上海","PostalCode":"21500","CountryCode":"CN"},"IsDefault":false} 这是shippingspa的参数 这两个一样吗？ 编辑地址也不一样 [已修复]
+
+25.包裹查询  表格的操作 语言为英文的时候 超出应该换行 现在不换行 效果很差 [已修复]
