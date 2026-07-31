@@ -1,144 +1,137 @@
 <template>
-    <div class="tracking-page">
-        <el-card shadow="never" class="filter-card">
+    <div class="content">
+        <div class="flex w">
             <el-input
                 v-model="textarea"
+                class="trackingsize"
                 :rows="4"
-                class="tracking-input"
                 type="textarea"
-                :placeholder="t('pages.trackplace')"
+                :placeholder="t('pages.trackingPage.trackplace')"
             />
-            <div class="tracking-actions">
-                <el-button type="primary" :icon="Search" :loading="searching" @click="onSearch">
-                    {{ t('pages.Search') }}
-                </el-button>
-                <el-button :icon="Refresh" @click="onReset">
-                    {{ t('pages.Reset') }}
-                </el-button>
-            </div>
-        </el-card>
-
-        <el-card shadow="never" class="result-card" v-loading="searching">
-            <el-empty
-                v-if="!list.length && !searching"
-                :description="t('pages.NoData')"
-            />
-            <div v-else class="card-list">
-                <el-card
-                    v-for="item in list"
-                    :key="item.trackingNbr || item.id"
-                    class="tracking-item"
-                    shadow="hover"
-                >
-                    <div class="tracking-row" @click="toggleExpand(item)">
-                        <div class="left">
-                            <el-icon
-                                class="status-icon"
-                                :class="statusClass(item)"
-                                :size="22"
-                            >
-                                <component :is="statusIcon(item)" />
-                            </el-icon>
-                            <div class="meta">
-                                <div class="tracking-no">{{ item.trackingNbr || item.id }}</div>
-                                <div
-                                    class="status-text"
-                                    :class="statusClass(item)"
-                                >
-                                    {{ statusText(item) }}
-                                </div>
-                                <div
-                                    v-if="isDelivered(item)"
-                                    class="delivery-time"
-                                >
-                                    {{ t('pages.trackingPage.deliveryTime') }}:
-                                    {{ getDeliveryTime(item) }}
-                                </div>
-                            </div>
+            <el-button
+                class="sub"
+                :disabled="disabled || loading"
+                :loading="loading"
+                @click="submit"
+            >
+                <el-icon v-if="!loading" :size="18"><Search /></el-icon>
+            </el-button>
+        </div>
+        <hr class="line" />
+        <div class="data">
+            <div
+                v-for="(item, index) in datalist"
+                :key="itemKey(item)"
+                class="tracking-card"
+                :class="{ 'tracking-card-paddingbottom0': item.checked }"
+                @click="() => toggleExpand(index, itemKey(item))"
+            >
+                <div class="tracking-left">
+                    <div class="status-icon">
+                        <el-icon v-if="item.hasError" class="status-error" :size="20">
+                            <Warning />
+                        </el-icon>
+                        <el-icon v-else-if="!item.stage" class="status-pending" :size="20">
+                            <Timer />
+                        </el-icon>
+                        <el-icon v-else-if="isDelivered(item)" class="status-success" :size="20">
+                            <CircleCheck />
+                        </el-icon>
+                        <el-icon v-else class="status-transit" :size="20">
+                            <Van />
+                        </el-icon>
+                    </div>
+                    <div class="tracking-info">
+                        <div class="tracking-number">{{ item.trackingNbr }}</div>
+                        <div class="tracking-status">
+                            <span v-if="item.hasError" class="status-text error">
+                                {{ t('pages.trackingPage.queryRestricted') }}
+                            </span>
+                            <span v-else-if="!item.stage" class="status-text pending">
+                                {{ t('pages.trackingPage.notFound') }}
+                            </span>
+                            <span v-else-if="isDelivered(item)" class="status-text success">
+                                {{ t('pages.trackingPage.delivered') }}
+                                ({{ getDeliveryDays(item) }}{{ t('pages.trackingPage.days') }})
+                            </span>
+                            <span v-else class="status-text transit">{{ item.stage }}</span>
                         </div>
-                        <div class="right">
-                            <template v-if="item.hasError">
-                                <div class="notice">
-                                    <el-icon class="notice-icon"><Warning /></el-icon>
-                                    <span class="notice-text">
-                                        {{ t('pages.trackingPage.queryRestricted') }}
-                                    </span>
-                                </div>
-                                <el-button
-                                    v-if="item.status === 4"
-                                    type="primary"
-                                    size="small"
-                                    link
-                                >
-                                    {{ t('pages.trackingPage.upgrade') }}
-                                </el-button>
-                            </template>
-                            <template v-else>
-                                <div class="latest">
-                                    <div class="latest-time">
-                                        {{ getLatestTime(item) || '' }}
-                                    </div>
-                                    <div class="latest-content">
-                                        {{ getLatestStatus(item) || '' }}
-                                    </div>
-                                </div>
-                            </template>
-                            <el-icon class="expand-icon" :class="{ rotated: isExpanded(item) }">
-                                <ArrowDown />
-                            </el-icon>
+                        <div v-if="isDelivered(item)" class="delivery-time">
+                            {{ t('pages.trackingPage.deliveryTime') }}:
+                            {{ getDeliveryTime(item) }}
                         </div>
                     </div>
-                    <transition name="el-fade-in">
-                        <div v-show="isExpanded(item)" class="timeline-wrap">
-                            <div
-                                v-if="!detailLoadingMap[itemKey(item)] && !getDetail(item).eventItems?.length"
-                                class="no-detail"
-                            >
-                                {{ t('pages.trackingPage.noDetails') }}
-                            </div>
-                            <el-timeline v-else>
-                                <el-timeline-item
-                                    v-for="(ev, idx) in getDetail(item).eventItems"
-                                    :key="ev.id || ev.utcTime"
-                                    :color="idx === 0 ? '#0bbd87' : '#e4e7ed'"
-                                >
-                                    <div class="timeline-content">
-                                        <div class="timeline-time">
-                                            {{ formatUtc(ev.utcTime) }}
-                                        </div>
-                                        <div
-                                            v-if="ev.operator"
-                                            class="timeline-operator"
-                                        >
-                                            <el-icon><User /></el-icon>
-                                            <span>{{ ev.operator }}</span>
-                                        </div>
-                                        <div class="timeline-place">
-                                            [{{ ev.utcPlace }}] {{ ev.content }}
-                                        </div>
-                                    </div>
-                                </el-timeline-item>
-                            </el-timeline>
+                </div>
+
+                <div class="tracking-right">
+                    <div v-if="item.hasError" class="error-notice">
+                        <el-icon><Warning /></el-icon>
+                        {{ t('pages.trackingPage.uspsLimit') }}
+                        <el-button type="warning" size="small" class="upgrade-btn">
+                            {{ t('pages.trackingPage.upgrade') }}
+                        </el-button>
+                    </div>
+                    <template v-else>
+                        <div class="latest-info">
+                            <div class="latest-time">{{ getLatestTime(item) }}</div>
+                            <div class="latest-status">{{ getLatestStatus(item) }}</div>
                         </div>
-                    </transition>
-                </el-card>
+                    </template>
+                    <el-icon
+                        class="expand-icon"
+                        :class="{ 'is-expand': item.checked }"
+                    >
+                        <ArrowRight />
+                    </el-icon>
+                </div>
+
+                <div v-if="item.checked" class="timeline-detail" @click.stop>
+                    <el-timeline v-if="item.eventItems && item.eventItems.length > 0">
+                        <el-timeline-item
+                            v-for="(val, idx) in item.eventItems"
+                            :key="val.id || val.utcTime"
+                            :color="idx === 0 ? '#0bbd87' : '#e4e7ed'"
+                        >
+                            <div class="timeline-content">
+                                <div class="timeline-time">
+                                    {{
+                                        val.utcTime
+                                            ? formatUtc(val.utcTime)
+                                            : ''
+                                    }}
+                                </div>
+                                <div v-if="val.operator" class="timeline-operator">
+                                    <el-icon><User /></el-icon>
+                                    {{ val.operator }}
+                                </div>
+                                <div class="timeline-place">
+                                    [{{ val.utcPlace }}] {{ val.content }}
+                                </div>
+                            </div>
+                        </el-timeline-item>
+                    </el-timeline>
+                    <div v-else class="empty-detail">
+                        <p>{{ t('pages.trackingPage.noDetails') }}</p>
+                    </div>
+                </div>
             </div>
-        </el-card>
+
+            <el-empty v-if="!loading && datalist.length === 0" :description="t('pages.NoData')" />
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import {
     Search,
-    Refresh,
     Warning,
+    Timer,
     CircleCheck,
     Van,
-    Timer,
-    ArrowDown,
+    ArrowRight,
     User,
 } from '@element-plus/icons-vue';
 import moment from 'moment';
@@ -154,18 +147,15 @@ interface TrackingEvent {
     content?: string;
     operator?: string;
 }
-
 interface TrackingItem {
     id?: string | number;
     trackingNbr?: string;
     stage?: string | number;
-    stageText?: string;
-    status?: number;
     hasError?: boolean;
-    deliveryTime?: string;
-    postedStamp?: { utcTime?: string };
-    utcPlace?: string;
     eventItems?: TrackingEvent[];
+    checked?: boolean;
+    getdata?: boolean;
+    loading?: boolean;
     [k: string]: any;
 }
 
@@ -173,78 +163,19 @@ const MAX_INPUT = 200;
 const CONCURRENCY = 3;
 
 const textarea = ref('');
-const list = ref<TrackingItem[]>([]);
-const searching = ref(false);
-const expandedId = ref<string | number | null>(null);
-const detailMap = ref<Record<string, { eventItems: TrackingEvent[] }>>({});
-const detailLoadingMap = ref<Record<string, boolean>>({});
+const datalist = ref<TrackingItem[]>([]);
+const loading = ref(false);
 
-const itemKey = (it: TrackingItem) =>
-    String(it.trackingNbr ?? it.id ?? '');
+const disabled = computed(() => !textarea.value);
 
-const splitInput = (raw: string): string[] => {
-    if (!raw) return [];
-    // 支持 换行、英文逗号、中文逗号
-    return raw
-        .split(/[\n,，]+/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-};
+const itemKey = (item: TrackingItem) =>
+    String(item.trackingNbr ?? item.id ?? '');
 
-const getInputNumbers = computed(() => splitInput(textarea.value));
-
-const onSearch = async () => {
-    const numbers = getInputNumbers.value;
-    if (!numbers.length) {
-        ElMessage.warning(t('pages.trackingPage.trackplace'));
-        return;
-    }
-    let toQuery = numbers;
-    let showLimitNotice = false;
-    if (numbers.length > MAX_INPUT) {
-        toQuery = numbers.slice(0, MAX_INPUT);
-        showLimitNotice = true;
-    }
-    if (showLimitNotice) {
-        ElMessage.warning(t('pages.trackingPage.limitInfo'));
-    }
-    searching.value = true;
-    list.value = [];
-    detailMap.value = {};
-    detailLoadingMap.value = {};
-    expandedId.value = null;
-    try {
-        const res: ApiResponse<TrackingItem[]> = await trackingSearch({
-            TrackingNbrs: toQuery.join('\n'),
-        });
-        if (res?.isSuccess) {
-            list.value = (res.result ?? []).map((item) => ({
-                ...item,
-                checked: false,
-                getdata: true,
-                hasError: false,
-                eventItems: item.eventItems || [],
-            })) as TrackingItem[];
-            await loadAllDetails();
-        } else {
-            list.value = [];
-            ElMessage.error(res?.message || t('pages.Failed'));
-        }
-    } catch {
-        ElMessage.error(t('pages.Failed'));
-    } finally {
-        searching.value = false;
-    }
-};
-
-const onReset = () => {
-    textarea.value = '';
-    list.value = [];
-    expandedId.value = null;
-};
+const formatUtc = (utc: string) =>
+    moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 
 const isDelivered = (item: TrackingItem): boolean => {
-    const events = getDetail(item).eventItems;
+    const events = item.eventItems;
     if (!events || !events.length) return false;
     const latest = events[0];
     const c = String(latest?.content || '').toLowerCase();
@@ -255,20 +186,40 @@ const isDelivered = (item: TrackingItem): boolean => {
     );
 };
 
-const getDeliveryEvent = (item: TrackingItem): TrackingEvent | undefined => {
-    const events = getDetail(item).eventItems;
-    if (!events || !events.length) return undefined;
-    return events.find(
+const getDeliveryDays = (item: TrackingItem): number => {
+    const events = item.eventItems;
+    if (!events || !events.length) return 0;
+    const delivered = events.find(
         (e) =>
             e.content &&
             (e.content.toLowerCase().includes('delivered') ||
                 e.content.includes('签收') ||
                 e.content.includes('已送达')),
     );
+    if (delivered?.utcTime) {
+        const date = new Date(delivered.utcTime);
+        const now = new Date();
+        const diff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        return diff > 0 ? diff : 1;
+    }
+    return 0;
+};
+
+const getDeliveryTime = (item: TrackingItem): string => {
+    const events = item.eventItems;
+    if (!events || !events.length) return '';
+    const delivered = events.find(
+        (e) =>
+            e.content &&
+            (e.content.toLowerCase().includes('delivered') ||
+                e.content.includes('签收') ||
+                e.content.includes('已送达')),
+    );
+    return delivered?.utcTime ? delivered.utcTime.split(' ')[0] : '';
 };
 
 const getLatestStatus = (item: TrackingItem): string => {
-    const ev = getDetail(item).eventItems?.[0];
+    const ev = item.eventItems?.[0];
     if (ev) {
         return `[${ev.utcPlace || ''}] ${ev.content || ''}`;
     }
@@ -276,125 +227,103 @@ const getLatestStatus = (item: TrackingItem): string => {
 };
 
 const getLatestTime = (item: TrackingItem): string => {
-    const ev = getDetail(item).eventItems?.[0];
-    return formatUtc(ev?.utcTime);
+    const ev = item.eventItems?.[0];
+    return ev?.utcTime ? formatUtc(ev.utcTime) : '';
 };
 
-const getDeliveryTime = (item: TrackingItem): string => {
-    const delivered = getDeliveryEvent(item);
-    if (delivered?.utcTime) {
-        return delivered.utcTime.split(' ')[0];
-    }
-    return '';
-};
+const splitInput = (raw: string): string[] =>
+    raw
+        .split(/[\n\r,，]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
 
-const getDeliveryDays = (item: TrackingItem): string | number => {
-    const delivered = getDeliveryEvent(item);
-    if (!delivered?.utcTime) return '';
-    const date = new Date(delivered.utcTime);
-    const now = new Date();
-    const diff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 1;
-};
-
-const formatUtc = (utc?: string) => {
-    if (!utc) return '';
-    return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
-};
-
-const statusIcon = (item: TrackingItem) => {
-    if (item.hasError) return Warning;
-    if (!item.stage) return Timer;
-    if (isDelivered(item)) return CircleCheck;
-    return Van;
-};
-
-const statusClass = (item: TrackingItem) => {
-    if (item.hasError) return 'is-error';
-    if (isDelivered(item)) return 'is-success';
-    if (!item.stage) return 'is-pending';
-    return 'is-transit';
-};
-
-const statusText = (item: TrackingItem) => {
-    if (item.hasError) return t('pages.trackingPage.queryRestricted');
-    if (isDelivered(item)) {
-        const days = getDeliveryDays(item);
-        return `${t('pages.trackingPage.delivered')} (${days}${t('pages.trackingPage.days')})`;
-    }
-    if (!item.stage) return t('pages.trackingPage.noTrackingInfo');
-    return String(item.stage);
-};
-
-const isExpanded = (item: TrackingItem) =>
-    expandedId.value === itemKey(item);
-
-const toggleExpand = async (item: TrackingItem) => {
-    const key = itemKey(item);
-    if (expandedId.value === key) {
-        expandedId.value = null;
-        return;
-    }
-    expandedId.value = key;
-    // 仅当 id 非 0、stage 非空且未加载过详情时拉取一次（对齐 shippingspa）
-    if (
-        item.id !== 0 &&
-        item.stage !== '' &&
-        !detailLoadingMap.value[key] &&
-        !getDetail(item).eventItems?.length
-    ) {
-        await loadDetail(item);
-    }
-};
-
-const getDetail = (item: TrackingItem) => {
-    const key = itemKey(item);
-    return detailMap.value[key] || { eventItems: item.eventItems || [] };
-};
-
-const loadDetail = async (item: TrackingItem) => {
-    const key = itemKey(item);
-    const id = item.id;
-    if (id === 0 || id === '' || id === undefined || id === null || item.stage === '') return;
-    if (detailLoadingMap.value[key]) return;
-    detailLoadingMap.value[key] = true;
+const submit = async () => {
+    if (loading.value) return;
+    loading.value = true;
     try {
-        const res: ApiResponse<TrackingEvent[]> = await trackingDetail(id);
-        if (res?.isSuccess && res.result) {
-            const result = res.result as any;
-            detailMap.value[key] = {
-                eventItems: result?.eventItems ?? result ?? [],
-            };
+        const raw = splitInput(textarea.value);
+        if (raw.length > MAX_INPUT) {
+            ElMessage.info(t('pages.trackingPage.limitInfo'));
+        }
+        const trackingNbrs = raw.slice(0, MAX_INPUT).join('\n');
+
+        const res: ApiResponse<TrackingItem[]> = await trackingSearch({
+            TrackingNbrs: trackingNbrs,
+        });
+        if (res?.isSuccess) {
+            datalist.value = (res.result ?? []).map((item) => ({
+                ...item,
+                checked: false,
+                getdata: true,
+                hasError: false,
+                eventItems: item.eventItems || [],
+            }));
+            const toLoad = datalist.value.filter(
+                (item) => item.id !== 0 && item.stage !== '' && item.stage !== undefined && item.stage !== null,
+            );
+            for (let i = 0; i < toLoad.length; i += CONCURRENCY) {
+                const batch = toLoad.slice(i, i + CONCURRENCY);
+                await Promise.all(
+                    batch.map((item) => {
+                        const idx = datalist.value.findIndex(
+                            (d) => itemKey(d) === itemKey(item),
+                        );
+                        return getdetail(item.id as string | number, idx);
+                    }),
+                );
+            }
         } else {
-            detailMap.value[key] = { eventItems: [] };
+            datalist.value = [];
+            ElMessage.error(res?.message || t('pages.Failed'));
         }
     } catch {
-        detailMap.value[key] = { eventItems: [] };
+        ElMessage.error(t('pages.Failed'));
     } finally {
-        detailLoadingMap.value[key] = false;
+        loading.value = false;
     }
 };
 
-// 控制并发：每批最多 CONCURRENCY 个
-async function loadAllDetails() {
-    const items = list.value.filter((i) => i.id !== 0 && i.stage !== '');
-    const queue = [...items];
-    const workers: Promise<void>[] = [];
-    const runOne = async () => {
-        while (queue.length) {
-            const item = queue.shift()!;
-            await loadDetail(item);
-        }
-    };
-    for (let i = 0; i < Math.min(CONCURRENCY, queue.length); i++) {
-        workers.push(runOne());
+const toggleExpand = (index: number, _key: string) => {
+    const isExpanding = !datalist.value[index].checked;
+    datalist.value = datalist.value.map((it, i) => ({
+        ...it,
+        checked: i === index ? isExpanding : false,
+    }));
+    if (
+        isExpanding &&
+        datalist.value[index].id !== 0 &&
+        datalist.value[index].stage !== '' &&
+        datalist.value[index].stage !== undefined &&
+        datalist.value[index].stage !== null &&
+        datalist.value[index].getdata &&
+        !datalist.value[index].loading
+    ) {
+        setTimeout(() => {
+            if (!datalist.value[index].loading) {
+                getdetail(datalist.value[index].id as string | number, index);
+            }
+        }, 100);
     }
-    await Promise.all(workers);
-}
+};
 
-onMounted(() => {
-    textarea.value = '';
-});
+const getdetail = async (id: string | number | undefined, index: number) => {
+    if (id === undefined || id === null || id === 0) return;
+    if (datalist.value[index].loading) return;
+    datalist.value[index].loading = true;
+    try {
+        const res: ApiResponse<{ eventItems?: TrackingEvent[] }> = await trackingDetail(id);
+        if (res?.isSuccess && res.result) {
+            datalist.value[index].eventItems = res.result.eventItems ?? [];
+        } else {
+            datalist.value[index].eventItems = [];
+        }
+        datalist.value[index].getdata = false;
+    } catch {
+        datalist.value[index].eventItems = [];
+    } finally {
+        datalist.value[index].loading = false;
+    }
+};
 </script>
 
 <script lang="ts">
@@ -402,168 +331,269 @@ export default { name: 'tracking-index' };
 </script>
 
 <style lang="scss" scoped>
-.tracking-page {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+.el-button:focus {
+    border: none !important;
 }
-.filter-card,
-.result-card {
+
+.content {
+    padding: 12px;
     background: #fff;
 }
-.tracking-input {
-    width: 100%;
-    max-width: 800px;
+
+.line {
+    height: 0;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    border: 1px solid #e5e9f2;
 }
-.tracking-actions {
-    margin-top: 12px;
+
+.trackingsize {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.w {
+    width: 85%;
+    min-width: calc(365px * 85%);
+    max-width: 1800px;
+    padding: 15px 25px;
+
+    .sub {
+        width: 40px !important;
+        margin-left: -3px;
+        padding-left: 10px;
+        color: white;
+        background-color: #68c2d1;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+}
+
+.data {
+    padding: 0 15px 12px;
+
+    .tracking-card {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px 20px;
+        background: #ffffff;
+        border: 1px solid #ebeef5;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+            box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+        }
+    }
+
+    .tracking-card-paddingbottom0 {
+        padding-bottom: 10px;
+    }
+
+    .tracking-left {
+        display: flex;
+        flex: 0 0 auto;
+        align-items: center;
+    }
+
+    .status-icon {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+        font-size: 20px;
+        border-radius: 8px;
+    }
+
+    .status-pending {
+        color: #909399;
+    }
+
+    .status-error {
+        color: #f56c6c;
+    }
+
+    .status-success {
+        padding: 6px;
+        color: #ffffff;
+        font-weight: bold;
+        background: #67c23a;
+        border-radius: 50%;
+    }
+
+    .status-transit {
+        padding: 6px;
+        color: #409eff;
+        background: #ecf5ff;
+        border-radius: 50%;
+    }
+
+    .tracking-info {
+        .tracking-number {
+            margin-bottom: 4px;
+            color: #303133;
+            font-weight: 600;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .tracking-status {
+            .status-text {
+                font-size: 13px;
+
+                &.success {
+                    color: #67c23a;
+                }
+                &.pending {
+                    color: #909399;
+                }
+                &.transit {
+                    color: #409eff;
+                }
+                &.error {
+                    color: #f56c6c;
+                }
+            }
+        }
+
+        .delivery-time {
+            margin-top: 4px;
+            color: #909399;
+            font-size: 12px;
+        }
+    }
+
+    .tracking-right {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-left: auto;
+
+        .latest-info {
+            margin-right: 20px;
+            text-align: right;
+
+            .latest-time {
+                margin-bottom: 4px;
+                color: #303133;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+
+            .latest-status {
+                max-width: 500px;
+                overflow: hidden;
+                color: #606266;
+                font-size: 13px;
+                line-height: 1.4;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+
+        .error-notice {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            padding: 8px 12px;
+            color: #f56c6c;
+            font-size: 13px;
+            background: #fef0f0;
+            border-radius: 4px;
+
+            .el-icon {
+                margin-right: 6px;
+            }
+
+            .upgrade-btn {
+                margin-left: 12px;
+            }
+        }
+
+        .expand-icon {
+            flex-shrink: 0;
+            color: #c0c4cc;
+            font-size: 16px;
+            transition: transform 0.3s;
+
+            &.is-expand {
+                transform: rotate(90deg);
+            }
+        }
+    }
+
+    .timeline-detail {
+        width: 100%;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #ebeef5;
+
+        .timeline-content {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+
+            .timeline-place {
+                color: #606266;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .timeline-operator {
+                margin-right: 15px;
+                color: #606266;
+                font-size: 13px;
+
+                .el-icon {
+                    margin-right: 4px;
+                }
+            }
+
+            .timeline-time {
+                margin-right: 15px;
+                color: #909399;
+                font-size: 13px;
+            }
+        }
+
+        .empty-detail {
+            padding: 20px;
+            color: #909399;
+            text-align: center;
+        }
+
+        :deep(.el-timeline-item) {
+            padding-bottom: 10px !important;
+        }
+    }
+}
+
+.flex {
     display: flex;
-    gap: 8px;
-    align-items: center;
 }
-.card-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.tracking-item {
-    margin-bottom: 0;
-}
-.tracking-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-}
-.left {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    flex: 1;
-    min-width: 0;
-}
-.right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    max-width: 40%;
-}
-.status-icon {
-    margin-top: 2px;
-}
-.status-icon.is-error {
-    color: #f56c6c;
-}
-.status-icon.is-pending {
-    color: #e6a23c;
-}
-.status-icon.is-success {
-    color: #67c23a;
-}
-.status-icon.is-transit {
-    color: #409eff;
-}
-.meta {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-.tracking-no {
-    font-weight: 600;
-    font-size: 14px;
-    color: #303133;
-}
-.status-text {
-    font-size: 13px;
-}
-.status-text.is-error {
-    color: #f56c6c;
-}
-.status-text.is-pending {
-    color: #e6a23c;
-}
-.status-text.is-success {
-    color: #67c23a;
-}
-.status-text.is-transit {
-    color: #409eff;
-}
-.delivery-time {
-    font-size: 12px;
-    color: #909399;
-}
-.latest {
-    text-align: right;
-    font-size: 12px;
-    color: #606266;
-    max-width: 360px;
-}
-.latest-place {
-    color: #909399;
-    margin-bottom: 2px;
-}
-.latest-content {
-    color: #303133;
-    margin-bottom: 2px;
-    word-break: break-word;
-}
-.latest-time {
-    color: #909399;
-    font-size: 11px;
-}
-.notice {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #e6a23c;
-    font-size: 13px;
-}
-.notice-icon {
-    color: #e6a23c;
-}
-.notice-text {
-    color: #e6a23c;
-}
-.expand-icon {
-    transition: transform 0.2s;
-    color: #c0c4cc;
-}
-.expand-icon.rotated {
-    transform: rotate(180deg);
-}
-.timeline-wrap {
-    margin-top: 12px;
-    padding-left: 30px;
-    border-top: 1px dashed #ebeef5;
-    padding-top: 12px;
-}
-.timeline-time {
-    font-size: 13px;
-    color: #303133;
-    margin-bottom: 4px;
-}
-.timeline-operator {
-    color: #909399;
-    font-size: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 4px;
-}
-.timeline-place {
-    color: #f56c6c;
-    font-size: 12px;
-    word-break: break-word;
-}
-.no-detail {
-    color: #909399;
-    font-size: 13px;
-    text-align: center;
-    padding: 8px 0;
+
+@media (max-width: 768px) {
+    .data {
+        .tracking-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .tracking-right {
+            justify-content: space-between;
+            width: 100%;
+
+            .latest-info {
+                text-align: left;
+            }
+        }
+    }
 }
 </style>

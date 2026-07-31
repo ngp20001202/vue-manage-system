@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import VueSetupExtend from 'vite-plugin-vue-setup-extend';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
+import { DEV_TARGET } from '@/utils/devTarget';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 export default defineConfig(({ mode }) => ({
 	base: mode === 'production' ? './' : '/',
@@ -13,7 +14,7 @@ export default defineConfig(({ mode }) => ({
 		open: false,
 		proxy: {
 			'/api1': {
-				target: 'https://shipping.sandbox.golads.com',
+				target: DEV_TARGET,
 				changeOrigin: true,
 				secure: false,
 				rewrite: (path) => path.replace(/^\/api1/, ''),

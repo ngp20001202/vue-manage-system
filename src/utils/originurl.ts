@@ -1,4 +1,4 @@
-const DEV_TARGET = window.location.origin;
+import { DEV_TARGET } from './devTarget';
 
 export function getoriginurl(): string {
     return (
