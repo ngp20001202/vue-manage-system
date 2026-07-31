@@ -26,4 +26,10 @@
 24.收件地址列表  新建地址 {"type":"Shipping","isDefault":false,"contact":{"name":"测试","phone":"12451524512","email":"","company":"","street1":"上海201","street2":"","street3":"","district":"","city":"上海","province":"上海","postalCode":"21500","countryCode":"CN"}} 这是当前项目的参数  {"Type":2,"Contact":{"Name":"测试","Phone":"12451524512","Email":"","Company":"","Street1":"上海201","Street2":"","Street3":"","District":"","City":"上海","Province":"上海","PostalCode":"21500","CountryCode":"CN"},"IsDefault":false} 这是shippingspa的参数 这两个一样吗？ 编辑地址也不一样 [已修复]
 
 25.包裹查询  表格的操作 语言为英文的时候 超出应该换行 现在不换行 效果很差 [已修复]
-26.包裹查询  下载打包单的效果与shippingspa不一致
+26.包裹查询  下载打包单的效果与shippingspa不一致 [已修复]
+
+27.单笔创建  点击获取报价  包裹信息的必填项没有跟shippingspa一样全部验证
+28.单笔创建  点击获取报价 弹窗表格缺少图片列
+29.代码跳转的还有小写的菜单路径  导致一些跳转404
+30.shippingspa的单笔创建  只要没有确认订单  在我切换页面的时候会保留我上次选择的收发件人信息
+

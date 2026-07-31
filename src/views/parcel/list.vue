@@ -214,15 +214,16 @@
 							>
 								{{ t('pages.downloadlabel') }}
 							</el-button>
-							<el-button
+							<a
 								v-if="scope.row.canPrintLabel"
-								type="info"
-								size="small"
-								:icon="FolderAdd"
+								target="_blank"
+								class="action-link"
 								@click="() => downpacking(scope.row.id)"
 							>
-								{{ t('pages.downloadpackinglist') }}
-							</el-button>
+								<el-button type="success" size="small" plain>
+									{{ t('pages.downloadpackinglist') }}
+								</el-button>
+							</a>
 							<el-button
 								v-if="scope.row.canParcelCancel"
 								type="danger"
@@ -731,6 +732,13 @@ onMounted(() => {
 	align-items: center;
 	gap: 4px;
 	padding: 0;
+}
+.action-link {
+	color: inherit;
+	text-decoration: none;
+}
+.action-link:hover {
+	text-decoration: none;
 }
 .action-cell :deep(.el-button.is-small) {
 	padding: 3px 6px;
