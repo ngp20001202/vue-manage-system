@@ -60,7 +60,7 @@
 release:
   push:
     - docker:
-        image: node:16.16.0
+        image: node:20.19.0
         volumes:
           - /root/.npm
           - node_modules
@@ -71,18 +71,18 @@ release:
 master:
   push:
     - docker:
-        image: node:16.16.0
+        image: node:20.19.0
         volumes:
           - /root/.npm
           - node_modules
       <<: *build_script
       env:
         ARTIFACT_NAME: shipping-test
-        CI_COMMIT_BRANCH: master      
+        CI_COMMIT_BRANCH: master
 "**":
   web_trigger_build_and_release:
     - docker:
-        image: node:16.16.0
+        image: node:20.19.0
         volumes:
           - /root/.npm
           - node_modules
