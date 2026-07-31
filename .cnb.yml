@@ -1,0 +1,91 @@
+.build_script: &build_script
+  stages:
+    - name: 安装依赖
+      script:
+        - uname -r
+        - cat /etc/*release
+        - env
+        - echo --------------------------
+        - ls -la
+        - node -v
+    - name: 编译
+      script: |
+        set -e
+        chmod +x ./.build/build.sh
+        ./.build/build.sh || { echo "构建脚本执行失败"; exit 1; }
+        [ -d "dist" ] || { echo "dist 目录不存在，构建可能失败"; exit 1; }
+        echo Version: `date +%Y.%m.%d.%H%M%SZ` >> ./dist/VERSION
+        echo Date: `date -Ins` >> ./dist/VERSION
+        echo CommitID: `git rev-parse HEAD` >> ./dist/VERSION
+    - name: 上传制品
+      allowFailure: true
+      image: docker.cnb.cool/suishouji_2025/tools/qshell
+      imports:
+        - https://cnb.cool/suishouji_2025/keys/-/blob/main/qiniu.json
+      script: |
+        qshell -v
+        qshell account $QINIU_AK $QINIU_SK ci
+        zip -q -r ${ARTIFACT_NAME}.zip dist
+        mkdir -p ./upload/artifacts/shipping
+        mv ${ARTIFACT_NAME}.zip ./upload/artifacts/shipping/
+        qshell qupload2 --src-dir=./upload --bucket=$QINIU_BUCKET --overwrite
+    - name: 发布
+      script: |
+        set -e
+        echo "🔧 准备发布..."
+        # 只有 master 分支才触发发布
+        if [ "$CI_COMMIT_BRANCH" = "master" ]; then
+          echo "🎯 检测到 $CI_COMMIT_BRANCH 分支，触发发布流程"
+          chmod +x ./.build/publish.sh
+          ./.build/publish.sh
+          echo "✅ 发布任务完成"
+        else
+          echo "⏭️  当前分支为 $CI_COMMIT_BRANCH，跳过发布流程"
+        fi
+    - name: 通知
+      image: tencentcom/wecom-message
+      settings:
+        robot: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=fd4d4f42-137a-4fa7-9ef1-6860fa6f273e
+        msgType: text
+        content: |
+          **shipping$CI_COMMIT_BRANCH编译成功**
+  failStages:
+    - name: 通知
+      image: tencentcom/wecom-message
+      settings:
+        robot: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=fd4d4f42-137a-4fa7-9ef1-6860fa6f273e
+        msgType: text
+        content: |
+          **shipping$CI_COMMIT_BRANCH编译失败**
+release:
+  push:
+    - docker:
+        image: node:16.16.0
+        volumes:
+          - /root/.npm
+          - node_modules
+      <<: *build_script
+      env:
+        ARTIFACT_NAME: shipping-release
+        CI_COMMIT_BRANCH: release
+master:
+  push:
+    - docker:
+        image: node:16.16.0
+        volumes:
+          - /root/.npm
+          - node_modules
+      <<: *build_script
+      env:
+        ARTIFACT_NAME: shipping-test
+        CI_COMMIT_BRANCH: master      
+"**":
+  web_trigger_build_and_release:
+    - docker:
+        image: node:16.16.0
+        volumes:
+          - /root/.npm
+          - node_modules
+      <<: *build_script
+      env:
+        ARTIFACT_NAME: shipping-test
