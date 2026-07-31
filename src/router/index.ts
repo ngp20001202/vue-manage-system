@@ -221,9 +221,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     NProgress.start();
 
-    // 免密登录（其它站点带 ?token= 跳过来）：必须在任何组件挂载前完成，
-    // 否则 permiss.key 仍是未登录状态，v-permiss 指令 mounted 时把菜单全部隐藏，
-    // 即使后面调用了 permiss.reset() 也无法再次触发这些指令（refresh 后才会刷新）。
+    // 免密登录（其它站点带 ?token= 跳过来）：把 token 从 URL 上去掉并触发登录。
     const urlToken = (to.query?.token as string | undefined) || undefined;
     if (urlToken) {
         try {
@@ -233,7 +231,6 @@ router.beforeEach(async (to, from, next) => {
         } catch (e) {
             console.warn('token-based login failed', e);
         }
-        // 把 token 从 URL 上清掉，避免后续路由跳转再触发一次
         const { token: _t, ...restQuery } = to.query as Record<string, any>;
         return next({ path: to.path, query: restQuery });
     }
