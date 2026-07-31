@@ -144,11 +144,15 @@
 					width="150"
 				/>
 				<el-table-column property="poa" :label="t('pages.POA')" width="150" />
-				<el-table-column :label="t('pages.Stage')" width="150">
+				<el-table-column
+					property="stageText"
+					:label="t('pages.Stage')"
+					width="150"
+				>
 					<template #default="scope">
 						<span>
 							<el-icon><List /></el-icon>
-							{{ scope.row.stageText }}
+							{{ scope.row.stage }}
 						</span>
 					</template>
 				</el-table-column>
