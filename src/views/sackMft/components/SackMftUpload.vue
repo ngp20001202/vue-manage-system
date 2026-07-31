@@ -164,7 +164,7 @@ const handleClose = () => {
 		right: 0;
 		left: 0;
 		z-index: 1;
-		height: 100%;
+		height: 96%;
 		padding: 0 12px;
 		color: #495057;
 		font-size: 15px;
