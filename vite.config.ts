@@ -65,4 +65,23 @@ export default defineConfig(({ mode }) => ({
 	define: {
 		__VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "true",
 	},
+	build: {
+		rollupOptions: {
+			output: {
+				entryFileNames: 'js/[name]-[hash].js',
+				chunkFileNames: 'js/[name]-[hash].js',
+				assetFileNames: (assetInfo) => {
+					const name = assetInfo.name ?? '';
+					const ext = name.match(/\.(png|jpe?g|gif|svg|webp|avif|ico)$/i)
+						? 'images'
+						: name.match(/\.(css)$/i)
+							? 'css'
+							: name.match(/\.(woff2?|ttf|otf|eot)$/i)
+								? 'fonts'
+								: 'assets';
+					return `${ext}/[name]-[hash][extname]`;
+				},
+			},
+		},
+	},
 }));
