@@ -1,1 +1,0 @@
-export const DEV_TARGET = 'https://shipping.sandbox.golads.com';

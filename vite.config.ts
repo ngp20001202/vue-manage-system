@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import VueSetupExtend from 'vite-plugin-vue-setup-extend';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
-import { DEV_TARGET } from '@/utils/devTarget';
+import { DEV_TARGET } from './src/utils/devTarget.js';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 export default defineConfig(({ mode }) => ({
 	base: mode === 'production' ? './' : '/',

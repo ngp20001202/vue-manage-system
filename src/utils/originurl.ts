@@ -1,4 +1,4 @@
-import { DEV_TARGET } from './devTarget';
+import { DEV_TARGET } from './devTarget.js';
 
 export function getoriginurl(): string {
     return (
