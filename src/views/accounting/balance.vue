@@ -7,31 +7,31 @@
 					:label="t('pages.AccountBalance.Currency')"
 					min-width="120"
 				/>
-				<el-table-column :label="t('pages.AccountBalance.VaultBalance')" min-width="140">
-					<template #default="scope">
-						<span>{{ scope.row.vaultBal?.value }}{{ scope.row.vaultBal?.unit }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.AccountBalance.InvoicedAmount')" min-width="140">
-					<template #default="scope">
-						<span>{{ scope.row.invoicedAmt?.value }}{{ scope.row.invoicedAmt?.unit }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.AccountBalance.UninvoicedAmount')" min-width="140">
-					<template #default="scope">
-						<span>{{ scope.row.uninvoicedAmt?.value }}{{ scope.row.uninvoicedAmt?.unit }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.AccountBalance.CreditLimit')" min-width="140">
-					<template #default="scope">
-						<span>{{ scope.row.creditLimit?.value }}{{ scope.row.creditLimit?.unit }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.AccountBalance.CurrentBalance')" min-width="140">
-					<template #default="scope">
-						<span>{{ scope.row.curBal?.value }}{{ scope.row.curBal?.unit }}</span>
-					</template>
-				</el-table-column>
+				<el-table-column
+					property="vaultBal.value"
+					:label="t('pages.AccountBalance.VaultBalance')"
+					min-width="140"
+				/>
+				<el-table-column
+					property="invoicedAmt.value"
+					:label="t('pages.AccountBalance.InvoicedAmount')"
+					min-width="140"
+				/>
+				<el-table-column
+					property="uninvoicedAmt.value"
+					:label="t('pages.AccountBalance.UninvoicedAmount')"
+					min-width="140"
+				/>
+				<el-table-column
+					property="creditLimit.value"
+					:label="t('pages.AccountBalance.CreditLimit')"
+					min-width="140"
+				/>
+				<el-table-column
+					property="curBal.value"
+					:label="t('pages.AccountBalance.CurrentBalance')"
+					min-width="140"
+				/>
 				<el-table-column align="center" width="120">
 					<template #default="scope">
 						<el-button size="small" @click="openRecharge(scope.row)">

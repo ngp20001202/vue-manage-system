@@ -29,14 +29,14 @@
 					@click="shipperDropdown = !shipperDropdown"
 				>
 					<span class="truncate">
-						{{ shipper?.contact?.name || '无寄件地址' }}
+						{{ shipper?.contact?.name || t('pages.Noshippingaddress') }}
 					</span>
 					<el-icon class="caret"><ArrowDown /></el-icon>
 				</el-button>
 				<div v-if="shipperDropdown" class="address-dropdown">
 					<el-input
 						v-model="shipperSearch"
-						placeholder="搜索..."
+						:placeholder="t('pages.Search')"
 						clearable
 						class="address-search"
 					/>
@@ -45,7 +45,7 @@
 							v-if="filteredShippers.length === 0"
 							class="empty-item"
 						>
-							无结果
+							{{ t('pages.NoData') }}
 						</li>
 						<li
 							v-for="(item, idx) in filteredShippers"
@@ -160,7 +160,7 @@
 				class="parcel-block"
 			>
 				<div class="section-header">
-					<h4>包裹 {{ pkgIndex + 1 }}</h4>
+					<h4>{{ t('pages.Parcel') }} {{ pkgIndex + 1 }}</h4>
 					<div class="parcel-actions">
 						<span
 							v-if="pkgIndex === parcels.length - 1"
@@ -230,10 +230,10 @@
 							v-model="pkg.DeclaredHeight"
 							type="number"
 							min="0"
-							style="width: 120px"
+							style="width: 170px"
 						>
 							<template #append>
-								<el-select v-model="pkg.DimUnit" style="width: 70px">
+								<el-select v-model="pkg.DimUnit" style="width: 65px">
 									<el-option
 										v-for="val in dimOptions"
 										:key="val.label"
@@ -279,10 +279,10 @@
 								v-model="item.LineTotal.Value"
 								type="number"
 								min="0"
-								style="width: 150px"
+								style="width: 200px"
 							>
 								<template #append>
-									<el-select v-model="item.LineTotal.Unit" style="width: 80px">
+									<el-select v-model="item.LineTotal.Unit" style="width: 75px">
 										<el-option
 											v-for="option in priceOptions"
 											:key="option.label"
@@ -391,14 +391,6 @@
 				@click="getQuote"
 			>
 				{{ t('pages.Getaquote') || '获取报价' }}
-			</el-button>
-			<el-button
-				type="primary"
-				:loading="submitLoading"
-				:icon="Check"
-				@click="onSubmit"
-			>
-				{{ t('pages.Submit') || '提交下单' }}
 			</el-button>
 		</div>
 
@@ -935,7 +927,7 @@ const saveShipper = () => {
 				? await addressedit({ ID: shipperEditId.value, ...payload })
 				: await addresscreate(payload);
 			if (res?.isSuccess) {
-				ElMessage.success(shipperEditId.value ? '修改成功' : '创建成功');
+				ElMessage.success(shipperEditId.value ? t('pages.UpdateSuccess') : t('pages.CreateSuccess'));
 				shipperEditVisible.value = false;
 				await fetchShippers();
 			} else {
@@ -1043,12 +1035,12 @@ const fetchRateForService = async (svc: any) => {
 const fetchRates = async () => {
 	// Validate consignee + shipper
 	if (!shipper.value?.contact?.name) {
-		ElMessage.error('请先选择寄件人');
+		ElMessage.error(t('pages.selectShipperFirst'));
 		return;
 	}
 	const validCnee = await cneeFormRef.value?.validate().catch(() => false);
 	if (!validCnee) {
-		ElMessage.error('请完善收件人信息');
+		ElMessage.error(t('pages.completeConsigneeInfo'));
 		return;
 	}
 	// Validate packages and line items before fetching rates
@@ -1155,14 +1147,14 @@ const confirmOrder = async (row: RateRow) => {
 		const payload: any = buildPayload(row.id, row.lastMilerID);
 		const res: ApiResponse<any> = await createparcel(payload);
 		if (res?.isSuccess) {
-			ElMessage.success('创建成功');
+			ElMessage.success(t('pages.CreateSuccess'));
 			setTimeout(() => {
 				router.push('/parcel/list').catch(() => {
 					router.go(0);
 				});
 			}, 800);
 		} else {
-			ElMessage.error(res?.message || '创建失败');
+			ElMessage.error(res?.message || t('pages.CreateFailed'));
 		}
 	} finally {
 		payLoading.value = false;
@@ -1172,9 +1164,9 @@ const confirmOrder = async (row: RateRow) => {
 const validateConsignee = async () => {
 	const valid = await cneeFormRef.value?.validate().catch(() => false);
 	if (valid) {
-		ElMessage.success(t('pages.SaveSuccess') || '保存成功');
+		ElMessage.success(t('pages.SaveSuccess'));
 	} else {
-		ElMessage.error(t('pages.ValidateFailed') || '验证失败');
+		ElMessage.error(t('pages.ValidateFailed'));
 	}
 };
 
@@ -1203,12 +1195,12 @@ const validateAllParcels = async (): Promise<boolean> => {
 
 const onSubmit = async () => {
 	if (!shipper.value?.contact?.name) {
-		ElMessage.error('请先选择寄件人');
+		ElMessage.error(t('pages.selectShipperFirst'));
 		return;
 	}
 	const validCnee = await cneeFormRef.value?.validate().catch(() => false);
 	if (!validCnee) {
-		ElMessage.error('请完善收件人信息');
+		ElMessage.error(t('pages.completeConsigneeInfo'));
 		return;
 	}
 	const parcelsOk = await validateAllParcels();
@@ -1224,7 +1216,7 @@ const onSubmit = async () => {
 			svc = ratePreview.value.find((r) => r.show);
 		}
 		if (!svc) {
-			ElMessage.error('暂无可用的服务渠道');
+			ElMessage.error(t('pages.noAvailableService'));
 			return;
 		}
 		await confirmOrder(svc);
@@ -1470,7 +1462,7 @@ watch(addressBookVisible, (visible) => {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding-top: 30px;
+	padding-top: 10px;
 }
 
 .rate-value {

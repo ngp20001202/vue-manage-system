@@ -361,7 +361,7 @@ export default { name: 'tracking-index' };
 
     .sub {
         width: 40px !important;
-        height: 40px !important;
+        height: auto !important;
         margin-left: -3px;
         padding-left: 10px;
         color: white;

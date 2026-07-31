@@ -126,7 +126,7 @@
 		<el-dialog
 			v-model="dialogVisible"
 			:title="isEdit ? t('pages.Edit') : t('pages.Create')"
-			width="720px"
+			width="50%"
 			destroy-on-close
 			:close-on-click-modal="false"
 			@close="closeDialog"
@@ -138,14 +138,36 @@
 				label-width="140px"
 				class="user-form"
 			>
+				<el-form-item
+					:label="t('pages.config.user.Site')"
+					prop="siteId"
+				>
+					<el-select
+						v-model="form.siteId"
+						:placeholder="t('pages.config.user.Site')"
+						filterable
+						style="width: 100%"
+					>
+						<el-option
+							v-for="s in siteOptions"
+							:key="s.id"
+							:label="s.alias"
+							:value="s.id"
+						/>
+					</el-select>
+				</el-form-item>
+
 				<h4 class="form-section">
 					{{ t('pages.config.user.LoginInformation') }}
 				</h4>
-				<el-form-item :label="t('pages.Username')" prop="username">
-					<el-input v-model="form.username" :placeholder="t('pages.Username')" />
+				<hr class="section-divider" />
+				<el-form-item :label="t('pages.Username')" prop="loginName">
+					<el-input
+						v-model="form.loginName"
+						:placeholder="t('pages.Username')"
+					/>
 				</el-form-item>
 				<el-form-item
-					v-if="!isEdit"
 					:label="t('pages.config.user.Password')"
 					prop="password"
 				>
@@ -157,12 +179,36 @@
 					/>
 				</el-form-item>
 				<el-form-item
-					v-if="!isEdit"
+					v-if="form.password"
+					label=""
+				>
+					<div class="pwd-strength">
+						<div class="pwd-strength__segments">
+							<div
+								v-for="i in 5"
+								:key="i"
+								class="pwd-strength__segment"
+								:class="{ active: i <= pwdStrength.level }"
+								:style="{
+									backgroundColor:
+										i <= pwdStrength.level ? pwdStrength.color : '#e0e0e0',
+								}"
+							/>
+						</div>
+						<span
+							class="pwd-strength__label"
+							:style="{ color: pwdStrength.color }"
+						>
+							{{ pwdStrength.label }}
+						</span>
+					</div>
+				</el-form-item>
+				<el-form-item
 					:label="t('pages.config.user.VerifyPassword')"
-					prop="verifyPassword"
+					prop="cfmpassword"
 				>
 					<el-input
-						v-model="form.verifyPassword"
+						v-model="form.cfmpassword"
 						type="password"
 						show-password
 						:placeholder="t('pages.config.user.VerifyPasswordplace')"
@@ -172,55 +218,30 @@
 				<h4 class="form-section">
 					{{ t('pages.config.user.UserInformation') }}
 				</h4>
-				<el-form-item :label="t('pages.Alias')" prop="alias">
+				<hr class="section-divider" />
+				<el-form-item :label="t('pages.Alias')" prop="userAlias">
 					<el-input
-						v-model="form.alias"
+						v-model="form.userAlias"
 						:placeholder="t('pages.config.user.Aliasplace')"
 					/>
 				</el-form-item>
-				<el-form-item :label="t('pages.config.user.UserType')" prop="userType">
-					<el-radio-group v-model="form.userType">
-						<el-radio :label="1">{{ t('pages.config.user.TenantUser') }}</el-radio>
-						<el-radio :label="2">{{ t('pages.config.user.SiteUser') }}</el-radio>
-					</el-radio-group>
-				</el-form-item>
-				<el-form-item
-					v-if="form.userType === 2"
-					:label="t('pages.config.user.Site')"
-					prop="siteId"
-				>
-					<el-select
-						v-model="form.siteId"
-						:placeholder="t('pages.config.user.Site')"
-						style="width: 100%"
-					>
-						<el-option
-							v-for="s in siteOptions"
-							:key="s.id"
-							:label="s.alias"
-							:value="s.id"
-						/>
-					</el-select>
-				</el-form-item>
-				<el-form-item :label="t('pages.config.user.Roles')" prop="role">
-					<el-select v-model="form.role" style="width: 100%">
-						<el-option label="ClientMgr" value="ClientMgr" />
-						<el-option label="ClientAdmin" value="ClientAdmin" />
-						<el-option label="ClientOP" value="ClientOP" />
-						<el-option label="HubOperator" value="HubOperator" />
-					</el-select>
-				</el-form-item>
-				<el-form-item :label="t('pages.Phone')" prop="phone">
-					<el-input v-model="form.phone" :placeholder="t('pages.phoneplace')" />
-				</el-form-item>
 				<el-form-item :label="t('pages.Email')" prop="email">
-					<el-input v-model="form.email" :placeholder="t('pages.emailplace')" />
-				</el-form-item>
-				<el-form-item :label="t('pages.countrycode')" prop="countryCode">
 					<el-input
-						v-model="form.countryCode"
-						:placeholder="t('pages.countrycode')"
+						v-model="form.email"
+						:placeholder="t('pages.emailplace')"
+						maxlength="50"
 					/>
+				</el-form-item>
+				<el-form-item :label="t('pages.Role')" prop="roleIds">
+					<el-checkbox-group v-model="form.roleIds">
+						<el-checkbox
+							v-for="r in roleOptions"
+							:key="r.value"
+							:label="r.value"
+						>
+							{{ r.label }}
+						</el-checkbox>
+					</el-checkbox-group>
 				</el-form-item>
 			</el-form>
 			<template #footer>
@@ -314,6 +335,7 @@ import {
 	userdisable,
 	userresetpwd,
 	usersitelist,
+	userroleslist,
 } from '@/api/userlist';
 import type { ApiResponse } from '@/api/types';
 import { passwordLevel, passwordStrengthValidator } from '@/utils/password-strength';
@@ -337,6 +359,7 @@ interface UserRow extends Record<string, any> {
 const alias = ref('');
 const siteId = ref(0);
 const siteOptions = ref<Array<{ id: string | number; alias: string }>>([]);
+const roleOptions = ref<Array<{ value: string; label: string }>>([]);
 const routeData = ref<UserRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
@@ -350,32 +373,49 @@ const formRef = ref<FormInstance>();
 
 const defaultForm = () => ({
 	id: '' as string | number,
-	username: '',
-	password: '',
-	verifyPassword: '',
-	alias: '',
-	userType: 1 as number,
 	siteId: undefined as number | undefined,
-	role: 'ClientOP',
-	phone: '',
+	loginName: '',
+	password: '',
+	cfmpassword: '',
+	userAlias: '',
 	email: '',
-	countryCode: '',
+	roleIds: [] as string[],
 });
 
 const form = reactive(defaultForm());
 
+const pwdStrength = ref(passwordLevel(''));
+watch(
+	() => form.password,
+	(val) => {
+		pwdStrength.value = passwordLevel(val);
+	},
+);
+
 const rules = reactive<FormRules>({
-	username: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
+	siteId: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+	loginName: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
 	password: [
 		{ required: true, message: t('pages.required'), trigger: 'blur' },
-		{ min: 6, message: t('pages.required'), trigger: 'blur' },
+		{
+			validator: (_r, value, cb) => {
+				if (!value) {
+					cb(new Error(t('pages.required')));
+					return;
+				}
+				const result = passwordStrengthValidator(value, 3);
+				if (result === true) cb();
+				else cb(new Error(result));
+			},
+			trigger: 'blur',
+		},
 	],
-	verifyPassword: [
+	cfmpassword: [
 		{ required: true, message: t('pages.required'), trigger: 'blur' },
 		{
 			validator: (_r, value, cb) => {
 				if (value !== form.password) {
-					cb(new Error(t('pages.required')));
+					cb(new Error(t('pages.passwordMismatch') || '两次密码不一致'));
 				} else {
 					cb();
 				}
@@ -383,10 +423,19 @@ const rules = reactive<FormRules>({
 			trigger: 'blur',
 		},
 	],
-	alias: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	userType: [{ required: true, message: t('pages.required'), trigger: 'change' }],
-	siteId: [{ required: true, message: t('pages.required'), trigger: 'change' }],
-	role: [{ required: true, message: t('pages.required'), trigger: 'change' }],
+	userAlias: [{ required: false }],
+	email: [
+		{ required: true, message: t('pages.required'), trigger: 'blur' },
+		{
+			validator: (_r, value, cb) => {
+				const mailReg = /^([a-zA-Z0-9_.\-])+\@(([a-zA-Z0-9_.\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+				if (value && mailReg.test(value)) cb();
+				else cb(new Error(t('pages.invalidEmail') || '邮箱格式不正确'));
+			},
+			trigger: 'blur',
+		},
+	],
+	roleIds: [{ required: true, message: t('pages.required'), trigger: 'change' }],
 });
 
 const onSearch = () => {
@@ -411,6 +460,16 @@ const loadSites = async () => {
 	}
 };
 
+const loadRoles = async () => {
+	const res: ApiResponse<any[]> = await userroleslist();
+	if (res?.isSuccess && Array.isArray(res.result)) {
+		roleOptions.value = res.result.map((r: any) => ({
+			value: String(r.value ?? r.id ?? r.name ?? ''),
+			label: r.label ?? r.text ?? r.name ?? String(r.id ?? ''),
+		}));
+	}
+};
+
 const getdata = async () => {
 	loading.value = true;
 	const res: ApiResponse<any> = await userlist({
@@ -428,6 +487,9 @@ const getdata = async () => {
 
 const onCreate = () => {
 	Object.assign(form, defaultForm());
+	if (siteOptions.value.length) {
+		form.siteId = siteOptions.value[0].id as number;
+	}
 	isEdit.value = false;
 	dialogVisible.value = true;
 };
@@ -435,14 +497,10 @@ const onCreate = () => {
 const onEdit = (row: UserRow) => {
 	Object.assign(form, defaultForm(), {
 		id: row.id,
-		username: row.loginName || '',
-		alias: row.userAlias || '',
-		userType: row.userType ?? 1,
-		siteId: row.siteId,
-		role: row.role || 'ClientOP',
-		phone: row.phone || '',
+		loginName: row.loginName || '',
+		userAlias: row.userAlias || '',
 		email: row.email || '',
-		countryCode: row.countryCode || '',
+		roleIds: row.roleIds || (row.role ? [String(row.role)] : []),
 	});
 	isEdit.value = true;
 	dialogVisible.value = true;
@@ -460,21 +518,19 @@ const onSubmit = async () => {
 	if (!valid) return;
 
 	const body: Record<string, any> = {
-		username: form.username,
-		alias: form.alias,
-		userType: form.userType,
-		role: form.role,
-		phone: form.phone,
+		loginName: form.loginName,
+		userAlias: form.userAlias || form.loginName,
 		email: form.email,
-		countryCode: form.countryCode,
+		SiteID: form.siteId || 0,
+		RoleIds: form.roleIds,
 	};
-	if (form.userType === 2) body.siteId = form.siteId;
-	if (!isEdit.value) body.password = form.password;
-	else body.id = form.id;
+	if (!isEdit.value) {
+		body.password = { value: form.password };
+	}
 
 	submitting.value = true;
 	const res: ApiResponse<any> = isEdit.value
-		? await userupdate(body as any)
+		? await userupdate({ id: form.id, ...body } as any)
 		: await usercreate(body);
 	submitting.value = false;
 
@@ -584,6 +640,7 @@ watch([count, pagecurrent], () => {
 
 onMounted(() => {
 	loadSites();
+	loadRoles();
 	getdata();
 });
 </script>

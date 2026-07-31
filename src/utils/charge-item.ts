@@ -30,6 +30,14 @@ export const formatChargeItem = (
 	return i18n.global.t(`pages.Charge.${key}`);
 };
 
-export const CHARGE_OPTIONS = Object.entries(CHARGE_ID_MAP)
-	.filter(([key]) => /^\d+$/.test(key) || key === 'Other')
-	.map(([value]) => ({ value, label: formatChargeItem(value) }));
+export const LEDGER_CHARGE_FILTERS: Array<{ value: number; key: string }> = [
+	{ value: 0, key: 'pages.Parcels.detail.ChargeItem' },
+	{ value: 1, key: 'pages.Charge.Other' },
+	{ value: 11, key: 'pages.Charge.Freight' },
+	{ value: 12, key: 'pages.Charge.FuelSurcharge' },
+	{ value: 13, key: 'pages.Charge.DAS' },
+	{ value: 14, key: 'pages.Charge.DASExtended' },
+	{ value: 10011, key: 'pages.Charge.FreightAdjustment' },
+	{ value: 10021, key: 'pages.Charge.Void' },
+	{ value: 10061, key: 'pages.Charge.OrderClaim' },
+];

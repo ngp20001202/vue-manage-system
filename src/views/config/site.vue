@@ -42,8 +42,8 @@
 
 		<el-dialog
 			v-model="dialogVisible"
-			:title="isEdit ? t('pages.Edit') : t('pages.Create')"
-			width="760px"
+			:title="isEdit ? `${t('pages.Edit')}#${form.id}` : t('pages.Create')"
+			width="50%"
 			destroy-on-close
 			:close-on-click-modal="false"
 			@close="closeDialog"
@@ -52,108 +52,122 @@
 				ref="formRef"
 				:model="form"
 				:rules="rules"
-				label-width="150px"
+				label-width="180px"
 				class="site-form"
 			>
-				<h4 class="form-section">
-					{{ t('pages.config.site.SiteInformation') }}
-				</h4>
 				<el-form-item :label="t('pages.Alias')" prop="alias">
 					<el-input
 						v-model="form.alias"
+						:disabled="isEdit"
 						:placeholder="t('pages.config.site.Aliasplace')"
 					/>
 				</el-form-item>
-				<el-form-item :label="t('pages.Username')" prop="username">
-					<el-input v-model="form.username" :placeholder="t('pages.Username')" />
-				</el-form-item>
-				<el-form-item :label="t('pages.CompanyName')" prop="companyName">
-					<el-input v-model="form.companyName" :placeholder="t('pages.CompanyName')" />
-				</el-form-item>
-				<el-form-item :label="t('pages.CountryRegion')" prop="countryRegion">
-					<el-input v-model="form.countryRegion" :placeholder="t('pages.CountryRegion')" />
-				</el-form-item>
-				<el-form-item :label="t('pages.AdoptingCode')" prop="adoptingCode">
+				<el-form-item v-if="!isEdit" :label="t('pages.AdoptingCode')" prop="adoptingCode">
 					<el-input v-model="form.adoptingCode" :placeholder="t('pages.AdoptingCode')" />
 				</el-form-item>
-				<el-form-item :label="t('pages.UtcPlace')" prop="utcPlace">
-					<el-input v-model="form.utcPlace" :placeholder="t('pages.UtcPlace')" />
+				<el-form-item :label="t('pages.CountryRegion')" prop="countryCode">
+					<el-select
+						v-model="form.countryCode"
+						style="width: 100%"
+						filterable
+						:disabled="isEdit"
+					>
+						<el-option
+							v-for="c in countryOptions"
+							:key="c.value"
+							:label="c.label"
+							:value="c.value"
+						/>
+					</el-select>
 				</el-form-item>
-				<el-form-item :label="t('pages.UtcOffset')" prop="utcOffset">
-					<el-input v-model="form.utcOffset" :placeholder="t('pages.UtcOffset')" />
+				<el-form-item :label="t('pages.UtcPlace')" prop="utcPlace">
+					<el-input v-model="form.utcPlace" :disabled="isEdit" :placeholder="t('pages.UtcPlace')" />
+				</el-form-item>
+				<el-form-item :label="t('pages.UtcOffset')" prop="utcOffset.value">
+					<el-select v-model="form.utcOffset.value" style="width: 100%" :disabled="isEdit">
+						<el-option
+							v-for="u in utcOffsetOptions"
+							:key="u.value"
+							:label="u.label"
+							:value="u.value"
+						/>
+					</el-select>
 				</el-form-item>
 
-				<template v-for="sec in addressSections" :key="sec.key">
-					<h4 class="form-section">{{ t(sec.labelKey) }}</h4>
-					<el-alert
-						v-if="sec.key === 'returning'"
-						class="form-note"
-						type="info"
-						:closable="false"
-						show-icon
-						:title="t('pages.config.site.Note')"
-						:description="t('pages.config.site.ReturnAddress')"
-					/>
-					<el-form-item :label="t('pages.ContactName')">
+				<el-divider />
+
+				<div v-if="!isEdit" class="site-note">
+					<el-icon class="note-icon"><WarningFilled /></el-icon>
+					{{ t('pages.config.site.Note') }}:
+					<span class="note-text">{{ t('pages.config.site.ReturnAddress') }}</span>
+				</div>
+
+				<div class="col-head" :class="{ 'is-single': isEdit }">
+					<div class="col-head__item">
+						<span class="req">*</span>{{ t('pages.config.site.ShippingInfo') }}
+					</div>
+					<div v-if="!isEdit" class="col-head__item">
+						{{ t('pages.config.site.Return') }}
+						<el-icon class="copy-icon" @click="copyToReturning"><DocumentCopy /></el-icon>
+					</div>
+				</div>
+
+				<el-form-item
+					v-for="f in addressFields"
+					:key="f.key"
+					:label="t(f.labelKey)"
+					:prop="`shippingInfo.${f.key}`"
+				>
+					<div class="flex" :class="{ 'is-single': isEdit }">
+						<el-select
+							v-if="f.type === 'select'"
+							v-model="form.shippingInfo[f.key]"
+							class="flex_item"
+							filterable
+						>
+							<el-option
+								v-for="c in countryOptions"
+								:key="c.value"
+								:label="c.label"
+								:value="c.value"
+							/>
+						</el-select>
 						<el-input
-							v-model="form[sec.key].contactName"
-							:placeholder="t('pages.ContactName')"
+							v-else
+							v-model="form.shippingInfo[f.key]"
+							class="flex_item"
+							:maxlength="f.maxlength"
+							:placeholder="f.placeholderKey ? t(f.placeholderKey) : ''"
 						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.Phone')">
-						<el-input
-							v-model="form[sec.key].phone"
-							:placeholder="t('pages.phoneplace')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.Email')">
-						<el-input
-							v-model="form[sec.key].email"
-							:placeholder="t('pages.emailplace')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.CountryCode')">
-						<el-input
-							v-model="form[sec.key].countryCode"
-							:placeholder="t('pages.countrycode')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.ProvinceState')">
-						<el-input
-							v-model="form[sec.key].provinceState"
-							:placeholder="t('pages.ProvinceStateplace')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.City')">
-						<el-input
-							v-model="form[sec.key].city"
-							:placeholder="t('pages.Cityplace')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.ZipPostalCode')">
-						<el-input
-							v-model="form[sec.key].zipPostalCode"
-							:placeholder="t('pages.ZipPostalCodeplace')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.StreetLine1')">
-						<el-input
-							v-model="form[sec.key].streetLine1"
-							:placeholder="t('pages.StreetLine1place')"
-						/>
-					</el-form-item>
-					<el-form-item :label="t('pages.StreetLine2')">
-						<el-input
-							v-model="form[sec.key].streetLine2"
-							:placeholder="t('pages.StreetLine2')"
-						/>
-					</el-form-item>
-				</template>
+						<template v-if="!isEdit">
+							<el-select
+								v-if="f.type === 'select'"
+								v-model="form.returningInfo[f.key]"
+								class="flex_item"
+								filterable
+							>
+								<el-option
+									v-for="c in countryOptions"
+									:key="c.value"
+									:label="c.label"
+									:value="c.value"
+								/>
+							</el-select>
+							<el-input
+								v-else
+								v-model="form.returningInfo[f.key]"
+								class="flex_item"
+								:maxlength="f.maxlength"
+								:placeholder="f.placeholderKey ? t(f.placeholderKey) : ''"
+							/>
+						</template>
+					</div>
+				</el-form-item>
 			</el-form>
 			<template #footer>
 				<el-button @click="closeDialog">{{ t('pages.Cancel') }}</el-button>
 				<el-button type="primary" :loading="submitting" @click="onSubmit">
-					{{ t('pages.Save') }}
+					{{ t('pages.submit') }}
 				</el-button>
 			</template>
 		</el-dialog>
@@ -164,45 +178,56 @@
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import type { FormInstance, FormRules } from 'element-plus';
-import { Plus, Edit } from '@element-plus/icons-vue';
-import { sitelist, sitecreate, siteupdate } from '@/api/site';
+import type { FormInstance } from 'element-plus';
+import { Plus, Edit, DocumentCopy, WarningFilled } from '@element-plus/icons-vue';
+import { sitelist, sitedetail, sitecreate, siteupdate } from '@/api/site';
 import type { ApiResponse } from '@/api/types';
+import { countryOptions } from '@/utils/country';
+import { utcOffsetOptions } from '@/utils/utc-offset';
 
 const { t } = useI18n();
 
 interface SiteRow extends Record<string, any> {
 	id: string | number;
 	alias?: string;
-	username?: string;
-	companyName?: string;
-	countryRegion?: string;
-	countryCode?: string;
-	routes?: Array<string | Record<string, any>>;
 	utcPlace?: string;
-	utcOffset?: string | { value?: string };
+	utcOffset?: number | { value?: number };
 	adoptingCode?: string;
-	enabled?: boolean;
 }
 
-interface AddressForm {
-	contactName: string;
-	phone: string;
-	email: string;
-	countryCode: string;
-	provinceState: string;
-	city: string;
-	zipPostalCode: string;
-	streetLine1: string;
-	streetLine2: string;
-}
+type AddressKey =
+	| 'name'
+	| 'company'
+	| 'email'
+	| 'phone'
+	| 'countryCode'
+	| 'province'
+	| 'city'
+	| 'district'
+	| 'street1'
+	| 'street2'
+	| 'street3'
+	| 'postalCode';
 
-type AddressKey = 'billing' | 'shipping' | 'returning';
-
-const addressSections: Array<{ key: AddressKey; labelKey: string }> = [
-	{ key: 'billing', labelKey: 'pages.Billing' },
-	{ key: 'shipping', labelKey: 'pages.config.site.ShippingInfo' },
-	{ key: 'returning', labelKey: 'pages.config.site.Return' },
+const addressFields: Array<{
+	key: AddressKey;
+	labelKey: string;
+	placeholderKey?: string;
+	maxlength?: number;
+	type?: 'select';
+}> = [
+	{ key: 'name', labelKey: 'pages.ContactName', placeholderKey: 'pages.ContactName' },
+	{ key: 'company', labelKey: 'pages.company', placeholderKey: 'pages.company', maxlength: 50 },
+	{ key: 'email', labelKey: 'pages.Email', placeholderKey: 'pages.emailplace', maxlength: 50 },
+	{ key: 'phone', labelKey: 'pages.Phone', placeholderKey: 'pages.phoneplace', maxlength: 20 },
+	{ key: 'countryCode', labelKey: 'pages.CountryRegion', type: 'select' },
+	{ key: 'province', labelKey: 'pages.ProvinceState', placeholderKey: 'pages.ProvinceStateplace', maxlength: 20 },
+	{ key: 'city', labelKey: 'pages.City', placeholderKey: 'pages.Cityplace', maxlength: 35 },
+	{ key: 'district', labelKey: 'pages.district', placeholderKey: 'pages.districtplace', maxlength: 20 },
+	{ key: 'street1', labelKey: 'pages.StreetLine1', placeholderKey: 'pages.StreetLine1place', maxlength: 35 },
+	{ key: 'street2', labelKey: 'pages.StreetLine2', maxlength: 35 },
+	{ key: 'street3', labelKey: 'pages.StreetLine3', maxlength: 35 },
+	{ key: 'postalCode', labelKey: 'pages.ZipPostalCode', placeholderKey: 'pages.ZipPostalCodeplace', maxlength: 10 },
 ];
 
 const routeData = ref<SiteRow[]>([]);
@@ -216,53 +241,74 @@ const isEdit = ref(false);
 const submitting = ref(false);
 const formRef = ref<FormInstance>();
 
-const defaultAddress = (): AddressForm => ({
-	contactName: '',
-	phone: '',
+const defaultAddress = (): Record<AddressKey, string> => ({
+	name: '',
+	company: '',
 	email: '',
+	phone: '',
 	countryCode: '',
-	provinceState: '',
+	province: '',
 	city: '',
-	zipPostalCode: '',
-	streetLine1: '',
-	streetLine2: '',
+	district: '',
+	street1: '',
+	street2: '',
+	street3: '',
+	postalCode: '',
 });
 
 const defaultForm = () => ({
 	id: '' as string | number,
 	alias: '',
-	username: '',
-	companyName: '',
-	countryRegion: '',
 	adoptingCode: '',
+	countryCode: '',
 	utcPlace: '',
-	utcOffset: '',
-	billing: defaultAddress(),
-	shipping: defaultAddress(),
-	returning: defaultAddress(),
+	utcOffset: { value: 0 as number | undefined },
+	shippingInfo: defaultAddress(),
+	returningInfo: defaultAddress(),
 });
 
 const form = reactive(defaultForm());
 
-const rules = reactive<FormRules>({
-	alias: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	username: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	companyName: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
-	countryRegion: [{ required: true, message: t('pages.required'), trigger: 'blur' }],
+const validateEmail = (_r: unknown, value: string, cb: (e?: Error) => void) => {
+	const mailReg = /^([a-zA-Z0-9_.\-])+\@(([a-zA-Z0-9_.\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+	if (!value || mailReg.test(value)) cb();
+	else cb(new Error(t('pages.invalidEmail')));
+};
+
+const req = { required: true, message: t('pages.required'), trigger: 'change' };
+
+const rules: any = reactive({
+	alias: [req],
+	countryCode: [req],
+	utcPlace: [req],
+	utcOffset: { value: [req] },
+	shippingInfo: {
+		name: [req],
+		company: [req],
+		email: [{ required: false, validator: validateEmail, trigger: 'blur' }],
+		phone: [req],
+		countryCode: [req],
+		province: [req],
+		city: [req],
+		street1: [req],
+		postalCode: [req],
+	},
+	returningInfo: {
+		email: [{ required: false, validator: validateEmail, trigger: 'blur' }],
+	},
 });
 
-const toAddress = (src: any): AddressForm => ({
-	...defaultAddress(),
-	contactName: src?.contactName ?? '',
-	phone: src?.phone ?? '',
-	email: src?.email ?? '',
-	countryCode: src?.countryCode ?? '',
-	provinceState: src?.provinceState ?? src?.state ?? '',
-	city: src?.city ?? '',
-	zipPostalCode: src?.zipPostalCode ?? src?.postalCode ?? '',
-	streetLine1: src?.streetLine1 ?? '',
-	streetLine2: src?.streetLine2 ?? '',
-});
+const toAddress = (src: any): Record<AddressKey, string> => {
+	const target = defaultAddress();
+	(Object.keys(target) as AddressKey[]).forEach((k) => {
+		target[k] = src?.[k] ?? '';
+	});
+	return target;
+};
+
+const copyToReturning = () => {
+	Object.assign(form.returningInfo, form.shippingInfo);
+};
 
 const getdata = async () => {
 	loading.value = true;
@@ -283,22 +329,21 @@ const onCreate = () => {
 	dialogVisible.value = true;
 };
 
-const onEdit = (row: SiteRow) => {
-	Object.assign(form, defaultForm(), {
-		id: row.id,
-		alias: row.alias || '',
-		username: row.username || '',
-		companyName: row.companyName || '',
-		countryRegion: row.countryRegion || row.countryCode || '',
-		adoptingCode: row.adoptingCode || '',
-		utcPlace: row.utcPlace || '',
-		utcOffset: (typeof row.utcOffset === 'object' ? row.utcOffset?.value : row.utcOffset) || '',
-		billing: toAddress(row.billing),
-		shipping: toAddress(row.shipping),
-		returning: toAddress(row.returning),
-	});
+const onEdit = async (row: SiteRow) => {
+	Object.assign(form, defaultForm(), { id: row.id });
 	isEdit.value = true;
 	dialogVisible.value = true;
+	const res: ApiResponse<any> = await sitedetail(row.id);
+	if (!res?.isSuccess) return;
+	const d = res.result ?? {};
+	Object.assign(form, {
+		alias: d.siteAlias ?? d.alias ?? '',
+		adoptingCode: d.adoptingCode ?? '',
+		countryCode: d.country ?? d.countryCode ?? '',
+		utcPlace: d.utcPlace ?? '',
+		utcOffset: { value: d.utcOffset?.value ?? d.utcOffset ?? 0 },
+		shippingInfo: toAddress(d.shippingInfo),
+	});
 };
 
 const closeDialog = () => {
@@ -307,33 +352,48 @@ const closeDialog = () => {
 	formRef.value?.resetFields();
 };
 
+const toPascalAddress = (src: Record<AddressKey, string>) => ({
+	Name: src.name,
+	Company: src.company,
+	Email: src.email,
+	Phone: src.phone,
+	CountryCode: src.countryCode,
+	Province: src.province,
+	City: src.city,
+	District: src.district,
+	Street1: src.street1,
+	Street2: src.street2,
+	Street3: src.street3,
+	PostalCode: src.postalCode,
+});
+
 const onSubmit = async () => {
 	if (!formRef.value) return;
 	const valid = await formRef.value.validate().catch(() => false);
 	if (!valid) return;
 
-	const body: Record<string, any> = {
-		alias: form.alias,
-		username: form.username,
-		companyName: form.companyName,
-		countryRegion: form.countryRegion,
-		adoptingCode: form.adoptingCode,
-		utcPlace: form.utcPlace,
-		utcOffset: form.utcOffset,
-		billing: { ...form.billing },
-		shipping: { ...form.shipping },
-		returning: { ...form.returning },
-	};
-	if (isEdit.value) body.id = form.id;
-
 	submitting.value = true;
 	const res: ApiResponse<any> = isEdit.value
-		? await siteupdate(body as any)
-		: await sitecreate(body);
+		? await siteupdate({
+				ID: form.id,
+				UtcPlace: form.utcPlace,
+				CountryCode: form.countryCode,
+				UtcOffset: { Value: form.utcOffset.value },
+				ShippingInfo: toPascalAddress(form.shippingInfo),
+			})
+		: await sitecreate({
+				Alias: form.alias,
+				AdoptingCode: form.adoptingCode,
+				CountryCode: form.countryCode,
+				UtcPlace: form.utcPlace,
+				UtcOffset: { value: form.utcOffset.value },
+				ShippingInfo: toPascalAddress(form.shippingInfo),
+				ReturningInfo: toPascalAddress(form.returningInfo),
+			});
 	submitting.value = false;
 
 	if (res?.isSuccess) {
-		ElMessage.success(t('pages.Success'));
+		ElMessage.success(res.message || t('pages.Success'));
 		closeDialog();
 		getdata();
 	} else {
@@ -369,11 +429,6 @@ onMounted(() => {
 .mr10 {
 	margin-right: 10px;
 }
-.route-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-}
 .cyan {
 	color: #17a2b8;
 	cursor: pointer;
@@ -386,14 +441,51 @@ onMounted(() => {
 	max-height: 60vh;
 	overflow-y: auto;
 }
-.form-section {
-	margin: 0 0 8px;
-	font-weight: 500;
-	font-size: 14px;
-	color: #303133;
-}
-.form-note {
+.site-note {
 	margin-bottom: 12px;
+	font-size: 14px;
+	font-weight: bold;
+}
+.note-icon {
+	color: #ffc107;
+	vertical-align: -2px;
+}
+.note-text {
+	font-style: italic;
+	color: #dc3545;
+}
+.col-head {
+	display: flex;
+	margin: 0 0 12px 180px;
+	font-size: 14px;
+	font-weight: bold;
+}
+.col-head__item {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.req {
+	color: #dc3545;
+	margin-right: 2px;
+}
+.copy-icon {
+	color: #2cb2ce;
+	cursor: pointer;
+}
+.flex {
+	display: flex;
+	width: 100%;
+}
+.flex .flex_item:nth-of-type(1) {
+	padding-right: 20px;
+}
+.flex.is-single .flex_item:nth-of-type(1) {
+	padding-right: 0;
+}
+.flex_item {
+	flex: 1;
 }
 .pager {
 	margin-top: 16px;
@@ -401,8 +493,8 @@ onMounted(() => {
 	display: flex;
 }
 @media (max-width: 768px) {
-	.keyword-input {
-		width: 100%;
+	.col-head {
+		margin-left: 0;
 	}
 }
 </style>

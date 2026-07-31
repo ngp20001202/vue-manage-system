@@ -19,7 +19,7 @@
 						/>
 					</div>
 					<div class="charge-select">
-						<el-select v-model="chargeID" clearable :placeholder="t('pages.ChargeItem')">
+						<el-select v-model="chargeID" :placeholder="t('pages.ChargeItem')">
 							<el-option
 								v-for="opt in chargeOptions"
 								:key="opt.value"
@@ -56,7 +56,6 @@
 		<el-card shadow="never" class="table-card">
 			<div v-show="routeData.length" class="op-row">
 				<el-button
-					v-if="activeTab === 'all'"
 					type="success"
 					:icon="Download"
 					@click="exportdata"
@@ -66,42 +65,42 @@
 			</div>
 
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
-				<el-table-column :label="t('pages.ID')" prop="id" width="180" />
+				<el-table-column :label="t('pages.ID')" prop="id" width="120" />
 				<el-table-column
-					:label="t('pages.clientRef')"
+					:label="t('pages.lastorder')"
 					prop="clientRef"
 					min-width="160"
 					show-overflow-tooltip
 				/>
 				<el-table-column
-					:label="t('pages.lastmiler')"
+					:label="t('pages.accounting.ledger.lastmiler')"
 					prop="lastMilerNbr"
 					min-width="160"
 					show-overflow-tooltip
 				/>
 				<el-table-column
-					:label="t('pages.tenantalias')"
+					:label="t('pages.accounting.ledger.tenantName')"
 					prop="tenantAlias"
-					min-width="160"
+					min-width="140"
 					show-overflow-tooltip
 				/>
 				<el-table-column
-					:label="t('pages.accounting.accountreceivable.SvcName')"
+					:label="t('pages.service')"
 					prop="svcName"
-					min-width="160"
+					min-width="140"
 					show-overflow-tooltip
 				/>
 				<el-table-column :label="t('pages.ChargeItem')" width="160">
 					<template #default="scope">
-						<span>{{ formatChargeItem(scope.row.chargeID ?? scope.row.chargeItem) }}</span>
+						<span>{{ formatChargeItem(scope.row.charge) }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.accounting.ledger.ChargeAmount')" width="160">
 					<template #default="scope">
-						<span>{{ scope.row.total?.value }}{{ scope.row.total?.unit }}</span>
+						<span>{{ scope.row.total?.value }} {{ scope.row.total?.unit }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.date')" width="180">
+				<el-table-column :label="t('pages.accounting.ledger.TalliedOn')" width="180">
 					<template #default="scope">
 						<span>{{ formatDate(scope.row.talliedOn) }}</span>
 					</template>
@@ -128,12 +127,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { ledgerlist, SackMftsign } from '@/api/accounting';
-import { formatChargeItem, CHARGE_OPTIONS } from '@/utils/charge-item';
+import { formatChargeItem, LEDGER_CHARGE_FILTERS } from '@/utils/charge-item';
 import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
 
@@ -155,7 +154,7 @@ type TabName = 'all' | 'tracking';
 
 const activeTab = ref<TabName>('all');
 const dates = ref<[string, string] | null>(null);
-const chargeID = ref<string | number>('');
+const chargeID = ref(0);
 const trackingNumbers = ref('');
 const routeData = ref<LedgerRow[]>([]);
 const loading = ref(true);
@@ -163,7 +162,9 @@ const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
 
-const chargeOptions = CHARGE_OPTIONS;
+const chargeOptions = computed(() =>
+	LEDGER_CHARGE_FILTERS.map((o) => ({ value: o.value, label: t(o.key) })),
+);
 
 const formatDate = (utc: string | undefined) => {
 	if (!utc) return '';
@@ -180,14 +181,6 @@ const defaultRange = (): [string, string] => [
 	moment().format('YYYY-MM-DD'),
 ];
 
-const parseTrackingNumbers = (text: string) => {
-	const list = text
-		.split(/[\n,，]/)
-		.map((s) => s.trim())
-		.filter(Boolean);
-	return list.slice(0, 200).join(',');
-};
-
 const onSearch = () => {
 	pagecurrent.value = 1;
 	getdata();
@@ -196,7 +189,7 @@ const onSearch = () => {
 const onReset = () => {
 	if (activeTab.value === 'all') {
 		dates.value = defaultRange();
-		chargeID.value = '';
+		chargeID.value = 0;
 	} else {
 		trackingNumbers.value = '';
 	}
@@ -207,7 +200,7 @@ const onReset = () => {
 const onTabChange = () => {
 	if (activeTab.value === 'all') {
 		dates.value = defaultRange();
-		chargeID.value = '';
+		chargeID.value = 0;
 	} else {
 		trackingNumbers.value = '';
 	}
@@ -217,32 +210,14 @@ const onTabChange = () => {
 
 const getdata = async () => {
 	loading.value = true;
-	const params: {
-		index: number;
-		size: number;
-		PeriodMin?: string;
-		PeriodMax?: string;
-		ChargeID?: string | number;
-		TrackingNbr?: string;
-	} = {
+	const res: ApiResponse<any> = await ledgerlist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-	};
-
-	if (activeTab.value === 'all') {
-		params.PeriodMin = toUtcIso(dates.value?.[0]);
-		params.PeriodMax = toUtcIso(dates.value?.[1]);
-		if (chargeID.value !== '' && chargeID.value != null) {
-			params.ChargeID = chargeID.value;
-		}
-	} else {
-		const nbrs = parseTrackingNumbers(trackingNumbers.value);
-		if (nbrs) {
-			params.TrackingNbr = nbrs;
-		}
-	}
-
-	const res: ApiResponse<any> = await ledgerlist(params);
+		PeriodMin: toUtcIso(dates.value?.[0]),
+		PeriodMax: toUtcIso(dates.value?.[1]),
+		ChargeID: chargeID.value,
+		TrackingNbr: encodeURIComponent(trackingNumbers.value),
+	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
@@ -252,22 +227,14 @@ const getdata = async () => {
 
 const exportdata = async () => {
 	const url = new URL(`${getoriginurl()}/api/accounting/ledger/export`);
-
-	let trackingNbr: string | undefined;
-	if (activeTab.value === 'all') {
-		if (dates.value) {
-			url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
-			url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
-		}
-		if (chargeID.value !== '' && chargeID.value != null) {
-			url.searchParams.set('ChargeID', String(chargeID.value));
-		}
-	} else {
-		trackingNbr = parseTrackingNumbers(trackingNumbers.value) || undefined;
-		if (trackingNbr) {
-			url.searchParams.set('IsUseTrackingNbr', 'true');
-			url.searchParams.set('RefNbrs', trackingNbr);
-		}
+	url.searchParams.set('ChargeID', String(chargeID.value));
+	if (dates.value) {
+		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
+		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
+	}
+	if (trackingNumbers.value) {
+		url.searchParams.set('IsUseTrackingNbr', 'true');
+		url.searchParams.set('RefNbrs', encodeURIComponent(trackingNumbers.value));
 	}
 
 	const res: any = await SackMftsign({ url: url.toString() });

@@ -1,12 +1,12 @@
 <template>
 	<el-dialog
 		v-model="visible"
-		:title="t('pages.InvoiceDetail') + id"
+		:title="t('pages.Parcels.list.detail.detail') + id"
 		width="860px"
 		:close-on-click-modal="false"
 		@closed="handleClose"
 	>
-		<div v-if="invoiceID && !paymentID" style="text-align: right; margin-bottom: 15px">
+		<div v-if="invoiceID" style="text-align: right; margin-bottom: 15px">
 			<el-button
 				type="success"
 				size="small"
@@ -21,49 +21,25 @@
 		</div>
 
 		<el-table
-			v-if="paymentID"
-			ref="multipleTableRef"
+			v-if="isPayment"
 			v-loading="loading"
 			:data="data"
 			style="width: 100%; margin-bottom: 15px"
 			size="small"
 			border
 		>
-			<el-table-column property="id" :label="t('pages.ID')">
+			<el-table-column property="payMethod" :label="t('pages.type1')" />
+			<el-table-column :label="t('pages.amount')">
 				<template #default="scope">
-					<span>{{ scope.row.id }}</span>
+					<span>{{ scope.row.paidAmt?.value }}{{ scope.row.paidAmt?.unit }}</span>
 				</template>
 			</el-table-column>
-			<el-table-column property="paymentID" :label="t('pages.PaymentID')">
+			<el-table-column :label="t('pages.date')">
 				<template #default="scope">
-					<span>{{ scope.row.paymentID }}</span>
+					<span>{{ formatDay(scope.row.paidOn) }}</span>
 				</template>
 			</el-table-column>
-			<el-table-column property="amount" :label="t('pages.amount')">
-				<template #default="scope">
-					<span
-						>{{ scope.row.amount?.value }}{{ scope.row.amount?.unit }}</span
-					>
-				</template>
-			</el-table-column>
-			<el-table-column
-				property="currencyText"
-				:label="t('pages.AccountBalance.Currency')"
-			/>
-			<el-table-column property="payMethod" :label="t('pages.type1')">
-				<template #default="scope">
-					<span>{{ scope.row.payMethod }}</span>
-				</template>
-			</el-table-column>
-			<el-table-column property="postedOn" :label="t('pages.PostedOn')">
-				<template #default="scope">
-					<span>{{ formatTime(scope.row.postedOn) }}</span>
-				</template>
-			</el-table-column>
-			<el-table-column
-				property="clientRefNbr"
-				:label="t('pages.Reference')"
-			/>
+			<el-table-column property="supplement" :label="t('pages.remark')" />
 			<template #empty>
 				<el-empty :description="t('pages.NoData')" />
 			</template>
@@ -71,44 +47,29 @@
 
 		<el-table
 			v-else
-			ref="multipleTableRef"
 			v-loading="loading"
 			:data="data"
 			style="width: 100%; margin-bottom: 15px"
 			size="small"
 			border
 		>
-			<el-table-column property="id" :label="t('pages.ID')">
+			<el-table-column property="clientRefNbr" :label="t('pages.Reference')" />
+			<el-table-column :label="t('pages.Parcels.detail.ChargeItem')">
 				<template #default="scope">
-					<span>{{ scope.row.id }}</span>
+					<span>{{ formatChargeItem(scope.row.chargeID) }}</span>
 				</template>
 			</el-table-column>
-			<el-table-column property="invoiceID" :label="t('pages.InvoiceID')">
+			<el-table-column :label="t('pages.amount')">
 				<template #default="scope">
-					<span>{{ scope.row.invoiceID }}</span>
+					<span>{{ scope.row.chargeAmt?.value }}{{ scope.row.chargeAmt?.unit }}</span>
 				</template>
 			</el-table-column>
-			<el-table-column
-				property="chargeItem"
-				:label="t('pages.Parcels.detail.ChargeItem')"
-			>
-				<template #default="scope">
-					<span>{{ formatChargeItem(scope.row.chargeItem ?? scope.row.chargeID) }}</span>
-				</template>
-			</el-table-column>
-			<el-table-column property="chargeAmt" :label="t('pages.amount')">
-				<template #default="scope">
-					<span
-						>{{ scope.row.chargeAmt?.value
-						}}{{ scope.row.chargeAmt?.unit }}</span
-					>
-				</template>
-			</el-table-column>
-			<el-table-column property="talliedOn" :label="t('pages.date')">
+			<el-table-column :label="t('pages.date')">
 				<template #default="scope">
 					<span>{{ formatTime(scope.row.talliedOn) }}</span>
 				</template>
 			</el-table-column>
+			<el-table-column property="supplement" :label="t('pages.remark')" />
 			<template #empty>
 				<el-empty :description="t('pages.NoData')" />
 			</template>
@@ -117,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { saveAs } from 'file-saver';
@@ -155,10 +116,17 @@ const formatTime = (utc: string | undefined) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
+const formatDay = (utc: string | undefined) => {
+	if (!utc) return '';
+	return moment.utc(utc).local().format('YYYY-MM-DD');
+};
+
+const isPayment = computed(() => parseInt(String(paymentID.value || 0), 10) > 0);
+
 const loadDetail = async () => {
 	loading.value = true;
 	try {
-		if (parseInt(String(paymentID.value || 0), 10) > 0) {
+		if (isPayment.value) {
 			const res: ApiResponse<any> = await getPayment(String(paymentID.value));
 			if (res?.isSuccess) {
 				data.value = Array.isArray(res.result) ? res.result : [res.result];

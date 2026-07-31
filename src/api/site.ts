@@ -23,9 +23,7 @@ export const sitecreate = (body: Record<string, any>): Promise<ApiResponse> =>
 	request({ url: '/api/Configuration/sites/create', method: 'POST', data: body });
 
 // 更新操作点（shippingspa: POST /api/Configuration/sites/edit）
-export const siteupdate = (
-	body: Record<string, any> & { id: string | number },
-): Promise<ApiResponse> =>
+export const siteupdate = (body: Record<string, any>): Promise<ApiResponse> =>
 	request({ url: '/api/Configuration/sites/edit', method: 'POST', data: body });
 
 // 禁用 / 启用操作点（保留 /disable 推测为软删除，需要时再核实）
