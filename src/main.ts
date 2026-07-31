@@ -3,7 +3,6 @@ import { createPinia } from 'pinia';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import App from './App.vue';
 import router from './router';
-import { usePermissStore } from './store/permiss';
 import { useUserStore } from './store/user';
 import i18n from './language';
 import 'element-plus/dist/index.css';
@@ -18,16 +17,8 @@ app.use(i18n);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component);
 }
-// 自定义权限指令
-const permiss = usePermissStore();
+// 初始化 user store（从 localStorage 恢复 token/name）
 const user = useUserStore();
 user.init();
-app.directive('permiss', {
-    mounted(el, binding) {
-        if (binding.value && !permiss.key.includes(String(binding.value))) {
-            el['hidden'] = true;
-        }
-    },
-});
 
 app.mount('#app');

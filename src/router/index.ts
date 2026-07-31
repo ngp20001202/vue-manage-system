@@ -218,12 +218,11 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
     NProgress.start();
 
-    // 免密登录（其它站点带 ?token= 跳过来）：必须在任何组件挂载前完成，
-    // 否则 permiss.key 仍是未登录状态，v-permiss 指令 mounted 时把菜单全部隐藏，
-    // 即使后面调用了 permiss.reset() 也无法再次触发这些指令（refresh 后才会刷新）。
+    // 免密登录（其它站点带 ?token= 跳过来）：在导航落到组件前完成 token 兑换，
+    // 并把 token 从 URL 上清掉，避免后续路由再触发一次。
     const urlToken = (to.query?.token as string | undefined) || undefined;
     if (urlToken) {
         try {
