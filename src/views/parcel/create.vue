@@ -198,7 +198,7 @@
 							style="width: 200px"
 						>
 							<template #append>
-								<el-select v-model="pkg.WeightUnit" style="width: 90px">
+								<el-select v-model="pkg.WeightUnit" style="width: 110px">
 									<el-option
 										v-for="val in weightOptions"
 										:key="val.label"
@@ -233,7 +233,7 @@
 							style="width: 170px"
 						>
 							<template #append>
-								<el-select v-model="pkg.DimUnit" style="width: 65px">
+								<el-select v-model="pkg.DimUnit" style="width: 90px">
 									<el-option
 										v-for="val in dimOptions"
 										:key="val.label"
@@ -282,7 +282,7 @@
 								style="width: 200px"
 							>
 								<template #append>
-									<el-select v-model="item.LineTotal.Unit" style="width: 75px">
+									<el-select v-model="item.LineTotal.Unit" style="width: 100px">
 										<el-option
 											v-for="option in priceOptions"
 											:key="option.label"

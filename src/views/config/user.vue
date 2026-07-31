@@ -39,9 +39,10 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
-			<div v-show="routeData.length" class="operation">
+			<div class="operation">
 				<el-button type="success" size="small" class="create-btn" :icon="Plus" @click="onCreate" />
 				<el-pagination
+					v-show="routeData.length"
 					class="op-row-pager"
 					background
 					layout="total, prev, pager, next, sizes"
