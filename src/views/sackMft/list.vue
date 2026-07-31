@@ -88,7 +88,7 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
-			<div v-show="routeData.length" class="op-row">
+			<div class="op-row">
 				<div class="op-row-left">
 					<el-tooltip :content="t('pages.upload')" placement="top" :enterable="false">
 						<el-button type="info" class="upload" @click="uploadVisible = true">
@@ -97,6 +97,7 @@
 					</el-tooltip>
 				</div>
 				<el-pagination
+					v-show="routeData.length"
 					class="op-row-pager"
 					background
 					layout="total, prev, pager, next, sizes"
