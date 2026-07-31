@@ -237,13 +237,8 @@ const copy = (key: string) => {
 	}
 };
 
-const defaultRange = (): [string, string] => [
-	moment().subtract(14, 'days').format('YYYY-MM-DD'),
-	moment().format('YYYY-MM-DD'),
-];
-
 const init = () => {
-	dates.value = defaultRange();
+	dates.value = null;
 	textarea.value = '';
 };
 
@@ -371,7 +366,6 @@ watch([count, pagecurrent], () => {
 });
 
 onMounted(() => {
-	dates.value = defaultRange();
 	getdata();
 });
 </script>

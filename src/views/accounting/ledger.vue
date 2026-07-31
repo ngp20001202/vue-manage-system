@@ -187,10 +187,10 @@ const toUtcIso = (date: string | undefined) => {
 	return moment(date).utc().format();
 };
 
-const defaultRange = (): [string, string] => [
-	moment().subtract(30, 'days').format('YYYY-MM-DD'),
-	moment().format('YYYY-MM-DD'),
-];
+const defaultRange = (): [string, string] => {
+	const today = moment().format('YYYY-MM-DD');
+	return [today, today];
+};
 
 const onSearch = () => {
 	pagecurrent.value = 1;
