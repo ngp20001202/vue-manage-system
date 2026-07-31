@@ -24,31 +24,31 @@ export const addressdetail = (id: string | number): Promise<ApiResponse> =>
 
 // 创建地址
 export interface AddressContact {
-	name: string;
-	phone?: string;
-	email?: string;
-	company?: string;
-	street1?: string;
-	street2?: string;
-	street3?: string;
-	district?: string;
-	city?: string;
-	province?: string;
-	postalCode?: string;
-	countryCode?: string;
+	Name: string;
+	Phone?: string;
+	Email?: string;
+	Company?: string;
+	Street1?: string;
+	Street2?: string;
+	Street3?: string;
+	District?: string;
+	City?: string;
+	Province?: string;
+	PostalCode?: string;
+	CountryCode?: string;
 }
 
 export interface AddressBody {
-	type: string | number;
-	contact: AddressContact;
-	isDefault?: boolean;
+	Type: number;
+	Contact: AddressContact;
+	IsDefault?: boolean;
 }
 
 export const addresscreate = (body: AddressBody): Promise<ApiResponse> =>
 	request({ url: '/api/address/Create', method: 'POST', data: body });
 
 // 更新地址（shippingspa: PUT /api/address/Edit，ID 走 body）
-export const addressupdate = (body: AddressBody & { id: string | number }): Promise<ApiResponse> =>
+export const addressupdate = (body: AddressBody & { ID: string | number }): Promise<ApiResponse> =>
 	request({ url: '/api/address/Edit', method: 'PUT', data: body });
 
 // 设置默认地址

@@ -65,6 +65,19 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
+			<el-pagination
+				v-if="routeData.length"
+				class="pager-top"
+				background
+				layout="total, prev, pager, next, sizes"
+				:total="availcnt"
+				:current-page="pagecurrent"
+				:page-size="count"
+				:page-sizes="[10, 20, 50, 100]"
+				@current-change="(p: number) => (pagecurrent = p)"
+				@size-change="(s: number) => (count = s)"
+			/>
+
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
 				<el-table-column :label="t('pages.ID')" width="150">
 					<template #default="scope">
@@ -333,6 +346,11 @@ onMounted(() => {
 }
 .pager {
 	margin-top: 16px;
+	justify-content: flex-end;
+	display: flex;
+}
+.pager-top {
+	margin-bottom: 12px;
 	justify-content: flex-end;
 	display: flex;
 }

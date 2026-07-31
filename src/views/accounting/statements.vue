@@ -33,6 +33,17 @@
 						<el-icon><Upload /></el-icon>
 					</el-button>
 				</el-tooltip>
+				<el-pagination
+					class="op-row-pager"
+					background
+					layout="total, prev, pager, next, sizes"
+					:total="availcnt"
+					:current-page="pagecurrent"
+					:page-size="count"
+					:page-sizes="[10, 20, 50, 100]"
+					@current-change="(p: number) => (pagecurrent = p)"
+					@size-change="(s: number) => (count = s)"
+				/>
 			</div>
 
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
@@ -210,6 +221,9 @@ onMounted(() => {
 	align-items: center;
 	min-height: 50px;
 	margin-bottom: 10px;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: space-between;
 }
 .export {
 	display: inline-flex;
@@ -226,6 +240,9 @@ onMounted(() => {
 	margin-top: 16px;
 	justify-content: flex-end;
 	display: flex;
+}
+.op-row-pager {
+	flex-shrink: 0;
 }
 @media (max-width: 768px) {
 	.date-picker {

@@ -726,7 +726,7 @@ onMounted(() => {
 }
 .action-cell {
 	display: flex;
-	flex-wrap: nowrap;
+	flex-wrap: wrap;
 	justify-content: center;
 	align-items: center;
 	gap: 4px;

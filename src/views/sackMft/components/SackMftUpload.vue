@@ -1,37 +1,37 @@
 <template>
 	<el-dialog
 		v-model="visible"
-		:title="t('pages.upload')"
+		title="UploadFile"
 		width="600px"
 		:close-on-click-modal="false"
 		@closed="handleClose"
 	>
 		<div class="upload-body">
-			<div class="file-row">
+			<div class="input-group">
 				<input
 					ref="fileInput"
 					type="file"
 					accept=".xls,.xlsx"
-					class="file-input"
+					class="custom-file-input"
 					@change="onFileChange"
 				/>
-				<el-input
-					:model-value="filename || t('pages.placechoose')"
-					readonly
-					:class="['file-name', { 'is-empty': !filename }]"
-				/>
-				<el-button type="primary" @click="triggerFile">
-					{{ t('pages.ChooseFile') }}
-				</el-button>
+				<label
+					:class="['custom-file-label', { 'is-empty': !filename }]"
+					for="upload-input"
+				>
+					{{ filename || t('pages.placechoose') }}
+				</label>
+				<button class="upload-btn" @click="triggerFile">
+					<el-icon><Upload /></el-icon>
+				</button>
 			</div>
-			<div class="actions">
-				<el-button type="success" :disabled="!file" @click="submit">
-					{{ t('pages.Import') }}
-				</el-button>
+			<el-button type="success" class="import-btn" @click="submit">
+				{{ t('pages.Import') }}
+			</el-button>
+			<div class="download-link">
 				<a href="/templates/Outgating_Template.xlsx" download>
-					<el-button type="info">
-						{{ t('pages.Download') }}
-					</el-button>
+					<el-icon><Download /></el-icon>
+					{{ t('pages.Download') }}
 				</a>
 			</div>
 		</div>
@@ -42,6 +42,7 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
+import { Upload, Download } from '@element-plus/icons-vue';
 import { sackMftimport } from '@/api/sackMft';
 
 const props = defineProps<{ modelValue: boolean }>();
@@ -109,22 +110,56 @@ const handleClose = () => {
 	flex-direction: column;
 	gap: 16px;
 }
-.file-input {
+.custom-file-input {
 	display: none;
 }
-.file-row {
+.input-group {
 	display: flex;
-	gap: 8px;
-	align-items: center;
+	align-items: stretch;
+	gap: 0;
 }
-.file-name {
+.custom-file-label {
 	flex: 1;
+	padding: 0 12px;
+	border: 1px solid #dcdfe6;
+	border-right: none;
+	border-radius: 4px 0 0 4px;
+	background: #fff;
+	color: #606266;
+	line-height: 32px;
+	min-height: 32px;
+	cursor: pointer;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	&.is-empty {
+		color: #a8abb2;
+	}
 }
-.file-name.is-empty :deep(.el-input__inner) {
-	color: #a8abb2;
+.upload-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+	background: #17a2b8;
+	color: #fff;
+	border: 1px solid #17a2b8;
+	border-radius: 0 4px 4px 0;
+	cursor: pointer;
 }
-.actions {
-	display: flex;
-	gap: 8px;
+.import-btn {
+	align-self: flex-start;
+}
+.download-link {
+	a {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		color: #17a2b8;
+		text-decoration: none;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
 }
 </style>

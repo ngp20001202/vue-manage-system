@@ -29,19 +29,19 @@
 				@row-click="onSelect"
 			>
 				<el-table-column :label="t('pages.Name')" min-width="120">
-					<template #default="scope">{{ scope.row.contact?.name }}</template>
+					<template #default="scope">{{ pickContact(scope.row, 'name') }}</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.company')" min-width="120">
-					<template #default="scope">{{ scope.row.contact?.company }}</template>
+					<template #default="scope">{{ pickContact(scope.row, 'company') }}</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.Phone')" min-width="110">
-					<template #default="scope">{{ scope.row.contact?.phone }}</template>
+					<template #default="scope">{{ pickContact(scope.row, 'phone') }}</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.StreetLine1')" min-width="220">
 					<template #default="scope">{{ addressLine(scope.row) }}</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.ZipPostalCode')" min-width="100">
-					<template #default="scope">{{ scope.row.contact?.postalCode }}</template>
+					<template #default="scope">{{ pickContact(scope.row, 'postalCode') }}</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.SenderSearch.Select')" width="90" align="center">
 					<template #default="scope">
@@ -114,16 +114,26 @@ const showList = computed(() => {
 	const kw = keyword.value.trim().toLowerCase();
 	if (!kw) return list.value;
 	return list.value.filter((item) => {
-		if (!item.contact) return true;
-		return Object.keys(item.contact).some((key) =>
-			String(item.contact?.[key] ?? '').toLowerCase().includes(kw),
+		const c = item.Contact ?? item.contact;
+		if (!c) return true;
+		return Object.keys(c).some((key) =>
+			String((c as Record<string, any>)?.[key] ?? '').toLowerCase().includes(kw),
 		);
 	});
 });
 
+// 兼容 shippingspa PascalCase 与旧小写接口
+const pickContact = (row: SenderAddress, field: string) => {
+	const c = row.Contact ?? row.contact;
+	if (!c) return '';
+	const camel = field.charAt(0).toLowerCase() + field.slice(1);
+	return (c as Record<string, any>)[field] ?? (c as Record<string, any>)[camel] ?? '';
+};
+
 const addressLine = (row: SenderAddress) => {
-	const c = row.contact || {};
-	return [c.street1, c.street2, c.street3, c.city, c.province, c.countryCode]
+	const c = row.Contact ?? row.contact;
+	if (!c) return '';
+	return [c.Street1 ?? c.street1, c.Street2 ?? c.street2, c.Street3 ?? c.street3, c.City ?? c.city, c.Province ?? c.province, c.CountryCode ?? c.countryCode]
 		.filter(Boolean)
 		.join(' ');
 };
@@ -139,7 +149,7 @@ const getdata = async () => {
 		});
 		if (res?.isSuccess) {
 			list.value = (res.result ?? []).filter(
-				(item) => !props.type || !item.type || item.type === props.type,
+				(item) => !props.type || !item.Type || !item.type || item.Type === props.type || item.type === props.type,
 			);
 		} else {
 			list.value = [];

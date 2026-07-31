@@ -25,21 +25,26 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
+			<el-pagination
+				v-if="routeData.length"
+				class="pager-top"
+				background
+				layout="total, prev, pager, next, sizes"
+				:total="availcnt"
+				:current-page="pagecurrent"
+				:page-size="count"
+				:page-sizes="[10, 20, 50, 100]"
+				@current-change="(p: number) => (pagecurrent = p)"
+				@size-change="(s: number) => (count = s)"
+			/>
+
 			<el-table
 				v-loading="loading"
 				:data="routeData"
 				style="width: 100%"
 				border
-				@row-click="onRowClick"
 			>
-				<el-table-column :label="t('pages.ID')" prop="id" width="180">
-					<template #default="scope">
-						<span class="cyan-detail">
-							<el-icon style="margin-right: 4px"><InfoFilled /></el-icon>
-							{{ scope.row.id }}
-						</span>
-					</template>
-				</el-table-column>
+				<el-table-column :label="t('pages.ID')" prop="id" width="180" />
 				<el-table-column
 					:label="t('pages.Invoice.name')"
 					prop="name"
@@ -92,20 +97,17 @@
 				@size-change="(s: number) => (count = s)"
 			/>
 		</el-card>
-
-		<InvoiceDetailDialog v-model="detailVisible" :id="detailId" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Search, Refresh, InfoFilled } from '@element-plus/icons-vue';
+import { Search, Refresh } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { GetInvoices, SackMftsign } from '@/api/accounting';
 import { datatoutc } from '@/utils/format';
 import { getoriginurl } from '@/utils/originurl';
-import InvoiceDetailDialog from './components/InvoiceDetailDialog.vue';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -124,8 +126,6 @@ const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
-const detailVisible = ref(false);
-const detailId = ref<string | number>('');
 
 const formatDate = (utc: string | undefined) => {
 	if (!utc) return '';
@@ -189,11 +189,6 @@ const onDownload = async (row: InvoiceRow) => {
 	}
 };
 
-const onRowClick = (row: InvoiceRow) => {
-	detailId.value = row?.id ?? '';
-	detailVisible.value = true;
-};
-
 watch([count, pagecurrent], () => {
 	getdata();
 });
@@ -242,14 +237,10 @@ onMounted(() => {
 	justify-content: flex-end;
 	display: flex;
 }
-.cyan-detail {
-	color: #17a2b8;
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-}
-.cyan-detail:hover {
-	text-decoration: underline;
+.pager-top {
+	margin-bottom: 12px;
+	justify-content: flex-end;
+	display: flex;
 }
 @media (max-width: 768px) {
 	.filter-item,

@@ -34,6 +34,17 @@
 						</el-button>
 					</el-tooltip>
 				</div>
+				<el-pagination
+					class="op-row-pager"
+					background
+					layout="total, prev, pager, next, sizes"
+					:total="availcnt"
+					:current-page="pagecurrent"
+					:page-size="count"
+					:page-sizes="[10, 20, 50, 100]"
+					@current-change="(p: number) => (pagecurrent = p)"
+					@size-change="(s: number) => (count = s)"
+				/>
 			</div>
 
 			<el-table

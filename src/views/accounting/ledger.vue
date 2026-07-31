@@ -62,6 +62,17 @@
 				>
 					{{ t('pages.Export') }}
 				</el-button>
+				<el-pagination
+					class="op-row-pager"
+					background
+					layout="total, prev, pager, next, sizes"
+					:total="availcnt"
+					:current-page="pagecurrent"
+					:page-size="count"
+					:page-sizes="[10, 20, 50, 100]"
+					@current-change="(p: number) => (pagecurrent = p)"
+					@size-change="(s: number) => (count = s)"
+				/>
 			</div>
 
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
@@ -305,7 +316,10 @@ onMounted(() => {
 	align-items: center;
 	margin-bottom: 12px;
 	flex-wrap: wrap;
-	justify-content: flex-end;
+	justify-content: space-between;
+}
+.op-row-pager {
+	flex-shrink: 0;
 }
 .pager {
 	margin-top: 16px;

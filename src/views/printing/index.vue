@@ -39,6 +39,17 @@
 				>
 					<span class="btn-text">{{ t('pages.printlabel') }}</span>
 				</el-button>
+				<el-pagination
+					class="op-row-pager"
+					background
+					layout="total, prev, pager, next, sizes"
+					:total="availcnt"
+					:current-page="pagecurrent"
+					:page-size="count"
+					:page-sizes="[10, 20, 50, 100]"
+					@current-change="(p: number) => (pagecurrent = p)"
+					@size-change="(s: number) => (count = s)"
+				/>
 			</div>
 
 			<el-table
@@ -197,6 +208,10 @@ onMounted(() => {
 	align-items: center;
 	margin-bottom: 12px;
 	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.op-row-pager {
+	flex-shrink: 0;
 }
 .print {
 	background-color: #409eff;

@@ -158,30 +158,33 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="120" align="center" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="380" align="center" fixed="right">
 					<template #default="scope">
-						<el-dropdown trigger="click">
-							<el-button type="primary" size="small">
-								<el-icon><Setting /></el-icon>
+						<div class="action-cell">
+							<el-button
+								type="info"
+								size="small"
+								@click="downloads(scope.row.id)"
+							>
+								{{ t('pages.SackMfts.download') }}
 							</el-button>
-							<template #dropdown>
-								<el-dropdown-menu>
-									<el-dropdown-item @click="downloads(scope.row.id)">
-										{{ t('pages.SackMfts.download') }}
-									</el-dropdown-item>
-									<el-dropdown-item @click="openScanForm(scope.row.id)">
-										{{ t('pages.SackMfts.SCANFORM') }}
-									</el-dropdown-item>
-									<el-dropdown-item
-										v-for="code in scope.row.roledActions"
-										:key="code"
-										@click="handleRoledAction(code, scope.row.id)"
-									>
-										{{ actionTitle(code) }}
-									</el-dropdown-item>
-								</el-dropdown-menu>
-							</template>
-						</el-dropdown>
+							<el-button
+								type="primary"
+								size="small"
+								@click="openScanForm(scope.row.id)"
+							>
+								{{ t('pages.SackMfts.SCANFORM') }}
+							</el-button>
+							<el-button
+								v-for="code in scope.row.roledActions"
+								:key="code"
+								:type="actionType(code)"
+								size="small"
+								@click="handleRoledAction(code, scope.row.id)"
+							>
+								{{ actionTitle(code) }}
+							</el-button>
+						</div>
 					</template>
 				</el-table-column>
 				<template #empty>
@@ -218,7 +221,6 @@ import {
 	Refresh,
 	InfoFilled,
 	List,
-	Setting,
 } from '@element-plus/icons-vue';
 import moment from 'moment';
 import {
@@ -405,6 +407,17 @@ const actionTitle = (code: number | string) => {
 	return map[code] ?? String(code);
 };
 
+const actionType = (code: number | string) => {
+	const map: Record<number | string, string> = {
+		31100: 'success',
+		27100: 'info',
+		31300: 'danger',
+		31400: 'warning',
+		31900: 'primary',
+	};
+	return map[code] ?? 'primary';
+};
+
 const handleRoledAction = async (code: number | string, id: string | number) => {
 	const apiMap: Record<number | string, (body: { ids: (string | number)[] }) => Promise<ApiResponse>> = {
 		27100: sackMftCfmOutgated,
@@ -422,8 +435,8 @@ const handleRoledAction = async (code: number | string, id: string | number) => 
 		return;
 	}
 	try {
-		await ElMessageBox.confirm(`${actionTitle(code)}?`, t('pages.attention') as string, {
-			confirmButtonText: t('pages.Save') as string,
+		await ElMessageBox.confirm(actionTitle(code), t('pages.attention') as string, {
+			confirmButtonText: t('pages.address.create.confirm') as string,
 			cancelButtonText: t('pages.Cancel') as string,
 			type: 'warning',
 			center: true,
@@ -556,6 +569,12 @@ onMounted(() => {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
+}
+.action-cell {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: center;
 }
 .pager {
 	margin-top: 16px;
