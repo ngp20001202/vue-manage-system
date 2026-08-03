@@ -384,7 +384,7 @@
 						<span v-else class="rate-error">{{ scope.row.quote }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="left">
+				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="left" class-name="action-col">
 					<template #default="scope">
 						<el-button
 							v-if="scope.row.show"
@@ -1568,6 +1568,9 @@ watch(isSign, (val) => {
 	.address-trigger,
 	.address-dropdown {
 		width: 100%;
+	}
+	.inline-form :deep(.el-input-group__append .el-select) {
+		width: 80px !important;
 	}
 }
 </style>

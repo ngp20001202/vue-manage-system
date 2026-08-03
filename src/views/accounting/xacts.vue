@@ -302,6 +302,7 @@ onMounted(() => {
 @media (max-width: 768px) {
 	.date-picker {
 		width: 100%;
+		margin-bottom: 10px;
 	}
 }
 </style>

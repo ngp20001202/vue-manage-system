@@ -134,6 +134,7 @@
 					layout="total, prev, pager, next, sizes"
 					:total="availcnt"
 					:current-page="pagecurrent"
+					pager-count="5"
 					:page-size="count"
 					:page-sizes="[10, 20, 50, 100]"
 					@current-change="(p: number) => (pagecurrent = p)"
@@ -202,7 +203,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="360" align="left" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="360" align="left" fixed="right" class-name="action-col">
 					<template #default="scope">
 						<div v-if="showoption(scope.row)" class="action-cell">
 							<el-button
@@ -792,6 +793,7 @@ onMounted(() => {
 	.date-picker,
 	.stage-select {
 		width: 100%;
+		margin-bottom: 10px;
 	}
 	.tracking-input {
 		width: 100%;

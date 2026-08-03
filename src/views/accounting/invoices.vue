@@ -3,7 +3,7 @@
 		<el-card shadow="never" class="filter-card">
 			<div class="filter-bar">
 				<div class="filter-item">
-					<span class="filter-label">{{ t('pages.Invoice.Billgenerationtime') }}：</span>
+					<span class="filter-label Billgenerationtime">{{ t('pages.Invoice.Billgenerationtime') }}：</span>
 					<el-date-picker
 						v-model="dates"
 						type="daterange"
