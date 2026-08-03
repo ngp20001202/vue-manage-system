@@ -136,6 +136,7 @@
           width="100"
           align="left"
           fixed="right"
+          class-name="action-col"
         >
           <template #default="scope">
             <el-button

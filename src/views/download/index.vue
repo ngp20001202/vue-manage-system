@@ -89,7 +89,7 @@
 						<span>{{ formatCreated(scope.row.createdOn) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="320" align="left">
+				<el-table-column :label="t('pages.Action')" width="320" align="left" class-name="action-col">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button

@@ -152,4 +152,19 @@ watch(
     box-shadow: -3px 0 15px 3px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
+
+@media (max-width: 768px) {
+    .tabs-container {
+        padding-right: 90px;
+    }
+    .Tabs-close-box {
+        width: 80px;
+    }
+    .Tabs-close-box .el-button {
+        padding: 5px 8px;
+    }
+    .Tabs-close-box .el-button span {
+        display: none;
+    }
+}
 </style>

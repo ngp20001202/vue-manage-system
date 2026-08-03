@@ -85,3 +85,55 @@ i {
 	--header-text-color: #fff;
 	--active-color: var(--el-color-primary);
 }
+
+@media (max-width: 768px) {
+	/* 内联表单垂直堆叠 */
+	.el-form--inline .el-form-item {
+		width: 100%;
+		margin-right: 0;
+	}
+	.el-form--inline :deep(.el-input),
+	.el-form--inline :deep(.el-select),
+	.el-form--inline :deep(.el-date-editor) {
+		width: 100% !important;
+	}
+
+	/* 对话框全宽 */
+	.el-dialog {
+		width: 90vw !important;
+		max-width: 100vw;
+	}
+	.el-dialog__body {
+		padding: 12px;
+	}
+
+	/* 表单标签顶部对齐 */
+	.el-form-item__label {
+		width: auto !important;
+		float: none;
+	}
+	.el-form-item__content {
+		margin-left: 0 !important;
+	}
+
+	/* 表格容器可横向滚动 */
+	.table-card .el-card__body {
+		overflow-x: auto;
+	}
+
+	/* action 列图标化 */
+	.action-col .el-button span {
+		display: none;
+	}
+	.action-col .el-button {
+		padding: 5px 6px;
+	}
+	.action-col .el-button .el-icon {
+		margin-right: 0;
+	}
+
+	/* 标签页操作按钮精简 */
+	.Tabs-close-box .el-button span {
+		display: none;
+	}
+}

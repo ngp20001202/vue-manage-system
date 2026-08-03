@@ -2,6 +2,9 @@
   <div class="header">
     <!-- 折叠按钮 -->
     <div class="header-left">
+      <div class="hamburger" @click="sidebar.toggleMobile()">
+        <el-icon :size="22"><Expand /></el-icon>
+      </div>
       <img class="logo" src="../assets/img/logo.svg" alt="" />
       <div class="web-title">{{ webTitle }}</div>
       <div class="collapse-btn" @click="collapseChage">
@@ -253,5 +256,58 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.hamburger {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 0 10px;
+  margin-right: 8px;
+  cursor: pointer;
+  opacity: 0.8;
+  font-size: 22px;
+}
+
+.hamburger:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .header-right {
+    padding-right: 12px;
+  }
+  .header-left {
+    padding-left: 12px;
+  }
+  .web-title {
+    margin: 0 12px 0 8px;
+    font-size: 16px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .collapse-btn {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+  }
+  .btn-icon {
+    margin: 0 2px;
+  }
+  .user-avator {
+    margin: 0 6px 0 10px;
+  }
+  .user-name {
+    max-width: 80px;
+  }
+  .el-dropdown-link {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>

@@ -162,7 +162,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="380" align="left" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="380" align="left" fixed="right" class-name="action-col">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button

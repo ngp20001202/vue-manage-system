@@ -84,6 +84,7 @@
 					width="280"
 					align="left"
 					fixed="right"
+					class-name="action-col"
 				>
 					<template #default="scope">
 						<div class="action-cell">

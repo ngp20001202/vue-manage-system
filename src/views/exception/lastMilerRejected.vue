@@ -130,7 +130,7 @@
 					min-width="180"
 					show-overflow-tooltip
 				/>
-				<el-table-column :label="t('pages.Action')" width="160" align="left" fixed="right">
+				<el-table-column :label="t('pages.Action')" width="160" align="left" fixed="right" class-name="action-col">
 					<template #default="scope">
 						<el-button
 							type="warning"

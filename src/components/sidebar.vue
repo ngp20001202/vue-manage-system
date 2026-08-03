@@ -1,5 +1,5 @@
 <template>
-    <div class="sidebar">
+    <div class="sidebar" :class="{ 'mobile-open': sidebar.mobileOpen }">
         <el-menu
             class="sidebar-el-menu"
             :default-active="onRoutes"
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSidebarStore } from '../store/sidebar';
 import { useRoute, useRouter } from 'vue-router';
@@ -70,6 +70,13 @@ const onRoutes = computed(() => {
 });
 
 const sidebar = useSidebarStore();
+
+watch(
+    () => route.path,
+    () => {
+        sidebar.closeMobile();
+    },
+);
 
 const prefetchRoute = (path?: string) => {
     if (!path || !path.startsWith('/')) return;
@@ -109,5 +116,19 @@ const prefetchRoute = (path?: string) => {
 
 .sidebar-el-menu {
     min-height: 100%;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        z-index: 2000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+    }
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
 }
 </style>

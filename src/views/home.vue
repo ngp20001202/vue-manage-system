@@ -2,6 +2,11 @@
     <div class="wrapper">
         <v-header />
         <v-sidebar />
+        <div
+            class="sidebar-mask"
+            :class="{ show: sidebar.mobileOpen }"
+            @click="sidebar.closeMobile()"
+        ></div>
         <div class="content-box" :class="{ 'content-collapse': sidebar.collapse }">
             <v-tabs></v-tabs>
             <div class="content">
@@ -59,5 +64,25 @@ const tabs = useTabsStore();
 
 .content-collapse {
     left: 65px;
+}
+
+.sidebar-mask {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1999;
+}
+
+@media (max-width: 768px) {
+    .sidebar-mask.show {
+        display: block;
+    }
+    .content-box {
+        left: 0 !important;
+    }
+    .content {
+        padding: 10px;
+    }
 }
 </style>
