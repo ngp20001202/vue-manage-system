@@ -203,7 +203,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="360" align="left" fixed="right" class-name="action-col">
+				<el-table-column :label="t('pages.Action')" width="360" align="left" :fixed="isDesktop ? 'right' : undefined">
 					<template #default="scope">
 						<div v-if="showoption(scope.row)" class="action-cell">
 							<el-button
@@ -270,6 +270,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
 	Download,
@@ -304,6 +305,7 @@ import ParcelTracking from './tracking.vue';
 import ParcelDownload from './download.vue';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface ParcelRow extends Record<string, any> {
 	id: string | number;

@@ -4,7 +4,7 @@
 			<div class="login-header">
 				<div class="login-title">{{ t('menu.Login') }}</div>
 			</div>
-			<el-form :model="param" :rules="rules" ref="loginForm" size="large">
+			<el-form :model="param" :rules="rules" ref="loginForm" size="large" class="login-form">
 				<el-form-item prop="username">
 					<el-input v-model="param.username" :placeholder="t('pages.username')">
 						<template #prepend>

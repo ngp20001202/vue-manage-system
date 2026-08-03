@@ -162,7 +162,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="380" align="left" fixed="right" class-name="action-col">
+				<el-table-column :label="t('pages.Action')" width="380" align="left" :fixed="isDesktop ? 'right' : undefined">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -218,6 +218,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { ElMessage } from 'element-plus';
 import {
 	Upload,
@@ -239,6 +240,7 @@ import SackMftUpload from './components/SackMftUpload.vue';
 import ScanFormDialog from './components/ScanFormDialog.vue';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface SackMftRow extends Record<string, any> {
 	id: string | number;
