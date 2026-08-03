@@ -117,9 +117,17 @@ i {
 		margin-left: 0 !important;
 	}
 
-	/* 表格容器可横向滚动 */
+	/* 表格容器可横向滚动，移动端取消固定列，统一滚动 */
 	.table-card .el-card__body {
 		overflow-x: auto;
+	}
+	.table-card .el-table {
+		width: auto !important;
+		min-width: 100%;
+	}
+	.el-table__fixed-right,
+	.el-table__fixed {
+		display: none !important;
 	}
 
 	/* action 列图标化 */
@@ -152,5 +160,37 @@ i {
 	}
 	.el-pager li {
 		margin-bottom: 2px;
+	}
+	.el-pagination{
+		max-width: 100%;
+	}
+	.header_left .select_box,.header_left .upload{
+		min-width: 100% !important;
+		margin-bottom: 10px;
+	}
+	.import .download{
+		width: 100%;
+		padding-right: 0 !important;
+	}
+	.import .import_btn{
+		margin-left: 0 !important;
+	}
+	.Billgenerationtime{
+		display: none !important;
+	}
+	.el-form .asterisk-left{
+		margin-bottom: 10px !important;
+	}
+
+	/* 标签页在窄屏可横向滚动 */
+	.el-tabs__header {
+		overflow-x: auto;
+	}
+	.el-tabs__nav {
+		flex-wrap: nowrap;
+	}
+	.el-tabs__item {
+		padding: 0 12px !important;
+		font-size: 13px;
 	}
 }
