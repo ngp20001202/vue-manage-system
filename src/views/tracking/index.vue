@@ -596,5 +596,9 @@ export default { name: 'tracking-index' };
             }
         }
     }
+    .w{
+        max-width: 100%;
+        min-width: 90%;
+    }
 }
 </style>
