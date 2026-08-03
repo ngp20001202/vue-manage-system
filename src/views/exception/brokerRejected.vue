@@ -588,6 +588,7 @@ onMounted(() => {
 	.date-picker,
 	.stage-select {
 		width: 100%;
+		margin-bottom: 10px;
 	}
 	.tracking-input {
 		width: 100%;

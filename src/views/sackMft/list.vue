@@ -570,6 +570,7 @@ onMounted(() => {
 	.stage-select,
 	.tracking-input {
 		width: 100%;
+		margin-bottom: 10px;
 	}
 	.stage-picker {
 		width: 100%;

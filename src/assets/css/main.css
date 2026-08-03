@@ -92,9 +92,10 @@ i {
 		width: 100%;
 		margin-right: 0;
 	}
-	.el-form--inline :deep(.el-input),
-	.el-form--inline :deep(.el-select),
-	.el-form--inline :deep(.el-date-editor) {
+	.el-form--inline .el-form-item__content > .el-input,
+	.el-form--inline .el-form-item__content > .el-input-number,
+	.el-form--inline .el-form-item__content > .el-select,
+	.el-form--inline .el-form-item__content > .el-date-editor {
 		width: 100% !important;
 	}
 
@@ -135,5 +136,21 @@ i {
 	/* 标签页操作按钮精简 */
 	.Tabs-close-box .el-button span {
 		display: none;
+	}
+
+	/* 分页组件允许换行 */
+	.el-pagination {
+		white-space: normal !important;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		row-gap: 4px;
+	}
+	.el-pager {
+		white-space: normal !important;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
+	.el-pager li {
+		margin-bottom: 2px;
 	}
 }

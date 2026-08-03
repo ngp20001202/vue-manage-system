@@ -16,6 +16,9 @@
         </el-icon>
       </div>
     </div>
+    <div v-show="!sidebar.mobileOpen" class="mobile-menu-trigger" @click="sidebar.toggleMobile()">
+      <el-icon :size="22"><Expand /></el-icon>
+    </div>
     <div class="header-right">
       <div class="header-user-con">
         <!-- 下载任务 -->
@@ -274,12 +277,33 @@ onBeforeUnmount(() => {
   opacity: 1;
 }
 
+.mobile-menu-trigger {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1998;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--header-text-color);
+  background-color: var(--header-bg-color);
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
 @media (max-width: 768px) {
+  .header {
+    height: 48px;
+  }
   .header-right {
     padding-right: 12px;
+    margin-left: auto;
   }
   .header-left {
-    padding-left: 12px;
+    display: none;
   }
   .web-title {
     margin: 0 12px 0 8px;
@@ -291,9 +315,6 @@ onBeforeUnmount(() => {
   }
   .collapse-btn {
     display: none;
-  }
-  .hamburger {
-    display: flex;
   }
   .btn-icon {
     margin: 0 2px;
@@ -308,6 +329,12 @@ onBeforeUnmount(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .header-user-con {
+    height: 48px;
+  }
+  .mobile-menu-trigger {
+    display: flex;
   }
 }
 </style>

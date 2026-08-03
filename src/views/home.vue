@@ -80,6 +80,7 @@ const tabs = useTabsStore();
     }
     .content-box {
         left: 0 !important;
+        top: 48px;
     }
     .content {
         padding: 10px;

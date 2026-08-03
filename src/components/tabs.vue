@@ -112,7 +112,7 @@ watch(
 );
 </script>
 
-<style scss>
+<style lang="scss">
 .tabs-container {
     position: relative;
     overflow: hidden;

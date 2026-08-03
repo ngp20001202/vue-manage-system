@@ -345,6 +345,7 @@ onMounted(() => {
 	.tracking-input {
 		width: 100%;
 		max-width: none;
+		margin-bottom: 10px;
 	}
 }
 </style>

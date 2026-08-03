@@ -1569,5 +1569,8 @@ watch(isSign, (val) => {
 	.address-dropdown {
 		width: 100%;
 	}
+	.inline-form :deep(.el-input-group__append .el-select) {
+		width: 80px !important;
+	}
 }
 </style>

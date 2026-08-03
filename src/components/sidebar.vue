@@ -1,9 +1,16 @@
 <template>
     <div class="sidebar" :class="{ 'mobile-open': sidebar.mobileOpen }">
+        <div class="mobile-sidebar-header">
+            <div class="mobile-hamburger" @click="sidebar.closeMobile()">
+                <el-icon :size="22"><Fold /></el-icon>
+            </div>
+            <img class="mobile-logo" src="../assets/img/logo.svg" alt="" />
+            <div class="mobile-title">{{ webTitle }}</div>
+        </div>
         <el-menu
             class="sidebar-el-menu"
             :default-active="onRoutes"
-            :collapse="sidebar.collapse"
+            :collapse="menuCollapse"
             :background-color="sidebar.bgColor"
             :text-color="sidebar.textColor"
             router
@@ -55,8 +62,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Fold } from '@element-plus/icons-vue';
 import { useSidebarStore } from '../store/sidebar';
+import { useUserStore } from '../store/user';
 import { useRoute, useRouter } from 'vue-router';
+import { useViewport } from '@/composables/useViewport';
 import { menuData } from '@/components/menu';
 
 const { t } = useI18n();
@@ -70,6 +80,10 @@ const onRoutes = computed(() => {
 });
 
 const sidebar = useSidebarStore();
+const userStore = useUserStore();
+const webTitle = computed(() => userStore.user.tenantAlias || '后台管理系统');
+const { isMobile } = useViewport();
+const menuCollapse = computed(() => (isMobile.value ? false : sidebar.collapse));
 
 watch(
     () => route.path,
@@ -118,6 +132,10 @@ const prefetchRoute = (path?: string) => {
     min-height: 100%;
 }
 
+.mobile-sidebar-header {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;
@@ -129,6 +147,42 @@ const prefetchRoute = (path?: string) => {
     }
     .sidebar.mobile-open {
         transform: translateX(0);
+    }
+    .mobile-sidebar-header {
+        display: flex;
+        align-items: center;
+        height: 48px;
+        padding: 0 12px;
+        background-color: var(--header-bg-color);
+        color: var(--header-text-color);
+        border-bottom: 1px solid #ddd;
+    }
+    .mobile-hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        margin-right: 8px;
+        cursor: pointer;
+        opacity: 0.8;
+    }
+    .mobile-hamburger:hover {
+        opacity: 1;
+    }
+    .mobile-logo {
+        width: 28px;
+        margin-right: 8px;
+    }
+    .mobile-title {
+        flex: 1;
+        font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .sidebar-el-menu {
+        min-height: calc(100% - 48px);
     }
 }
 </style>
