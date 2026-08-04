@@ -195,10 +195,10 @@
 							type="number"
 							min="0"
 							step="1"
-							style="width: 200px"
+							class="unit-input"
 						>
 							<template #append>
-								<el-select v-model="pkg.WeightUnit" style="width: 130px">
+								<el-select v-model="pkg.WeightUnit" class="unit-select">
 									<el-option
 										v-for="val in weightOptions"
 										:key="val.label"
@@ -230,10 +230,10 @@
 							v-model="pkg.DeclaredHeight"
 							type="number"
 							min="0"
-							style="width: 170px"
+							class="unit-input"
 						>
 							<template #append>
-								<el-select v-model="pkg.DimUnit" style="width: 110px">
+								<el-select v-model="pkg.DimUnit" class="unit-select">
 									<el-option
 										v-for="val in dimOptions"
 										:key="val.label"
@@ -279,10 +279,10 @@
 								v-model="item.LineTotal.Value"
 								type="number"
 								min="0"
-								style="width: 200px"
+								class="unit-input"
 							>
 								<template #append>
-									<el-select v-model="item.LineTotal.Unit" style="width: 120px">
+									<el-select v-model="item.LineTotal.Unit" class="unit-select">
 										<el-option
 											v-for="option in priceOptions"
 											:key="option.label"
@@ -1560,6 +1560,12 @@ watch(isSign, (val) => {
 	padding: 12px;
 	text-align: center;
 }
+.unit-input {
+	width: 220px;
+}
+.unit-select {
+	width: 80px;
+}
 
 @media (max-width: 768px) {
 	.inline-form {
@@ -1569,8 +1575,8 @@ watch(isSign, (val) => {
 	.address-dropdown {
 		width: 100%;
 	}
-	.inline-form :deep(.el-input-group__append .el-select) {
-		width: 80px !important;
+	.unit-select {
+		width: 120px !important;
 	}
 }
 </style>
