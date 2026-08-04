@@ -155,16 +155,15 @@ watch(
 
 @media (max-width: 768px) {
     .tabs-container {
-        padding-right: 90px;
+        padding-right: 110px;
     }
     .Tabs-close-box {
-        width: 80px;
+        width: auto;
+        min-width: 80px;
+        padding: 0 6px;
     }
     .Tabs-close-box .el-button {
         padding: 5px 8px;
-    }
-    .Tabs-close-box .el-button span {
-        display: none;
     }
 }
 </style>
