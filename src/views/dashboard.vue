@@ -43,14 +43,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onActivated } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useUserStore } from '@/store/user';
 import { getBalance } from '@/api/accounting';
 import RechargeDialog from '@/components/RechargeDialog.vue';
 
 const { t } = useI18n();
-const user = useUserStore();
 
 interface BalanceCard {
 	id?: number;
@@ -90,11 +88,15 @@ const onRecharge = (card: BalanceCard) => {
 
 // 免密登录（URL 上带 ?token=）已经在 router.beforeEach 里完成，
 // 这里只负责拉余额，不再处理 token。
-onMounted(async () => {
-	if (user.token) {
+// 挂 onMounted + onActivated 两份：onMounted 负责首次进入，
+// onActivated 负责从其他页跳回时（被 keep-alive 缓存）的刷新。
+const fetchBalance = async () => {
+	try {
 		await loadBalance();
-	}
-});
+	} catch {}
+};
+onMounted(fetchBalance);
+onActivated(fetchBalance);
 </script>
 
 <style scoped>

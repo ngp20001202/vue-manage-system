@@ -470,7 +470,7 @@ export default {
     UtcOffset: "时区偏移",
     Billing: "账单地址信息",
     phoneplace: "例如: 15562387569",
-    emailplace: "例如: test@example.com",
+    emailplace: "例如: test{'@'}example.com",
     AdoptingCode: "认领码",
     CompanyName: "公司名称",
     CountryRegion: "国家区域",
