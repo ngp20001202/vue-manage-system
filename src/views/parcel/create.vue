@@ -1576,7 +1576,7 @@ watch(isSign, (val) => {
 		width: 100%;
 	}
 	.unit-select {
-		width: 120px !important;
+		width: 105px !important;
 	}
 }
 </style>
