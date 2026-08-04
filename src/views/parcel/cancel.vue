@@ -192,6 +192,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { RefreshLeft, Search, Refresh, InfoFilled, DocumentCopy, List } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { formatParagraphtext, datatoutc } from '@/utils/format';
+import { copyToClipboard } from '@/utils/copy';
 import { parcellist, parcelSearchlist, parcelUndo } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from './detail.vue';
@@ -233,16 +234,16 @@ const formatPosted = (utc: string | undefined) => {
 const show = (row: ParcelRow) =>
 	row.stageText === '订单已取消' || row.stageText === 'Parcel Voided';
 
-const copy = (key: string) => {
+const copy = async (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
 		ElMessage.warning(t('pages.noCopyData'));
 		return;
 	}
-	try {
-		navigator.clipboard.writeText(text);
+	const ok = await copyToClipboard(text);
+	if (ok) {
 		ElMessage.success(t('pages.copySuccess'));
-	} catch {
+	} else {
 		ElMessage.error(t('pages.copyFailed'));
 	}
 };

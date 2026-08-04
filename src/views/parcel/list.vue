@@ -286,6 +286,7 @@ import {
 import moment from 'moment';
 import { saveAs } from 'file-saver';
 import { formatParagraphtext, datatoutc } from '@/utils/format';
+import { copyToClipboard } from '@/utils/copy';
 import { filenames } from '@/utils/filename';
 import {
 	parcellist,
@@ -360,16 +361,16 @@ const formatPosted = (utc: string | undefined) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
-const copy = (key: string) => {
+const copy = async (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
 		ElMessage.warning(t('pages.noCopyData'));
 		return;
 	}
-	try {
-		navigator.clipboard.writeText(text);
+	const ok = await copyToClipboard(text);
+	if (ok) {
 		ElMessage.success(t('pages.copySuccess'));
-	} catch {
+	} else {
 		ElMessage.error(t('pages.copyFailed'));
 	}
 };

@@ -181,6 +181,7 @@ import {
 } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { formatParagraphtext } from '@/utils/format';
+import { copyToClipboard } from '@/utils/copy';
 import {
 	lastMilerRejectedlist,
 	lastMilerRequeue,
@@ -225,16 +226,16 @@ const formatPosted = (row: RejectionRow) => {
 	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm');
 };
 
-const copy = (key: string) => {
+const copy = async (key: string) => {
 	const text = formatParagraphtext(routeData.value, key);
 	if (text === ' ') {
 		ElMessage.warning('当前页没有可复制的数据');
 		return;
 	}
-	try {
-		navigator.clipboard.writeText(text);
+	const ok = await copyToClipboard(text);
+	if (ok) {
 		ElMessage.success('复制成功');
-	} catch {
+	} else {
 		ElMessage.error('复制失败');
 	}
 };
