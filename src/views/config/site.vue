@@ -513,5 +513,21 @@ onMounted(() => {
 	.col-head {
 		margin-left: 0;
 	}
+	.site-form {
+		max-height: 70vh;
+		padding-right: 0;
+	}
+	.site-form :deep(.el-form-item) {
+		margin-bottom: 28px;
+	}
+	.flex {
+		flex-direction: column;
+	}
+	.flex .flex_item:nth-of-type(1) {
+		padding-right: 0;
+	}
+	.flex_item + .flex_item {
+		margin-top: 8px;
+	}
 }
 </style>

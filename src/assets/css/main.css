@@ -174,7 +174,7 @@ i {
 		display: none !important;
 	}
 	.el-form .asterisk-left{
-		margin-bottom: 10px !important;
+		margin-bottom: 20px !important;
 	}
 
 	/* 标签页在窄屏可横向滚动 */
@@ -212,5 +212,11 @@ i {
 	.el-date-range-picker__content.is-left {
 		border-right: none;
 		border-bottom: 1px solid var(--el-datepicker-inner-border-color);
+	}
+
+	/* 表头文字允许换行，避免移动端标题显示不完整 */
+	.el-table th .cell {
+		white-space: normal;
+		line-height: 1.2;
 	}
 }

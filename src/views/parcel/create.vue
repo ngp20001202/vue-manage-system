@@ -384,7 +384,7 @@
 						<span v-else class="rate-error">{{ scope.row.quote }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="left" class-name="action-col">
+				<el-table-column :label="t('pages.Action') || '操作'" width="180" align="left">
 					<template #default="scope">
 						<el-button
 							v-if="scope.row.show"

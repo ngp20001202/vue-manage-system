@@ -233,6 +233,9 @@ const confirmOrder = async () => {
 		filename.value = '';
 		updateFile.value = new FormData();
 		data.value = [];
+		fileId.value = '';
+		req.value = false;
+		isCyan.value = false;
 	} else {
 		ElMessage.error(res?.message || t('pages.Failed') || '失败');
 	}
@@ -435,5 +438,33 @@ onMounted(() => {
 .size p {
 	margin: 0;
 	line-height: 1.4;
+}
+@media (max-width: 768px) {
+	.content {
+		min-height: auto;
+	}
+	.import {
+		padding: 12px;
+	}
+	.header_left {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+	.header_left .select_box,
+	.header_left .upload {
+		flex: 1 1 100% !important;
+		width: 100% !important;
+		min-width: 0 !important;
+		margin-right: 0;
+	}
+	.import_btn {
+		width: 100%;
+		margin-right: 0;
+	}
+	.download {
+		text-align: left;
+		padding-right: 0;
+	}
 }
 </style>

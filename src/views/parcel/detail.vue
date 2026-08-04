@@ -389,6 +389,8 @@ const handleClose = () => {
 		flex: 1;
 		margin: 0;
 		color: #303133;
+		word-break: break-all;
+		overflow-wrap: break-word;
 	}
 }
 .text-warning {
