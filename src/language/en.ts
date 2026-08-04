@@ -339,7 +339,7 @@ export default {
     Name: "Name",
     Phone: "Phone",
     phoneplace: "eg.021-888888888",
-    emailplace: "eg.test@example.com",
+    emailplace: "eg.test{'@'}example.com",
     Email: "Email",
     Role: "Role",
     CountryCode: "Country Code",
