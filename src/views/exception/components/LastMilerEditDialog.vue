@@ -98,7 +98,7 @@
 					</el-form-item>
 					<el-form-item :label="t('pages.LineTotal')" prop="lineTotal.value">
 						<div class="line-total">
-							<el-input v-model="val.lineTotal.value" type="number" min="0" step="1" />
+							<el-input v-model="val.lineTotal.value" type="number" min="0" step="1" class="value-input" />
 							<el-select v-model="val.lineTotal.unit" class="unit-select">
 								<el-option
 									v-for="p in priceOptions"
@@ -394,13 +394,14 @@ const submit = async () => {
 	align-items: center;
 	gap: 8px;
 	width: 100%;
-	:deep(.el-input) {
+	.value-input {
 		flex: 1;
+		min-width: 0;
 	}
 }
 .unit-select {
-	width: 100px;
-	flex-shrink: 0;
+	width: 80px;
+	flex: 0 0 80px;
 }
 .row-actions {
 	flex: 1 1 100% !important;
