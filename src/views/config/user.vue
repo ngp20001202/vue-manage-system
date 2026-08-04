@@ -753,10 +753,15 @@ onMounted(() => {
 	padding-right: 16px;
 }
 .form-section {
-	margin: 0 0 8px;
-	font-weight: 500;
-	font-size: 14px;
-	color: #303133;
+  margin: 0 0 12px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #303133;
+}
+.section-divider {
+  margin: 0 0 12px;
+  color:rgb(229, 229, 229);
+  opacity: 0.3;
 }
 .pager {
 	margin-top: 16px;
