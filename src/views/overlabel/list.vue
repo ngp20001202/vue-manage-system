@@ -159,7 +159,7 @@
 						<span>{{ formatStamp(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : undefined">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : false">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button type="danger" size="small" :icon="Delete">

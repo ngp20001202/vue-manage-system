@@ -203,7 +203,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="360" align="left" :fixed="isDesktop ? 'right' : undefined">
+				<el-table-column :label="t('pages.Action')" width="360" align="left" :fixed="isDesktop ? 'right' : false">
 					<template #default="scope">
 						<div v-if="showoption(scope.row)" class="action-cell">
 							<el-button

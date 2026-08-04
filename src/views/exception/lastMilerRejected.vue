@@ -130,7 +130,7 @@
 					min-width="180"
 					show-overflow-tooltip
 				/>
-				<el-table-column :label="t('pages.Action')" width="160" align="left" fixed="right" class-name="action-col">
+				<el-table-column :label="t('pages.Action')" width="160" align="left" :fixed="isDesktop ? 'right' : false">
 					<template #default="scope">
 						<el-button
 							type="warning"
@@ -170,6 +170,7 @@
 <script setup lang="ts" name="lastmiler-rejected">
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
 	Search,
@@ -190,6 +191,7 @@ import ParcelDetail from '@/views/parcel/detail.vue';
 import LastMilerEditDialog from './components/LastMilerEditDialog.vue';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface RejectionRow extends Record<string, any> {
 	id: string | number;
