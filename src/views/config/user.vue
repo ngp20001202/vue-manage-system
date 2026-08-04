@@ -83,8 +83,7 @@
 					:label="t('pages.Action')"
 					width="280"
 					align="left"
-					fixed="right"
-					class-name="action-col"
+					:fixed="isDesktop ? 'right' : undefined"
 				>
 					<template #default="scope">
 						<div class="action-cell">
@@ -345,6 +344,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { Search, Refresh, Plus, Edit, Key, Lock, Unlock } from '@element-plus/icons-vue';
@@ -362,6 +362,7 @@ import type { ApiResponse } from '@/api/types';
 import { passwordLevel, passwordStrengthValidator } from '@/utils/password-strength';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface UserRow extends Record<string, any> {
 	id: string | number;

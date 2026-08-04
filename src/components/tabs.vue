@@ -10,7 +10,7 @@
             ></el-tab-pane>
         </el-tabs>
         <div class="Tabs-close-box">
-            <el-dropdown @command="handleTags">
+            <el-dropdown :trigger="isMobile ? 'click' : 'hover'" @command="handleTags">
                 <el-button size="small" type="primary" plain>
                     {{ t('tabs.actions') }}
                     <el-icon class="el-icon--right">
@@ -32,10 +32,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { useTabsStore } from '../store/tabs';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 
 const { t } = useI18n();
+const { isMobile } = useViewport();
 const route = useRoute();
 const router = useRouter();
 const activePath = ref(route.fullPath);
@@ -155,16 +157,15 @@ watch(
 
 @media (max-width: 768px) {
     .tabs-container {
-        padding-right: 90px;
+        padding-right: 110px;
     }
     .Tabs-close-box {
-        width: 80px;
+        width: auto;
+        min-width: 80px;
+        padding: 0 6px;
     }
     .Tabs-close-box .el-button {
         padding: 5px 8px;
-    }
-    .Tabs-close-box .el-button span {
-        display: none;
     }
 }
 </style>
