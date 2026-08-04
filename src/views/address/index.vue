@@ -135,8 +135,7 @@
           :label="t('pages.Action')"
           width="100"
           align="left"
-          fixed="right"
-          class-name="action-col"
+          :fixed="isDesktop ? 'right' : false"
         >
           <template #default="scope">
             <el-button
@@ -307,6 +306,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { useViewport } from "@/composables/useViewport";
 import { ElMessage, ElMessageBox, FormInstance, FormRules } from "element-plus";
 import { Search, Refresh, Plus, Edit, Delete } from "@element-plus/icons-vue";
 import {
@@ -320,6 +320,7 @@ import type { ApiResponse } from "@/api/types";
 import { countryOptions } from "@/utils/country";
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface ContactBody {
   Name?: string;

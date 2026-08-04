@@ -176,7 +176,7 @@
 						<span>{{ formatPosted(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="280" align="left" fixed="right" class-name="action-col">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : false">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
@@ -232,6 +232,7 @@
 <script setup lang="ts" name="broker-rejected">
 import { ref, reactive, watch, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import {
 	Search,
@@ -249,6 +250,7 @@ import type { ApiResponse } from '@/api/types';
 import ParcelDetail from '@/views/parcel/detail.vue';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface BrokerRow extends Record<string, any> {
 	id: string | number;

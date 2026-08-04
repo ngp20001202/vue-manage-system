@@ -83,7 +83,7 @@
 					:label="t('pages.Action')"
 					width="280"
 					align="left"
-					:fixed="isDesktop ? 'right' : undefined"
+					:fixed="isDesktop ? 'right' : false"
 				>
 					<template #default="scope">
 						<div class="action-cell">
