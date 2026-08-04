@@ -159,7 +159,7 @@
 						<span>{{ formatStamp(scope.row.statedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="280" align="left" fixed="right" class-name="action-col">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : undefined">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button type="danger" size="small" :icon="Delete">
@@ -203,6 +203,7 @@
 <script setup lang="ts" name="overlabel-list">
 import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useViewport } from '@/composables/useViewport';
 import {
 	Search,
 	Refresh,
@@ -217,6 +218,7 @@ import { overlabellist } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
+const { isDesktop } = useViewport();
 
 interface OverlabelRow extends Record<string, any> {
 	id: string | number;

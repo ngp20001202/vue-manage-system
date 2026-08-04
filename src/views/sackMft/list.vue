@@ -1,29 +1,27 @@
 <template>
 	<div class="sackmft-list">
 		<el-card shadow="never" class="filter-card">
-			<div class="tabs-header">
-				<el-tabs
-					v-model="activeName"
-					type="border-card"
-					class="demo-tabs"
-					:before-leave="beforeLeave"
+			<el-tabs
+				v-model="activeName"
+				type="border-card"
+				class="demo-tabs"
+				:before-leave="beforeLeave"
+			>
+				<el-tab-pane :label="t('pages.all')" name="0" />
+				<el-tab-pane
+					v-for="item in tablist"
+					:key="item.stage"
+					:name="String(item.stage)"
 				>
-					<el-tab-pane :label="t('pages.all')" name="0" />
-					<el-tab-pane
-						v-for="item in tablist"
-						:key="item.stage"
-						:name="String(item.stage)"
-					>
-						<template #label>
-							<div>
-								{{ item.label }}
-								<el-badge :value="item.count" class="item" type="primary" />
-							</div>
-						</template>
-					</el-tab-pane>
-					<el-tab-pane :label="t('pages.MawbMbl')" name="tracking" />
-				</el-tabs>
-			</div>
+					<template #label>
+						<div>
+							{{ item.label }}
+							<el-badge :value="item.count" class="item" type="primary" />
+						</div>
+					</template>
+				</el-tab-pane>
+				<el-tab-pane :label="t('pages.MawbMbl')" name="tracking" />
+			</el-tabs>
 
 			<div class="tabs-content">
 				<template v-if="activeName === '0'">
@@ -447,18 +445,6 @@ onMounted(() => {
 .filter-card,
 .table-card {
 	background: #fff;
-}
-.tabs-header {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-}
-.tabs-header :deep(.el-tabs) {
-	flex: 1;
-}
-.tab-search {
-	flex-shrink: 0;
-	min-width: 0;
 }
 .tabs-content {
 	margin-top: 12px;
