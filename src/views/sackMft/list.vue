@@ -160,7 +160,7 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="380" align="left" :fixed="isDesktop ? 'right' : undefined">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : undefined">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button

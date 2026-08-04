@@ -394,6 +394,9 @@ const submit = async () => {
 	align-items: center;
 	gap: 8px;
 	width: 100%;
+	:deep(.el-input) {
+		flex: 1;
+	}
 }
 .unit-select {
 	width: 100px;
