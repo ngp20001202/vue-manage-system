@@ -183,14 +183,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	justify-content: space-between;
 	padding: 48px;
 	color: #1f2937;
-	background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-	--tw-gradient-from: #9ca3af;
-	--tw-gradient-via: #6b7280;
-	--tw-gradient-to: #4b5563;
-	--tw-gradient-stops:
-		var(--tw-gradient-from),
-		var(--tw-gradient-via) 50%,
-		var(--tw-gradient-to);
+	background: #f5a404;
 	overflow: hidden;
 }
 
