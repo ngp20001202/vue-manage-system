@@ -1564,7 +1564,7 @@ watch(isSign, (val) => {
 	width: 220px;
 }
 .unit-select {
-	width: 80px;
+	width: 100px;
 }
 
 @media (max-width: 768px) {
