@@ -230,14 +230,14 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	height: 320px;
 	top: 15%;
 	right: 18%;
-	background: #cbd5e1;
+	background: #f5a404;
 }
 .visual-orb-b {
 	width: 420px;
 	height: 420px;
 	bottom: 15%;
 	left: 10%;
-	background: #f3f4f6;
+	background: #f5a404;
 }
 
 .login2-right {
