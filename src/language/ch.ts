@@ -286,6 +286,7 @@ export default {
       minWeight: "最小重量",
       maxLength: "最大长度",
     },
+    services: "服务",
     SelectAddress: "从地址簿中选择",
     Entered: "单号",
     Getaquote: "获取报价",

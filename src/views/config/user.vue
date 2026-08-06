@@ -662,7 +662,7 @@ const onSubmitReset = async () => {
 	resetSubmitting.value = true;
 	const res: ApiResponse<any> = await userresetpwd({
 		ID: resetForm.id,
-		NewPassword: resetForm.newPassword,
+		Password: { Value: resetForm.newPassword },
 	});
 	resetSubmitting.value = false;
 	if (res?.isSuccess) {

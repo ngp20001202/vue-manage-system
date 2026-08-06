@@ -288,6 +288,7 @@ export default {
       minWeight: "minWeight",
       maxLength: "maxLength",
     },
+    services: "Services",
     SelectAddress: "Select from the address book",
     Entered: "Entered #",
     Getaquote: "Get quote",

@@ -39,8 +39,8 @@ export const userupdate = (
 export const userdisable = (body: { ID: string | number; IsDisable: boolean }): Promise<ApiResponse> =>
 	request({ url: '/api/Configuration/user/disable', method: 'POST', data: body });
 
-// 重置密码（shippingspa: POST /api/Configuration/user/reset，body: { ID, NewPassword }）
-export const userresetpwd = (body: { ID: string | number; NewPassword: string }): Promise<ApiResponse> =>
+// 重置密码（shippingspa: POST /api/Configuration/user/reset，body: { ID, Password: { Value } }）
+export const userresetpwd = (body: { ID: string | number; Password: { Value: string } }): Promise<ApiResponse> =>
 	request({
 		url: '/api/Configuration/user/reset',
 		method: 'POST',

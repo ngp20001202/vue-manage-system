@@ -1082,7 +1082,7 @@ const getQuote = () => {
 
 // ------- Submit / confirm order -------
 
-const buildPayload = (svcId?: string | number, lastMilerID?: string | number) => ({
+const buildPayload = (svcId?: string | number) => ({
 	POA: null,
 	ClientRefNbr: clientRefNbr.value || '',
 	RootSvcID: svcId,
@@ -1144,14 +1144,13 @@ const buildPayload = (svcId?: string | number, lastMilerID?: string | number) =>
 			CmdyID: it.CmdyID,
 		})),
 	),
-	LastMilerID: lastMilerID,
 });
 
 const confirmOrder = async (row: RateRow) => {
 	if (payLoading.value) return;
 	payLoading.value = true;
 	try {
-		const payload: any = buildPayload(row.id, row.lastMilerID);
+		const payload: any = buildPayload(row.id);
 		const res: ApiResponse<any> = await createparcel(payload);
 		if (res?.isSuccess) {
 			ElMessage.success(t('pages.CreateSuccess'));
@@ -1564,7 +1563,7 @@ watch(isSign, (val) => {
 	width: 220px;
 }
 .unit-select {
-	width: 80px;
+	width: 100px;
 }
 
 @media (max-width: 768px) {

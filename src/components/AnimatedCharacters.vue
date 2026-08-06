@@ -441,11 +441,12 @@ const yellowRightPupil = computed(() => calcPupilPos(yellowRef.value, 5, yellowF
 <style lang="scss" scoped>
 .animated-characters {
 	position: relative;
+	overflow: hidden;
 }
 
 .char {
 	position: absolute;
-	bottom: 0;
+	bottom: -2px;
 	transition: transform 0.7s ease-in-out, height 0.7s ease-in-out;
 	transform-origin: bottom center;
 }
