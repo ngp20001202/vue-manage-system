@@ -1,5 +1,5 @@
 <template>
-	<div class="animated-characters" :style="{ width: '550px', height: '400px' }">
+	<div class="animated-characters" :style="{ width: '550px', height: '450px' }">
 		<!-- Purple tall rectangle - Back layer -->
 		<div
 			ref="purpleRef"
