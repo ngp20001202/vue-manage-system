@@ -32,12 +32,15 @@ export const formatChargeItem = (
 
 export const LEDGER_CHARGE_FILTERS: Array<{ value: number; key: string }> = [
 	{ value: 0, key: 'pages.Parcels.detail.ChargeItem' },
-	{ value: 1, key: 'pages.Charge.Other' },
 	{ value: 11, key: 'pages.Charge.Freight' },
+	{ value: 10021, key: 'pages.Charge.Void' },
+	{ value: 10041, key: 'pages.Charge.RefundFee' },
+	{ value: 10051, key: 'pages.Charge.OrderRebound' },
+	{ value: 1, key: 'pages.Charge.Other' },
 	{ value: 12, key: 'pages.Charge.FuelSurcharge' },
 	{ value: 13, key: 'pages.Charge.DAS' },
 	{ value: 14, key: 'pages.Charge.DASExtended' },
 	{ value: 10011, key: 'pages.Charge.FreightAdjustment' },
-	{ value: 10021, key: 'pages.Charge.Void' },
+	{ value: 10031, key: 'pages.Charge.OriginalRecord' },
 	{ value: 10061, key: 'pages.Charge.OrderClaim' },
 ];
