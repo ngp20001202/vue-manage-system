@@ -192,6 +192,14 @@ const defaultRange = (): [string, string] => {
 	return [today, today];
 };
 
+const normalizeTrackingNumbers = (raw: string): string => {
+	return raw
+		.split(/[\s,;，；]+/)
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.join(',');
+};
+
 const onSearch = () => {
 	pagecurrent.value = 1;
 	getdata();
@@ -228,7 +236,7 @@ const getdata = async () => {
 		PeriodMin: toUtcIso(dates.value?.[0]),
 		PeriodMax: toUtcIso(dates.value?.[1]),
 		ChargeID: chargeID.value,
-		TrackingNbr: encodeURIComponent(trackingNumbers.value),
+		TrackingNbr: encodeURIComponent(normalizeTrackingNumbers(trackingNumbers.value)),
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
@@ -238,21 +246,20 @@ const getdata = async () => {
 };
 
 const exportdata = async () => {
-	const url = new URL(`${getoriginurl()}/api/accounting/ledger/export`);
-	url.searchParams.set('ChargeID', String(chargeID.value));
+	const params: string[] = [`ChargeID=${chargeID.value}`];
 	if (dates.value) {
-		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
-		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
+		params.push(`PeriodMin=${toUtcIso(dates.value[0]) || ''}`);
+		params.push(`PeriodMax=${toUtcIso(dates.value[1]) || ''}`);
 	}
 	if (trackingNumbers.value) {
-		url.searchParams.set('IsUseTrackingNbr', 'true');
-		url.searchParams.set('RefNbrs', encodeURIComponent(trackingNumbers.value));
+		params.push('IsUseTrackingNbr=true');
+		params.push(`RefNbrs=${normalizeTrackingNumbers(trackingNumbers.value)}`);
 	}
-
-	const res: any = await SackMftsign({ url: url.toString() });
+	let url = `${getoriginurl()}/api/accounting/ledger/export?${params.join('&')}`;
+	const res: any = await SackMftsign({ url });
 	if (res?.token) {
-		url.searchParams.set('token', res.token);
-		window.open(url.toString(), '_blank');
+		url += `&token=${res.token}`;
+		window.open(url, '_blank');
 	}
 };
 

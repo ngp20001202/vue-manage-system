@@ -209,15 +209,19 @@ const getdata = async () => {
 };
 
 const exportdata = async () => {
-	const url = new URL(`${getoriginurl()}/api/accounting/xacts/export`);
+	const params: string[] = [];
 	if (dates.value) {
-		url.searchParams.set('PeriodMin', toUtcIso(dates.value[0]) || '');
-		url.searchParams.set('PeriodMax', toUtcIso(dates.value[1]) || '');
+		params.push(`PeriodMin=${toUtcIso(dates.value[0]) || ''}`);
+		params.push(`PeriodMax=${toUtcIso(dates.value[1]) || ''}`);
 	}
-	const res: any = await SackMftsign({ url: url.toString() });
+	let url = `${getoriginurl()}/api/accounting/xacts/export`;
+	if (params.length) {
+		url += `?${params.join('&')}`;
+	}
+	const res: any = await SackMftsign({ url });
 	if (res?.token) {
-		url.searchParams.set('token', res.token);
-		window.open(url.toString(), '_blank');
+		url += `${params.length ? '&' : '?'}token=${res.token}`;
+		window.open(url, '_blank');
 	}
 };
 
