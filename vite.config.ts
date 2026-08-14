@@ -33,20 +33,11 @@ export default defineConfig(({ mode }) => ({
 	],
 	optimizeDeps: {
 		include: [
-			'schart.js',
 			'element-plus',
 			'element-plus/es/locale/lang/zh-cn',
-			'echarts',
-			'echarts-wordcloud',
-			'vue-echarts',
-			'@wangeditor/editor',
-			'@wangeditor/editor-for-vue',
-			'md-editor-v3',
-			'vue-cropper',
+			'moment',
 			'xlsx',
 			'file-saver',
-			'moment',
-			'countup.js',
 		],
 	},
 	css: {
