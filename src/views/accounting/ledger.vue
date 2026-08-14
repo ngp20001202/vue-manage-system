@@ -209,9 +209,8 @@ const onReset = () => {
 	if (activeTab.value === 'all') {
 		dates.value = defaultRange();
 		chargeID.value = 0;
-	} else {
-		trackingNumbers.value = '';
 	}
+	trackingNumbers.value = '';
 	pagecurrent.value = 1;
 	getdata();
 };
@@ -221,9 +220,8 @@ const onTabChange = () => {
 	if (activeTab.value === 'all') {
 		dates.value = defaultRange();
 		chargeID.value = 0;
-	} else {
-		trackingNumbers.value = '';
 	}
+	trackingNumbers.value = '';
 	pagecurrent.value = 1;
 	getdata();
 };
