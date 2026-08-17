@@ -55,14 +55,14 @@
 		<el-card shadow="never" class="table-card">
 			<div v-show="routeData.length" class="op-row">
 				<div class="op-row-left">
-					<el-tooltip :content="t('pages.undo')" placement="top" :enterable="false">
+					<el-tooltip :content="t('pages.ClaimList.submitClaim')" placement="top" :enterable="false">
 						<el-button
 							type="danger"
 							:disabled="!selectarr.length"
 							class="cancell"
-							@click="() => undo(true)"
+							@click="submitClaim"
 						>
-							<el-icon><RefreshLeft /></el-icon>
+							<el-icon><Edit /></el-icon>
 						</el-button>
 					</el-tooltip>
 				</div>
@@ -90,7 +90,6 @@
 				<el-table-column
 					type="selection"
 					width="55"
-					:selectable="(row) => show(row)"
 				/>
 				<el-table-column :label="t('pages.ID')" width="150">
 					<template #default="scope">
@@ -140,17 +139,17 @@
 						<span>{{ formatPosted(scope.row.postedStamp?.utcTime) }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Action')" width="200" align="left" :fixed="isDesktop ? 'right' : false">
+				<el-table-column :label="t('pages.Action')" width="280" align="left" :fixed="isDesktop ? 'right' : false">
 					<template #default="scope">
 						<div class="action-cell">
 							<el-button
-								v-if="show(scope.row)"
 								type="warning"
 								size="small"
-								:icon="RefreshLeft"
-								@click="() => undo(false, scope.row.id)"
+								:icon="Edit"
+								plain
+								@click="() => submitClaim(scope.row)"
 							>
-								{{ t('pages.undo') }}
+								{{ t('pages.ClaimList.submitClaim') }}
 							</el-button>
 						</div>
 					</template>
@@ -181,6 +180,7 @@
 			@changestatus="changestatus"
 			@clearselect="clearselect"
 		/>
+		<ParcelClaimUpload v-model="claimUploadVisible" :order-id="currentOrderId" />
 	</div>
 </template>
 
@@ -188,15 +188,16 @@
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useViewport } from '@/composables/useViewport';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { RefreshLeft, Search, Refresh, InfoFilled, DocumentCopy, List } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
+import { Search, Refresh, InfoFilled, DocumentCopy, List, Edit } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { formatParagraphtext, datatoutc } from '@/utils/format';
-import { parcellist, parcelSearchlist, parcelUndo } from '@/api/parcel';
+import { parcellist, parcelSearchlist } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from './detail.vue';
 import ParcelTracking from './tracking.vue';
 import ParcelDownload from './download.vue';
+import ParcelClaimUpload from './components/ParcelClaimUpload.vue';
 
 const { t } = useI18n();
 const { isDesktop } = useViewport();
@@ -224,6 +225,13 @@ const multipleTableRef = ref();
 const parcelDetail = reactive({ id: '' });
 const parcelDownload = reactive<{ ids: Array<string | number> }>({ ids: [] });
 const trackingDialog = reactive({ id: '' });
+const claimUploadVisible = ref(false);
+const currentOrderId = ref('');
+
+const submitClaim = (row?: ParcelRow) => {
+	currentOrderId.value = row?.lastMilerNbr ?? '';
+	claimUploadVisible.value = true;
+};
 
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
@@ -338,34 +346,6 @@ const postdata = async () => {
 		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
 	}
 	loading.value = false;
-};
-
-const undo = async (isBatch: boolean, id?: string | number) => {
-	const list = isBatch
-		? selectarr.value.map((r) => r.id)
-		: [id as string | number];
-	ElMessageBox.confirm(
-		t('pages.undoWarning'),
-		t('pages.undoConfirm'),
-		{
-			confirmButtonText: t('pages.undoConfirmBtn'),
-			cancelButtonText: t('pages.Cancel'),
-			type: 'warning',
-			center: true,
-		},
-	)
-		.then(async () => {
-			const res: ApiResponse<any> = await parcelUndo({ ids: list });
-			if (res?.isSuccess) {
-				ElMessage.success(t('pages.undoSuccess'));
-				getdata();
-			} else {
-				ElMessage.error(res?.message || t('pages.Failed'));
-			}
-		})
-		.catch(() => {
-			multipleTableRef.value?.clearSelection();
-		});
 };
 
 watch([count, pagecurrent], () => {
