@@ -533,6 +533,10 @@ onMounted(() => {
 	flex-wrap: wrap;
 	gap: 6px;
 	justify-content: left;
+	align-items: flex-start;
+}
+:deep(.action-cell .el-button + .el-button) {
+	margin-left: 0;
 }
 .pager {
 	margin-top: 16px;

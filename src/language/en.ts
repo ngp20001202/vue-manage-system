@@ -11,6 +11,7 @@ export default {
       Batchcalculation: "Batch Calculation",
       CancelList: "Undo List",
       RefundList: "Refund List",
+      ClaimList: "Claim List",
     },
     CustomManagers: {
       CustomManagers: "Inventory",
@@ -470,6 +471,17 @@ export default {
       refundRejected: "Rejected",
       cancelled: "Cancelled",
     },
+    ClaimList: {
+      claimCreated: "Claim Created",
+      claimUnderReview: "Under Review",
+      claimSucceeded: "Claim Succeeded",
+      claimRejected: "Claim Rejected",
+      claimAmount: "Claim Amount",
+      submittedOn: "Submitted On",
+      submitClaim: "Submit Claim",
+      claimInfoFile: "Claim Info",
+      evidenceFile: "Evidence",
+    },
     type: "Type ",
     countrycode: "Country Code ",
     company: "Company ",
@@ -691,6 +703,7 @@ export default {
     Recharge: "Recharge",
     CancelList: "Undo List",
     RefundList: "Refund List",
+    ClaimList: "Claim List",
     ParcelCreate: "Parcel - Create",
   },
   tabs: {

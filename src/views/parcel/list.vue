@@ -734,9 +734,12 @@ onMounted(() => {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: left;
-	align-items: center;
+	align-items: flex-start;
 	gap: 4px;
 	padding: 0;
+}
+:deep(.action-cell .el-button + .el-button) {
+	margin-left: 0;
 }
 .action-link {
 	color: inherit;

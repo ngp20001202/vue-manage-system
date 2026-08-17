@@ -11,6 +11,7 @@ export default {
       Batchcalculation: "批量试算",
       CancelList: "撤销列表",
       RefundList: "退款列表",
+      ClaimList: "理赔列表",
     },
     CustomManagers: {
       CustomManagers: "清单管理",
@@ -466,6 +467,17 @@ export default {
       refundRejected: "退款拒绝",
       cancelled: "已取消",
     },
+    ClaimList: {
+      claimCreated: "理赔已创建",
+      claimUnderReview: "审核中",
+      claimSucceeded: "索赔成功",
+      claimRejected: "索赔被拒",
+      claimAmount: "理赔金额",
+      submittedOn: "提交时间",
+      submitClaim: "提交索赔",
+      claimInfoFile: "理赔信息表",
+      evidenceFile: "凭证附件",
+    },
     type: "类型",
     countrycode: "国家代码",
     company: "公司",
@@ -677,6 +689,7 @@ export default {
     Recharge: "充值",
     CancelList: "撤销列表",
     RefundList: "退款列表",
+    ClaimList: "理赔列表",
     ParcelCreate: "包裹 - 单笔创建",
   },
   tabs: {
