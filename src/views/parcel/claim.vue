@@ -69,18 +69,27 @@
 		</el-card>
 
 		<el-card shadow="never" class="table-card">
-			<el-pagination
-				v-if="routeData.length"
-				class="pager-top"
-				background
-				layout="total, prev, pager, next, sizes"
-				:total="availcnt"
-				:current-page="pagecurrent"
-				:page-size="count"
-				:page-sizes="[10, 20, 50, 100]"
-				@current-change="(p: number) => (pagecurrent = p)"
-				@size-change="(s: number) => (count = s)"
-			/>
+			<div class="op-row">
+				<div class="op-row-left">
+					<el-tooltip :content="t('pages.upload')" placement="top" :enterable="false">
+						<el-button type="info" class="upload" @click="uploadVisible = true">
+							<el-icon><Upload /></el-icon>
+						</el-button>
+					</el-tooltip>
+				</div>
+				<el-pagination
+					v-show="routeData.length"
+					class="op-row-pager"
+					background
+					layout="total, prev, pager, next, sizes"
+					:total="availcnt"
+					:current-page="pagecurrent"
+					:page-size="count"
+					:page-sizes="[10, 20, 50, 100]"
+					@current-change="(p: number) => (pagecurrent = p)"
+					@size-change="(s: number) => (count = s)"
+				/>
+			</div>
 
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
 				<el-table-column :label="t('pages.ID')" width="150">
@@ -138,6 +147,7 @@
 		</el-card>
 
 		<ParcelDetail :id="parcelDetail.id" @changestatus="changestatus" />
+		<ParcelClaimUpload v-model="uploadVisible" @success="getdata" />
 	</div>
 </template>
 
@@ -145,11 +155,12 @@
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Search, Refresh } from '@element-plus/icons-vue';
+import { Search, Refresh, Upload } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { claimlist } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import ParcelDetail from './detail.vue';
+import ParcelClaimUpload from './components/ParcelClaimUpload.vue';
 
 const { t } = useI18n();
 
@@ -173,6 +184,7 @@ const count = ref(10);
 const pagecurrent = ref(1);
 
 const parcelDetail = reactive({ id: '' });
+const uploadVisible = ref(false);
 
 const CLAIM_STATE_ALIAS: Record<string, string> = {
 	'11040': 'Created',
@@ -323,6 +335,36 @@ onMounted(() => {
 .filter-card,
 .table-card {
 	background: #fff;
+}
+.op-row {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	margin-bottom: 12px;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+.op-row-left {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+.op-row-pager {
+	flex-shrink: 0;
+}
+.op-row-pager :deep(.el-pagination__sizes) {
+	margin-right: 0;
+}
+.upload {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 33px;
+	min-width: 0 !important;
+	padding: 5px 4px;
+	color: #fff;
+	border: none;
+	background-color: #17a2b8;
 }
 .tabs-content {
 	margin-top: 12px;
