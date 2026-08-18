@@ -48,7 +48,7 @@
 									<input
 										id="parcel_claim_evidence_file"
 										ref="evidenceInput"
-										accept=".zip,.rar,.jpg,.jpeg,.png,.pdf"
+										accept=".zip,.rar"
 										class="custom-file-input"
 										type="file"
 										@change="(e) => onFileChange(e, 'evidence')"
@@ -74,6 +74,12 @@
 					<el-button type="success" class="import-btn" @click="submit">
 						{{ t('pages.Import') }}
 					</el-button>
+					<div class="download">
+						<a href="/templates/Claim_Template.xlsx" download>
+							<el-icon><Download /></el-icon>
+							{{ t('pages.ClaimList.downloadClaimTemplate') }}
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -84,7 +90,7 @@
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
-import { Upload } from '@element-plus/icons-vue';
+import { Upload, Download } from '@element-plus/icons-vue';
 import { claimImport } from '@/api/parcel';
 
 const props = defineProps<{
@@ -276,6 +282,20 @@ const handleClose = () => {
 	.import-btn:hover {
 		background-color: #218838 !important;
 		border-color: #1e7e34 !important;
+	}
+	.download {
+		text-align: right;
+		font-size: 14px;
+		a {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			color: #007bff;
+			text-decoration: none;
+		}
+		a:hover {
+			text-decoration: underline;
+		}
 	}
 }
 </style>
