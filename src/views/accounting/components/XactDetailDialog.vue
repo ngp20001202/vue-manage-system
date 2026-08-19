@@ -90,6 +90,7 @@ import {
 } from '@/api/accounting';
 import type { ApiResponse } from '@/api/types';
 import { formatChargeItem } from '@/utils/charge-item';
+import { filenames } from '@/utils/filename';
 
 const props = defineProps<{
 	modelValue: boolean;
@@ -154,11 +155,8 @@ const loadDetail = async () => {
 const exportmps = async () => {
 	exporting.value = true;
 	try {
-		const blob: any = await Invoiceexport(String(id.value), String(invoiceID.value));
-		const filename = `xact_${id.value}_${invoiceID.value}_${moment().format(
-			'YYYYMMDD_HHmmss',
-		)}.xlsx`;
-		saveAs(blob, filename);
+		const res: any = await Invoiceexport(String(id.value), String(invoiceID.value));
+		saveAs(res.data, filenames(res));
 		ElMessage.success(t('pages.Success'));
 	} catch {
 		ElMessage.error(t('pages.Failed'));

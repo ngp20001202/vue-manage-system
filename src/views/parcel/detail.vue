@@ -227,6 +227,7 @@ import {
 } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 import { formatChargeItem } from '@/utils/charge-item';
+import { filenames } from '@/utils/filename';
 
 const props = defineProps<{
 	id: string;
@@ -343,9 +344,8 @@ const downloadDetail = async (id: string | number) => {
 
 const exportmps = async () => {
 	try {
-		const blob: any = await mpsexport(props.id);
-		const filename = `mps_${props.id}_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-		saveAs(blob, filename);
+		const res: any = await mpsexport(props.id);
+		saveAs(res.data, filenames(res));
 		ElMessage.success(t('pages.Success'));
 	} catch {
 		ElMessage.error(t('pages.Failed'));

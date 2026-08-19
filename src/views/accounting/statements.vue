@@ -105,6 +105,7 @@ import moment from 'moment';
 import { saveAs } from 'file-saver';
 import { statementlist, statementexport } from '@/api/accounting';
 import { datatoutc } from '@/utils/format';
+import { filenames } from '@/utils/filename';
 import type { ApiResponse } from '@/api/types';
 
 const { t } = useI18n();
@@ -166,12 +167,11 @@ const getdata = async () => {
 const exportdata = async () => {
 	exporting.value = true;
 	try {
-		const blob: any = await statementexport({
+		const res: any = await statementexport({
 			PeriodMin: datatoutc(dates.value?.[0]),
 			PeriodMax: datatoutc(dates.value?.[1]),
 		});
-		const filename = `statements_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-		saveAs(blob, filename);
+		saveAs(res.data, filenames(res));
 		ElMessage.success(t('pages.Success'));
 	} catch {
 		ElMessage.error(t('pages.Failed'));

@@ -572,7 +572,7 @@ const parcelsexport = async () => {
     return;
   }
   try {
-    const blob: any = await parcelexport(
+    const res: any = await parcelexport(
       {
         Stage: Stage.value as any,
         StageMin: startstage.value as any,
@@ -586,8 +586,7 @@ const parcelsexport = async () => {
           .filter((s) => s.trim() !== ""),
       },
     );
-    const filename = `parcels_${moment().format("YYYYMMDD_HHmmss")}.xlsx`;
-    saveAs(blob, filename);
+    saveAs(res.data, filenames(res));
     ElMessage.success(t("pages.Success"));
   } catch {
     ElMessage.error(t("pages.Failed"));
