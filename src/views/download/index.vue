@@ -147,6 +147,7 @@ import { Delete, Search, Refresh } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { saveAs } from 'file-saver';
 import { getoriginurl } from '@/utils/originurl';
+import { filenames } from '@/utils/filename';
 import { downloadlist, DELETEDownload, Downloadpdf } from '@/api/download';
 import { SackMftsign } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
@@ -274,9 +275,8 @@ const downloads = async (fileurl: string) => {
 
 const Combinedsheet = async (id: string | number, url: string) => {
 	try {
-		const blob: any = await Downloadpdf(id, { url });
-		const filename = `download_${id}.pdf`;
-		saveAs(blob, filename);
+		const res: any = await Downloadpdf(id, { url });
+		saveAs(res.data, filenames(res));
 		ElMessage.success(t('pages.Success'));
 	} catch {
 		ElMessage.error(t('pages.Failed'));
