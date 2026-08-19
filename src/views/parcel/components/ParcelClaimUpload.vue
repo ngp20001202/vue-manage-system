@@ -8,7 +8,7 @@
 	>
 		<div class="parcel-claim-upload">
 			<div class="import">
-				<div class="file-row">
+				<div v-if="!attachmentOnly" class="file-row">
 					<label class="file-label">{{ t('pages.ClaimList.claimInfoFile') }}</label>
 					<div class="header-left">
 						<div class="upload-wrap">
@@ -96,6 +96,7 @@ import { claimImport } from '@/api/parcel';
 const props = defineProps<{
 	modelValue: boolean;
 	orderId?: string;
+	attachmentOnly?: boolean;
 }>();
 const emit = defineEmits(['update:modelValue', 'success']);
 
@@ -147,7 +148,7 @@ const onFileChange = (e: Event, which: 'info' | 'evidence') => {
 };
 
 const submit = async () => {
-	if (!fileInfo.value) {
+	if (!props.attachmentOnly && !fileInfo.value) {
 		ElMessage.warning(t('pages.ClaimList.claimInfoFile'));
 		return;
 	}
@@ -156,7 +157,7 @@ const submit = async () => {
 		return;
 	}
 	const formdata = new FormData();
-	formdata.append('infoFile', fileInfo.value);
+	if (fileInfo.value) formdata.append('infoFile', fileInfo.value);
 	formdata.append('evidenceFile', fileEvidence.value);
 	const res = await claimImport(formdata);
 	if (res?.isSuccess) {
