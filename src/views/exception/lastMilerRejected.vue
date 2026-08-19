@@ -161,7 +161,7 @@
 			/>
 		</el-card>
 
-		<ParcelDetail :id="parcelDetail.id" @changestatus="changestatus" />
+		<ParcelDetail :id="parcelDetail.id" :use-list-label-api="true" @changestatus="changestatus" />
 
 		<LastMilerEditDialog v-model="editVisible" :id="editId" @success="getdata" />
 	</div>

@@ -222,6 +222,7 @@ import {
 	parcellistdetail,
 	parcellistdetailmps,
 	downloaddetaillabel,
+	downloadlabel,
 	mpsexport,
 	parcelstage,
 } from '@/api/parcel';
@@ -231,6 +232,9 @@ import { filenames } from '@/utils/filename';
 
 const props = defineProps<{
 	id: string;
+	// 获取面单失败（lastMilerRejected）等场景下，调用 /api/Parcels/{id}/labels
+	// 而非详情内的 /api/Parcels/detail/{id}/labels
+	useListLabelApi?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -333,7 +337,9 @@ const loadDetail = async () => {
 };
 
 const downloadDetail = async (id: string | number) => {
-	const res: ApiResponse<any> = await downloaddetaillabel(String(id));
+	const res: ApiResponse<any> = await (props.useListLabelApi
+		? downloadlabel(String(id))
+		: downloaddetaillabel(String(id)));
 	if (res?.isSuccess && res.result) {
 		const a = document.createElement('a');
 		a.target = '_blank';
