@@ -473,7 +473,7 @@ export default {
       claimSucceeded: "索赔成功",
       claimRejected: "索赔被拒",
       claimAmount: "理赔金额",
-      submittedOn: "提交时间",
+      claimCreatedOn: "理赔创建时间",
       submitClaim: "提交索赔",
       claimInfoFile: "理赔单号表",
       evidenceFile: "凭证附件",

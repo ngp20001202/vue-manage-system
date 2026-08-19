@@ -117,14 +117,9 @@
 						<span>{{ scope.row.reason || '-' }}</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.PostedOn')" width="180">
+				<el-table-column :label="t('pages.ClaimList.claimCreatedOn')" width="180">
 					<template #default="scope">
 						<span>{{ formatPosted(scope.row.postedOn) }}</span>
-					</template>
-				</el-table-column>
-				<el-table-column :label="t('pages.ClaimList.submittedOn')" width="180">
-					<template #default="scope">
-						<span>{{ formatPosted(scope.row.submittedOn) }}</span>
 					</template>
 				</el-table-column>
 				<template #empty>

@@ -477,7 +477,7 @@ export default {
       claimSucceeded: "Claim Succeeded",
       claimRejected: "Claim Rejected",
       claimAmount: "Claim Amount",
-      submittedOn: "Submitted On",
+      claimCreatedOn: "Claim Created On",
       submitClaim: "Submit Claim",
       claimInfoFile: "Claim #",
       evidenceFile: "Evidence",
