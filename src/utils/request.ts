@@ -29,11 +29,10 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
 	(response: any) => {
-		const ct: string = (response.headers?.['content-type'] || '').toLowerCase();
-		// blob / arraybuffer / text / stream 等二进制或非 JSON 响应：直接返回 response.data
-		// 让调用方拿到真正的 Blob / ArrayBuffer / string，避免把 axios 包装对象当作文件保存。
-		if (ct.indexOf('application/json') === -1) {
-			return response.data;
+		// blob / arraybuffer / text / stream 等二进制或非 JSON 响应：返回完整 axios response，
+		// 由调用方通过 res.data 取 Blob / ArrayBuffer / string，并通过 res.headers 取 Content-Disposition
+		if ((response.headers?.['content-type'] || '').toLowerCase().indexOf('application/json') === -1) {
+			return response;
 		}
 		const availcnt = response.headers['x-paging-availcnt'];
 		if (response.data && typeof availcnt !== 'undefined') {
