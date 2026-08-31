@@ -452,6 +452,7 @@ const beforeLeave = (e: string | number) => {
 	if (e === 'tracking') {
 		routeData.value = [];
 		Stage.value = 0;
+		activeName.value = String(e);
 		return true;
 	}
 	if (Number(e) !== 0) {
@@ -459,6 +460,10 @@ const beforeLeave = (e: string | number) => {
 	} else {
 		Stage.value = 0;
 	}
+	// before-leave 在 tab 真正切换前触发，activeName 此时还是旧值；
+	// 需要先同步 activeName，否则 getdata 内的 isTracking 判断会拿错，
+	// 导致从 tracking 切回"全部"时 UI 显示了默认日期但请求没带 PeriodMin/PeriodMax
+	activeName.value = String(e);
 	getdata();
 	return true;
 };
