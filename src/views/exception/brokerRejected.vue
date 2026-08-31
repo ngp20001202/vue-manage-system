@@ -342,8 +342,12 @@ const beforeLeave = (e: string | number) => {
 	init();
 	if (e === 'mawb') {
 		routeData.value = [];
+		activeName.value = String(e);
 		return true;
 	}
+	// before-leave 在 tab 真正切换前触发，需先同步 activeName，
+	// 否则 getdata 内的 isMawb 拿到旧值，导致请求漏带 PeriodMin/PeriodMax
+	activeName.value = String(e);
 	getdata();
 	return true;
 };
