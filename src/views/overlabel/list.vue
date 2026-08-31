@@ -316,19 +316,19 @@ const beforeLeave = (e: string | number) => {
 	init();
 	if (e === 'f') {
 		routeData.value = [];
-		activeName.value = String(e);
 		return true;
 	}
-	// before-leave 在 tab 真正切换前触发，需先同步 activeName，
-	// 否则 getdata 内的 isTracking 拿到旧值，导致请求漏带 PeriodMin/PeriodMax
-	activeName.value = String(e);
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 手动改 activeName 会让 el-tabs 的 modelValue watcher 重入 setCurrentName，
+	// 导致 beforeLeave 二次触发、getdata 重复请求
+	getdata(e);
 	return true;
 };
 
-const getdata = async () => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const isTracking = activeName.value === 'f';
+	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
+	const isTracking = currentTab === 'f';
 	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await overlabellist({
 		index: pagecurrent.value - 1,

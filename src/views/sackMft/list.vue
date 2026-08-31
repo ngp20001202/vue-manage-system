@@ -317,23 +317,22 @@ const beforeLeave = (e: string | number) => {
 	init();
 	if (e === 'tracking') {
 		routeData.value = [];
-		activeName.value = 'tracking';
 		return true;
 	}
-	activeName.value = String(e);
 	if (Number(e) !== 0) {
-		getdata();
+		getdata(e);
 	} else {
 		dates.value = defaultRange();
-		getdata();
+		getdata(e);
 	}
 	return true;
 };
 
-const getdata = async () => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const isTracking = activeName.value === 'tracking';
-	const currentStage = isTracking ? 0 : Number(activeName.value) || 0;
+	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
+	const isTracking = currentTab === 'tracking';
+	const currentStage = isTracking ? 0 : Number(currentTab) || 0;
 	const encodedTracking = isTracking ? encodeURIComponent(textarea.value) : undefined;
 
 	const res: ApiResponse<any> = await sackMftlist({

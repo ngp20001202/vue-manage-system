@@ -452,7 +452,6 @@ const beforeLeave = (e: string | number) => {
 	if (e === 'tracking') {
 		routeData.value = [];
 		Stage.value = 0;
-		activeName.value = String(e);
 		return true;
 	}
 	if (Number(e) !== 0) {
@@ -460,17 +459,17 @@ const beforeLeave = (e: string | number) => {
 	} else {
 		Stage.value = 0;
 	}
-	// before-leave 在 tab 真正切换前触发，activeName 此时还是旧值；
-	// 需要先同步 activeName，否则 getdata 内的 isTracking 判断会拿错，
-	// 导致从 tracking 切回"全部"时 UI 显示了默认日期但请求没带 PeriodMin/PeriodMax
-	activeName.value = String(e);
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 不能在这里手动改 activeName——el-tabs 会 watch modelValue，外部改动会
+	// 让 setCurrentName 重入，导致 beforeLeave 被二次调用、getdata 被重复触发
+	getdata(e);
 	return true;
 };
 
-const getdata = async () => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const isTracking = activeName.value === 'tracking';
+	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
+	const isTracking = currentTab === 'tracking';
 	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
