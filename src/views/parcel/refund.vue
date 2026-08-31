@@ -227,11 +227,12 @@ const beforeLeave = (e: string | number) => {
 	textarea.value = '';
 	if (e === 'tracking') {
 		routeData.value = [];
-		activeName.value = String(e);
 		return true;
 	}
-	activeName.value = String(e);
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 手动改 activeName 会让 el-tabs 的 modelValue watcher 重入 setCurrentName，
+	// 导致 beforeLeave 二次触发、getdata 重复请求
+	getdata(undefined, e);
 	return true;
 };
 

@@ -459,13 +459,17 @@ const beforeLeave = (e: string | number) => {
 	} else {
 		Stage.value = 0;
 	}
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 不能在这里手动改 activeName——el-tabs 会 watch modelValue，外部改动会
+	// 让 setCurrentName 重入，导致 beforeLeave 被二次调用、getdata 被重复触发
+	getdata(e);
 	return true;
 };
 
-const getdata = async () => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const isTracking = activeName.value === 'tracking';
+	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
+	const isTracking = currentTab === 'tracking';
 	// 运单号搜索时不带日期范围（与 shippingspa 一致：切到 tracking 页签会清空 dates）
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
@@ -565,7 +569,12 @@ const cancell = async (isBatch: boolean, id?: string | number) => {
 			const res: ApiResponse<any> = await parcelcancel({ ids: list as any });
 			if (res?.isSuccess) {
 				ElMessage.success(t('pages.cancelSuccess'));
-				getdata();
+				// tracking 页签下走 POST 搜索，避免 GET 把整段 textarea 拼到 URL 触发 414
+				if (activeName.value === 'tracking') {
+					postdata();
+				} else {
+					getdata();
+				}
 			} else {
 				ElMessage.error(res?.message || t('pages.Failed'));
 			}
