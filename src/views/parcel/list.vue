@@ -628,7 +628,12 @@ const cancell = async (isBatch: boolean, id?: string | number) => {
       const res: ApiResponse<any> = await parcelcancel({ ids: list as any });
       if (res?.isSuccess) {
         ElMessage.success(t("pages.cancelSuccess"));
-        getdata();
+        // tracking 页签下走 POST 搜索，避免 GET 把整段 textarea 拼到 URL 触发 414
+        if (activeName.value === "tracking") {
+          postdata();
+        } else {
+          getdata();
+        }
       } else {
         ElMessage.error(res?.message || t("pages.Failed"));
       }
