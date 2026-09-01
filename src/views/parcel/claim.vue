@@ -217,7 +217,8 @@ const formatAmount = (amount: ClaimRow['claimAmount']) => {
 
 const toUtcIso = (date: string | undefined) => {
 	if (!date) return undefined;
-	return moment(date).utc().format();
+	// Claims 后端 SQL Server 不识别带 Z 的 ISO 8601，改用 'YYYY-MM-DD HH:mm:ss'
+	return moment(date).utc();
 };
 
 const defaultRange = (): [string, string] => [
@@ -261,37 +262,40 @@ const beforeLeave = (e: string | number) => {
 
 const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const currentTab = tabName ?? activeName.value;
-	const isTracking = currentTab === 'tracking';
+	try {
+		const currentTab = tabName ?? activeName.value;
+		const isTracking = currentTab === 'tracking';
 
-	const params: Record<string, any> = {
-		PageIndex: pagecurrent.value - 1,
-		PageSize: count.value,
-	};
-	if (isTracking) {
-		// 单号查询：单条 + Status=Nil + 不带日期
-		params.TrackingNbr = textarea.value.trim();
-		params.Status = 'Nil';
-	} else {
-		// 接口约定：Status = "Nil" 表示不按状态过滤
-		params.Status = String(currentTab) === '0' ? 'Nil' : currentTab;
-		params.PeriodMin = toUtcIso(dates.value?.[0]);
-		params.PeriodMax = toUtcIso(dates.value?.[1]);
-	}
+		const params: Record<string, any> = {
+			PageIndex: pagecurrent.value - 1,
+			PageSize: count.value,
+		};
+		if (isTracking) {
+			// 单号查询：单条 + Status=Nil + 不带日期
+			params.TrackingNbr = textarea.value.trim();
+			params.Status = 'Nil';
+		} else {
+			// 接口约定：Status = "Nil" 表示不按状态过滤
+			params.Status = String(currentTab) === '0' ? 'Nil' : currentTab;
+			params.PeriodMin = toUtcIso(dates.value?.[0]);
+			params.PeriodMax = toUtcIso(dates.value?.[1]);
+		}
 
-	const res: ApiResponse<any> = await claimlist(params as {
-		Status?: string | number;
-		TrackingNbr?: string;
-		PageIndex: number;
-		PageSize: number;
-		PeriodMin?: string;
-		PeriodMax?: string;
-	});
-	if (res?.isSuccess) {
-		routeData.value = res.result ?? [];
-		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
+		const res: ApiResponse<any> = await claimlist(params as {
+			Status?: string | number;
+			TrackingNbr?: string;
+			PageIndex: number;
+			PageSize: number;
+			PeriodMin?: string;
+			PeriodMax?: string;
+		});
+		if (res?.isSuccess) {
+			routeData.value = res.result ?? [];
+			availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
+		}
+	} finally {
+		loading.value = false;
 	}
-	loading.value = false;
 };
 
 watch([count, pagecurrent], () => {
