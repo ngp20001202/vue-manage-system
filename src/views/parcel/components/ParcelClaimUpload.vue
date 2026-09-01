@@ -157,8 +157,8 @@ const submit = async () => {
 		return;
 	}
 	const formdata = new FormData();
-	if (fileInfo.value) formdata.append('infoFile', fileInfo.value);
-	formdata.append('evidenceFile', fileEvidence.value);
+	if (fileInfo.value) formdata.append('excel', fileInfo.value);
+	formdata.append('zip', fileEvidence.value);
 	const res = await claimImport(formdata);
 	if (res?.isSuccess) {
 		ElMessage.success(t('pages.Success'));

@@ -280,24 +280,25 @@ const getdata = async (type?: number, tabName?: string | number) => {
 	const trackingNbrs = rawTrackingNbrs.slice(0, 200).join('\n');
 
 	const params: Record<string, any> = {
-		pageIndex: pagecurrent.value - 1,
-		pageSize: count.value,
+		PageIndex: pagecurrent.value - 1,
+		PageSize: count.value,
 	};
 	if (type || isTracking) {
-		params.RefNbrs = trackingNbrs;
+		params.TrackingNbr = trackingNbrs;
 	} else {
-		params.stateID = currentTab;
-		params.periodMin = toUtcIso(dates.value?.[0]);
-		params.periodMax = toUtcIso(dates.value?.[1]);
+		// 接口约定：Status = "Nil" 表示不按状态过滤
+		params.Status = String(currentTab) === '0' ? 'Nil' : currentTab;
+		params.PeriodMin = toUtcIso(dates.value?.[0]);
+		params.PeriodMax = toUtcIso(dates.value?.[1]);
 	}
 
 	const res: ApiResponse<any> = await claimlist(params as {
-		pageIndex: number;
-		pageSize: number;
-		RefNbrs?: string;
-		stateID?: string | number;
-		periodMin?: string;
-		periodMax?: string;
+		Status?: string | number;
+		TrackingNbr?: string;
+		PageIndex: number;
+		PageSize: number;
+		PeriodMin?: string;
+		PeriodMax?: string;
 	});
 	if (res?.isSuccess) {
 		routeData.value = res.result ?? [];
