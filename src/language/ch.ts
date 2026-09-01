@@ -468,10 +468,10 @@ export default {
       cancelled: "已取消",
     },
     ClaimList: {
-      claimCreated: "理赔已创建",
+      claimCreated: "待处理",
       claimUnderReview: "审核中",
       claimSucceeded: "索赔成功",
-      claimRejected: "索赔被拒",
+      claimRejected: "索赔拒绝",
       claimAmount: "理赔金额",
       claimCreatedOn: "理赔创建时间",
       submitClaim: "提交索赔",

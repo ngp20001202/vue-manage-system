@@ -10,19 +10,19 @@
 				<el-tab-pane :label="t('pages.all')" name="0" />
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimCreated')"
-					name="11040"
+					name="Pending"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimUnderReview')"
-					name="11010"
+					name="Processing"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimSucceeded')"
-					name="10005"
+					name="Approved"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimRejected')"
-					name="11020"
+					name="Rejected"
 				/>
 				<el-tab-pane :label="t('pages.tracking')" name="tracking" />
 			</el-tabs>
@@ -181,21 +181,22 @@ const pagecurrent = ref(1);
 const parcelDetail = reactive({ id: '' });
 const uploadVisible = ref(false);
 
+// 后端返回的状态字符串可能大小写不一致，统一归一到 PascalCase 键
 const CLAIM_STATE_ALIAS: Record<string, string> = {
-	'11040': 'Created',
-	Created: 'Created',
-	'11010': 'UnderReview',
-	UnderReview: 'UnderReview',
-	'10005': 'Succeeded',
-	Succeeded: 'Succeeded',
-	'11020': 'Rejected',
+	pending: 'Pending',
+	Pending: 'Pending',
+	processing: 'Processing',
+	Processing: 'Processing',
+	Approved: 'Approved',
+	approved: 'Approved',
 	Rejected: 'Rejected',
+	rejected: 'Rejected',
 };
 
 const CLAIM_STATE_META: Record<string, { type: string; label: string }> = {
-	Created: { type: 'info', label: 'pages.ClaimList.claimCreated' },
-	UnderReview: { type: 'warning', label: 'pages.ClaimList.claimUnderReview' },
-	Succeeded: { type: 'success', label: 'pages.ClaimList.claimSucceeded' },
+	Pending: { type: 'info', label: 'pages.ClaimList.claimCreated' },
+	Processing: { type: 'warning', label: 'pages.ClaimList.claimUnderReview' },
+	Approved: { type: 'success', label: 'pages.ClaimList.claimSucceeded' },
 	Rejected: { type: 'danger', label: 'pages.ClaimList.claimRejected' },
 };
 
