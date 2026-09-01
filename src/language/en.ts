@@ -482,6 +482,7 @@ export default {
       claimInfoFile: "Claim #",
       evidenceFile: "Evidence",
       downloadClaimTemplate: "Download Claim Template",
+      trackplace: "Enter tracking# or order#",
     },
     type: "Type ",
     countrycode: "Country Code ",

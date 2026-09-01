@@ -52,16 +52,14 @@
 					<el-input
 						v-model="textarea"
 						class="tracking-input"
-						:placeholder="t('pages.trackplace')"
+						:placeholder="t('pages.ClaimList.trackplace')"
 					/>
-					<div class="tracking-actions">
-						<el-button type="primary" :icon="Search" @click="onSearch">
-							{{ t('pages.Search') }}
-						</el-button>
-						<el-button :icon="Refresh" @click="onReset">
-							{{ t('pages.Reset') }}
-						</el-button>
-					</div>
+					<el-button type="primary" :icon="Search" @click="onSearch">
+						{{ t('pages.Search') }}
+					</el-button>
+					<el-button :icon="Refresh" @click="onReset">
+						{{ t('pages.Reset') }}
+					</el-button>
 				</div>
 			</div>
 		</el-card>
@@ -370,18 +368,14 @@ onMounted(() => {
 	width: 100%;
 }
 .tracking-input {
-	width: 70%;
-	max-width: 720px;
+	width: 320px;
+	max-width: 100%;
 }
 .tracking-block {
 	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-.tracking-actions {
-	display: flex;
-	gap: 8px;
 	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
 }
 .cyan {
 	color: #17a2b8;

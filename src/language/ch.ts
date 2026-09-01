@@ -478,6 +478,7 @@ export default {
       claimInfoFile: "理赔单号表",
       evidenceFile: "凭证附件",
       downloadClaimTemplate: "下载理赔单号模版",
+      trackplace: "请输入运单号或订单号",
     },
     type: "类型",
     countrycode: "国家代码",
