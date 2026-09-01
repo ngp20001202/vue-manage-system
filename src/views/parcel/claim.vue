@@ -10,19 +10,19 @@
 				<el-tab-pane :label="t('pages.all')" name="0" />
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimCreated')"
-					name="11040"
+					name="Pending"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimUnderReview')"
-					name="11010"
+					name="Processing"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimSucceeded')"
-					name="10005"
+					name="Approved"
 				/>
 				<el-tab-pane
 					:label="t('pages.ClaimList.claimRejected')"
-					name="11020"
+					name="Rejected"
 				/>
 				<el-tab-pane :label="t('pages.tracking')" name="tracking" />
 			</el-tabs>
@@ -51,19 +51,15 @@
 				<div v-else class="tracking-block">
 					<el-input
 						v-model="textarea"
-						:rows="4"
 						class="tracking-input"
-						type="textarea"
-						:placeholder="t('pages.trackplace')"
+						:placeholder="t('pages.ClaimList.trackplace')"
 					/>
-					<div class="tracking-actions">
-						<el-button type="primary" :icon="Search" @click="onSearch">
-							{{ t('pages.Search') }}
-						</el-button>
-						<el-button :icon="Refresh" @click="onReset">
-							{{ t('pages.Reset') }}
-						</el-button>
-					</div>
+					<el-button type="primary" :icon="Search" @click="onSearch">
+						{{ t('pages.Search') }}
+					</el-button>
+					<el-button :icon="Refresh" @click="onReset">
+						{{ t('pages.Reset') }}
+					</el-button>
 				</div>
 			</div>
 		</el-card>
@@ -149,7 +145,6 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
 import { Search, Refresh, Upload } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { claimlist } from '@/api/parcel';
@@ -181,21 +176,22 @@ const pagecurrent = ref(1);
 const parcelDetail = reactive({ id: '' });
 const uploadVisible = ref(false);
 
+// 后端返回的状态字符串可能大小写不一致，统一归一到 PascalCase 键
 const CLAIM_STATE_ALIAS: Record<string, string> = {
-	'11040': 'Created',
-	Created: 'Created',
-	'11010': 'UnderReview',
-	UnderReview: 'UnderReview',
-	'10005': 'Succeeded',
-	Succeeded: 'Succeeded',
-	'11020': 'Rejected',
+	pending: 'Pending',
+	Pending: 'Pending',
+	processing: 'Processing',
+	Processing: 'Processing',
+	Approved: 'Approved',
+	approved: 'Approved',
 	Rejected: 'Rejected',
+	rejected: 'Rejected',
 };
 
 const CLAIM_STATE_META: Record<string, { type: string; label: string }> = {
-	Created: { type: 'info', label: 'pages.ClaimList.claimCreated' },
-	UnderReview: { type: 'warning', label: 'pages.ClaimList.claimUnderReview' },
-	Succeeded: { type: 'success', label: 'pages.ClaimList.claimSucceeded' },
+	Pending: { type: 'info', label: 'pages.ClaimList.claimCreated' },
+	Processing: { type: 'warning', label: 'pages.ClaimList.claimUnderReview' },
+	Approved: { type: 'success', label: 'pages.ClaimList.claimSucceeded' },
 	Rejected: { type: 'danger', label: 'pages.ClaimList.claimRejected' },
 };
 
@@ -221,6 +217,7 @@ const formatAmount = (amount: ClaimRow['claimAmount']) => {
 
 const toUtcIso = (date: string | undefined) => {
 	if (!date) return undefined;
+	// Claims 后端 SQL Server 不识别带 Z 的 ISO 8601，改用 'YYYY-MM-DD HH:mm:ss'
 	return moment(date).utc().format();
 };
 
@@ -245,11 +242,8 @@ const changestatus = () => {
 };
 
 const onSearch = () => {
-	if (activeName.value === 'tracking') {
-		getdata(1);
-	} else {
-		getdata();
-	}
+	pagecurrent.value = 1;
+	getdata();
 };
 
 const beforeLeave = (e: string | number) => {
@@ -257,61 +251,55 @@ const beforeLeave = (e: string | number) => {
 	textarea.value = '';
 	if (e === 'tracking') {
 		routeData.value = [];
-		activeName.value = String(e);
 		return true;
 	}
-	activeName.value = String(e);
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 不能在这里手动改 activeName——el-tabs 会 watch modelValue，外部改动会
+	// 让 setCurrentName 重入，导致 beforeLeave 被二次调用、getdata 被重复触发
+	getdata(e);
 	return true;
 };
 
-const getdata = async (type?: number, tabName?: string | number) => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
-	const currentTab = tabName ?? activeName.value;
-	const isTracking = currentTab === 'tracking';
+	try {
+		const currentTab = tabName ?? activeName.value;
+		const isTracking = currentTab === 'tracking';
 
-	const rawTrackingNbrs = textarea.value
-		.split(/[\n\r,,，]+/)
-		.map((s) => s.trim())
-		.filter(Boolean);
-	if (rawTrackingNbrs.length > 200) {
-		ElMessage.info(t('pages.trackingPage.limitInfo'));
-	}
-	const trackingNbrs = rawTrackingNbrs.slice(0, 200).join('\n');
+		const params: Record<string, any> = {
+			PageIndex: pagecurrent.value - 1,
+			PageSize: count.value,
+		};
+		if (isTracking) {
+			// 单号查询：单条 + Status=Nil + 不带日期
+			params.TrackingNbr = textarea.value.trim();
+			params.Status = 'Nil';
+		} else {
+			// 接口约定：Status = "Nil" 表示不按状态过滤
+			params.Status = String(currentTab) === '0' ? 'Nil' : currentTab;
+			params.PeriodMin = toUtcIso(dates.value?.[0]);
+			params.PeriodMax = toUtcIso(dates.value?.[1]);
+		}
 
-	const params: Record<string, any> = {
-		pageIndex: pagecurrent.value - 1,
-		pageSize: count.value,
-	};
-	if (type || isTracking) {
-		params.RefNbrs = trackingNbrs;
-	} else {
-		params.stateID = currentTab;
-		params.periodMin = toUtcIso(dates.value?.[0]);
-		params.periodMax = toUtcIso(dates.value?.[1]);
+		const res: ApiResponse<any> = await claimlist(params as {
+			Status?: string | number;
+			TrackingNbr?: string;
+			PageIndex: number;
+			PageSize: number;
+			PeriodMin?: string;
+			PeriodMax?: string;
+		});
+		if (res?.isSuccess) {
+			routeData.value = res.result ?? [];
+			availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
+		}
+	} finally {
+		loading.value = false;
 	}
-
-	const res: ApiResponse<any> = await claimlist(params as {
-		pageIndex: number;
-		pageSize: number;
-		RefNbrs?: string;
-		stateID?: string | number;
-		periodMin?: string;
-		periodMax?: string;
-	});
-	if (res?.isSuccess) {
-		routeData.value = res.result ?? [];
-		availcnt.value = res.pagination?.availCnt ?? res.availcnt ?? 0;
-	}
-	loading.value = false;
 };
 
 watch([count, pagecurrent], () => {
-	if (activeName.value === 'tracking') {
-		getdata(1);
-	} else {
-		getdata();
-	}
+	getdata();
 });
 
 onMounted(() => {
@@ -384,18 +372,14 @@ onMounted(() => {
 	width: 100%;
 }
 .tracking-input {
-	width: 70%;
-	max-width: 720px;
+	width: 320px;
+	max-width: 100%;
 }
 .tracking-block {
 	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-.tracking-actions {
-	display: flex;
-	gap: 8px;
 	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
 }
 .cyan {
 	color: #17a2b8;
