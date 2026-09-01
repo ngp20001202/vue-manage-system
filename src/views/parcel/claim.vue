@@ -51,9 +51,7 @@
 				<div v-else class="tracking-block">
 					<el-input
 						v-model="textarea"
-						:rows="4"
 						class="tracking-input"
-						type="textarea"
 						:placeholder="t('pages.trackplace')"
 					/>
 					<div class="tracking-actions">
@@ -149,7 +147,6 @@
 <script setup lang="ts">
 import { ref, reactive, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
 import { Search, Refresh, Upload } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { claimlist } from '@/api/parcel';
@@ -246,11 +243,8 @@ const changestatus = () => {
 };
 
 const onSearch = () => {
-	if (activeName.value === 'tracking') {
-		getdata(1);
-	} else {
-		getdata();
-	}
+	pagecurrent.value = 1;
+	getdata();
 };
 
 const beforeLeave = (e: string | number) => {
@@ -258,34 +252,28 @@ const beforeLeave = (e: string | number) => {
 	textarea.value = '';
 	if (e === 'tracking') {
 		routeData.value = [];
-		activeName.value = String(e);
 		return true;
 	}
-	activeName.value = String(e);
-	getdata();
+	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
+	// 不能在这里手动改 activeName——el-tabs 会 watch modelValue，外部改动会
+	// 让 setCurrentName 重入，导致 beforeLeave 被二次调用、getdata 被重复触发
+	getdata(e);
 	return true;
 };
 
-const getdata = async (type?: number, tabName?: string | number) => {
+const getdata = async (tabName?: string | number) => {
 	loading.value = true;
 	const currentTab = tabName ?? activeName.value;
 	const isTracking = currentTab === 'tracking';
-
-	const rawTrackingNbrs = textarea.value
-		.split(/[\n\r,,，]+/)
-		.map((s) => s.trim())
-		.filter(Boolean);
-	if (rawTrackingNbrs.length > 200) {
-		ElMessage.info(t('pages.trackingPage.limitInfo'));
-	}
-	const trackingNbrs = rawTrackingNbrs.slice(0, 200).join('\n');
 
 	const params: Record<string, any> = {
 		PageIndex: pagecurrent.value - 1,
 		PageSize: count.value,
 	};
-	if (type || isTracking) {
-		params.TrackingNbr = trackingNbrs;
+	if (isTracking) {
+		// 单号查询：单条 + Status=Nil + 不带日期
+		params.TrackingNbr = textarea.value.trim();
+		params.Status = 'Nil';
 	} else {
 		// 接口约定：Status = "Nil" 表示不按状态过滤
 		params.Status = String(currentTab) === '0' ? 'Nil' : currentTab;
@@ -309,11 +297,7 @@ const getdata = async (type?: number, tabName?: string | number) => {
 };
 
 watch([count, pagecurrent], () => {
-	if (activeName.value === 'tracking') {
-		getdata(1);
-	} else {
-		getdata();
-	}
+	getdata();
 });
 
 onMounted(() => {
