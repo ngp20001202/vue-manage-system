@@ -1,0 +1,25 @@
+{
+    "理赔列表接口":{
+        "url":"/api/Claims",
+        "method":"GET",
+        "params":{
+            "Status":"Nil",
+            "TrackingNbr":"410245515",
+            "PageIndex":0,
+            "PageSize":10,
+            "PeriodMin":null,
+            "PeriodMax":null
+        }
+    },
+    "理赔上传接口":{
+        "url":"/api/Claims",
+        "method":"POST",
+        "body":{
+            "excel":"excel文件",
+            "zip":"zip文件"
+        },
+        "headers":{
+            "Content-Type":"multipart/form-data"
+        }
+    }
+}
