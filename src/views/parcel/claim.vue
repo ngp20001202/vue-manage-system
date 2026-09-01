@@ -218,7 +218,7 @@ const formatAmount = (amount: ClaimRow['claimAmount']) => {
 const toUtcIso = (date: string | undefined) => {
 	if (!date) return undefined;
 	// Claims 后端 SQL Server 不识别带 Z 的 ISO 8601，改用 'YYYY-MM-DD HH:mm:ss'
-	return moment(date).utc();
+	return moment(date).utc().format();
 };
 
 const defaultRange = (): [string, string] => [
