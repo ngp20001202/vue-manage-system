@@ -54,6 +54,25 @@ export const refundlist = (params: {
 	periodMax?: string;
 }): Promise<ApiResponse> => request({ url: '/api/Parcels/refunds', method: 'GET', params });
 
+// 理赔列表（暂用退款接口，真实理赔接口待开发）
+export const claimlist = (params: {
+	pageIndex: number;
+	pageSize: number;
+	RefNbrs?: string;
+	stateID?: string | number;
+	periodMin?: string;
+	periodMax?: string;
+}): Promise<ApiResponse> => request({ url: '/api/Parcels/refunds', method: 'GET', params });
+
+// 理赔上传（占位，真实理赔接口待开发）
+export const claimImport = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Parcels/claims/import',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
 // 单个面单下载（返回 url）
 export const downloadlabel = (id: string) =>
 	request({ url: `/api/Parcels/${id}/labels`, method: 'GET' });

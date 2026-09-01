@@ -76,6 +76,12 @@ const routes: RouteRecordRaw[] = [
                 component: () => import(/* webpackChunkName: "parcel-refund" */ '../views/parcel/refund.vue'),
             },
             {
+                path: '/Parcels/ClaimList',
+                name: 'shippingspa-parcel-claim',
+                meta: { title: '理赔列表', titleKey: 'title.ClaimList', permiss: '119', hideInMenu: true },
+                component: () => import(/* webpackChunkName: "parcel-claim" */ '../views/parcel/claim.vue'),
+            },
+            {
                 path: '/PostingToLastMiler/Import',
                 name: 'shippingspa-parcel-postingToLastMiler',
                 meta: { title: '推送入网', titleKey: 'title.PostingtoLastMilerImport', permiss: '100', hideInMenu: true },
