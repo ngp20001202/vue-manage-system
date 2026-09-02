@@ -93,6 +93,7 @@ import { ElMessage, ElNotification } from 'element-plus';
 import { Upload, Download } from '@element-plus/icons-vue';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import moment from 'moment';
 import { claimImport } from '@/api/parcel';
 
 const props = defineProps<{
@@ -129,9 +130,11 @@ const downloadFailed = (failed: ClaimImportItem[]) => {
 	const wb = XLSX.utils.book_new();
 	XLSX.utils.book_append_sheet(wb, ws, 'Failed');
 	const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+	const stamp = moment().format('YYYYMMDDHHmm');
+	const filename = `${t('pages.ClaimList.importFailedFile')}_${stamp}.xlsx`;
 	saveAs(
 		new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
-		t('pages.ClaimList.importFailedFile'),
+		filename,
 	);
 };
 
@@ -197,9 +200,13 @@ const submit = async () => {
 		const failed = items.filter((item) => item.status !== 'Success');
 		const success = items.length - failed.length;
 		if (items.length > 0) {
+			const summaryMsg = t('pages.ClaimList.importSummary', { success, fail: failed.length });
+			const message = failed.length > 0
+				? `${summaryMsg}，${t('pages.ClaimList.importGeneratingFailed')}`
+				: summaryMsg;
 			ElNotification({
 				title: t('pages.Success'),
-				message: t('pages.ClaimList.importSummary', { success, fail: failed.length }),
+				message,
 				type: failed.length > 0 ? 'warning' : 'success',
 				duration: 5000,
 			});
