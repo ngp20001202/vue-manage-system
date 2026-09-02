@@ -89,8 +89,11 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElNotification } from 'element-plus';
 import { Upload, Download } from '@element-plus/icons-vue';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import moment from 'moment';
 import { claimImport } from '@/api/parcel';
 
 const props = defineProps<{
@@ -102,6 +105,38 @@ const emit = defineEmits(['update:modelValue', 'success']);
 
 const { t } = useI18n();
 const visible = ref(false);
+
+interface ClaimImportItem {
+	trackingNbr?: string;
+	status?: string;
+}
+
+const CLAIM_IMPORT_STATUS_LABEL: Record<string, string> = {
+	Success: 'pages.ClaimList.importStatusSuccess',
+	TrackingNbrNotExist: 'pages.ClaimList.importStatusTrackingNbrNotExist',
+	AlreadyClaimed: 'pages.ClaimList.importStatusAlreadyClaimed',
+};
+
+const statusLabel = (status: string | undefined) => {
+	if (!status) return '-';
+	const key = CLAIM_IMPORT_STATUS_LABEL[status];
+	return key ? t(key) : status;
+};
+
+const downloadFailed = (failed: ClaimImportItem[]) => {
+	const header = [t('pages.Parcels.list.lastmiler'), t('pages.Reason')];
+	const rows = failed.map((item) => [item.trackingNbr ?? '', statusLabel(item.status)]);
+	const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+	const wb = XLSX.utils.book_new();
+	XLSX.utils.book_append_sheet(wb, ws, 'Failed');
+	const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+	const stamp = moment().format('YYYYMMDDHHmm');
+	const filename = `${t('pages.ClaimList.importFailedFile')}_${stamp}.xlsx`;
+	saveAs(
+		new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+		filename,
+	);
+};
 
 const dialogTitle = computed(() =>
 	props.orderId ? `提交 ${props.orderId} 的索赔` : t('pages.ClaimList.submitClaim'),
@@ -161,7 +196,24 @@ const submit = async () => {
 	formdata.append('zip', fileEvidence.value);
 	const res = await claimImport(formdata);
 	if (res?.isSuccess) {
-		ElMessage.success(t('pages.Success'));
+		const items: ClaimImportItem[] = Array.isArray(res?.result) ? res.result : [];
+		const failed = items.filter((item) => item.status !== 'Success');
+		const success = items.length - failed.length;
+		if (items.length > 0) {
+			const summaryMsg = t('pages.ClaimList.importSummary', { success, fail: failed.length });
+			const message = failed.length > 0
+				? `${summaryMsg}，${t('pages.ClaimList.importGeneratingFailed')}`
+				: summaryMsg;
+			ElNotification({
+				title: t('pages.Success'),
+				message,
+				type: failed.length > 0 ? 'warning' : 'success',
+				duration: 5000,
+			});
+		} else {
+			ElMessage.success(t('pages.Success'));
+		}
+		if (failed.length > 0) downloadFailed(failed);
 		emit('success');
 		emit('update:modelValue', false);
 		resetForm();
