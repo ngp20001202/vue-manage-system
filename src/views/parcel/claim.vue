@@ -204,7 +204,7 @@ const getClaimStateTag = (state: string | number | undefined) => {
 
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
-	return moment(utc).format('YYYY-MM-DD HH:mm:ss');
+	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
 const formatAmount = (amount: ClaimRow['amount']) => {
