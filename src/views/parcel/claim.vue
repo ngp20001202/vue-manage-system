@@ -90,9 +90,7 @@
 			<el-table v-loading="loading" :data="routeData" style="width: 100%" border>
 				<el-table-column :label="t('pages.ID')" width="150">
 					<template #default="scope">
-						<span class="cyan" @click="() => setid('detail', scope.row.id)">
-							{{ scope.row.id }}
-						</span>
+						<span>{{ scope.row.id }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.Parcels.list.lastmiler')" prop="trackingNbr" min-width="150" />
@@ -137,19 +135,17 @@
 			/>
 		</el-card>
 
-		<ParcelDetail :id="parcelDetail.id" @changestatus="changestatus" />
 		<ParcelClaimUpload v-model="uploadVisible" @success="getdata" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Upload } from '@element-plus/icons-vue';
 import moment from 'moment';
 import { claimlist } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
-import ParcelDetail from './detail.vue';
 import ParcelClaimUpload from './components/ParcelClaimUpload.vue';
 
 const { t } = useI18n();
@@ -172,7 +168,6 @@ const availcnt = ref(0);
 const count = ref(10);
 const pagecurrent = ref(1);
 
-const parcelDetail = reactive({ id: '' });
 const uploadVisible = ref(false);
 
 // 后端返回的状态字符串可能大小写不一致，统一归一到 PascalCase 键
@@ -230,14 +225,6 @@ const onReset = () => {
 	textarea.value = '';
 	pagecurrent.value = 1;
 	onSearch();
-};
-
-const setid = (_name: string, id: string | number) => {
-	parcelDetail.id = String(id);
-};
-
-const changestatus = () => {
-	parcelDetail.id = '';
 };
 
 const onSearch = () => {
@@ -379,13 +366,6 @@ onMounted(() => {
 	align-items: center;
 	gap: 12px;
 	flex-wrap: wrap;
-}
-.cyan {
-	color: #17a2b8;
-	cursor: pointer;
-}
-.cyan:hover {
-	text-decoration: underline;
 }
 .pager {
 	margin-top: 16px;
