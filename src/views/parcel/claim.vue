@@ -95,17 +95,17 @@
 						</span>
 					</template>
 				</el-table-column>
-				<el-table-column :label="t('pages.Parcels.list.lastmiler')" prop="lastMilerNbr" min-width="150" />
+				<el-table-column :label="t('pages.Parcels.list.lastmiler')" prop="trackingNbr" min-width="150" />
 				<el-table-column :label="t('pages.Stage')" width="160">
 					<template #default="scope">
-						<el-tag :type="getClaimStateTag(scope.row.state).type" size="small">
-							{{ getClaimStateTag(scope.row.state).label }}
+						<el-tag :type="getClaimStateTag(scope.row.status).type" size="small">
+							{{ getClaimStateTag(scope.row.status).label }}
 						</el-tag>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.ClaimList.claimAmount')" width="160">
 					<template #default="scope">
-						<span>{{ formatAmount(scope.row.claimAmount) }}</span>
+						<span>{{ formatAmount(scope.row.amount) }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.Reason')" min-width="200">
@@ -115,7 +115,7 @@
 				</el-table-column>
 				<el-table-column :label="t('pages.ClaimList.claimCreatedOn')" width="180">
 					<template #default="scope">
-						<span>{{ formatPosted(scope.row.postedOn) }}</span>
+						<span>{{ formatPosted(scope.row.createdAt) }}</span>
 					</template>
 				</el-table-column>
 				<template #empty>
@@ -156,12 +156,11 @@ const { t } = useI18n();
 
 interface ClaimRow extends Record<string, any> {
 	id: string | number;
-	lastMilerNbr?: string;
-	state?: string | number;
-	claimAmount?: { value: number | string; unit?: string };
+	trackingNbr?: string;
+	status?: string | number;
+	amount?: { value: number | string; unit?: string };
 	reason?: string;
-	postedOn?: string;
-	submittedOn?: string;
+	createdAt?: string;
 }
 
 const activeName = ref('0');
@@ -205,10 +204,10 @@ const getClaimStateTag = (state: string | number | undefined) => {
 
 const formatPosted = (utc: string | undefined) => {
 	if (!utc) return '';
-	return moment(utc).format('YYYY-MM-DD HH:mm:ss');
+	return moment.utc(utc).local().format('YYYY-MM-DD HH:mm:ss');
 };
 
-const formatAmount = (amount: ClaimRow['claimAmount']) => {
+const formatAmount = (amount: ClaimRow['amount']) => {
 	if (!amount) return '-';
 	const value = amount.value;
 	const unit = amount.unit ?? '';
