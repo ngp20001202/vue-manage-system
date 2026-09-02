@@ -123,6 +123,23 @@
     },
     "headers": {
       "Content-Type": "multipart/form-data"
+    },
+    "response": {
+      "result": [
+        { "trackingNbr": "9212290374414310751713", "status": "Success" },
+        { "trackingNbr": "9212290374414310751737", "status": "Success" },
+        { "trackingNbr": "9212290374414310751751", "status": "Success" },
+        { "trackingNbr": "9212290374414310751768", "status": "Success" },
+        { "trackingNbr": "9212290374414310751775", "status": "Success" },
+        { "trackingNbr": "Fake218411801785908936568", "status": "Success" },
+        { "trackingNbr": "Fake218411951785914615612", "status": "Success" },
+        { "trackingNbr": "TEST001677021841179011", "status": "Success" },
+        { "trackingNbr": "TEST001677021841181016", "status": "Success" },
+        { "trackingNbr": "TEST001679021841288012", "status": "Success" }
+      ],
+      "message": "",
+      "isSuccess": true,
+      "utcStamp": "2026-09-02T11:17:39.3355106Z"
     }
   }
 }
