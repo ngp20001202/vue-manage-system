@@ -233,9 +233,9 @@ const handleClose = () => {
 <style lang="scss" scoped>
 .parcel-claim-upload {
 	.import-warn {
-		padding: 0 25px 12px;
+		padding: 0 25px;
 		color: #f56c6c;
-		font-size: 13px;
+		font-size: 15px;
 		line-height: 1.4;
 		border-bottom: 1px dashed #ebeef5;
 	}
