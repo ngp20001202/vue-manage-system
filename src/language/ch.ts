@@ -485,6 +485,7 @@ export default {
       importStatusAlreadyClaimed: "已存在理赔单",
       importFailedFile: "理赔失败",
       importGeneratingFailed: "失败文件生成中，请稍后",
+      importMaxWarn: "每批导入最大 10000 单",
     },
     type: "类型",
     countrycode: "国家代码",

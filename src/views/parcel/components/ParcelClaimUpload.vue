@@ -7,6 +7,9 @@
 		@closed="handleClose"
 	>
 		<div class="parcel-claim-upload">
+			<div class="import-warn">
+				{{ t('pages.ClaimList.importMaxWarn') }}
+			</div>
 			<div class="import">
 				<div v-if="!attachmentOnly" class="file-row">
 					<label class="file-label">{{ t('pages.ClaimList.claimInfoFile') }}</label>
@@ -229,6 +232,13 @@ const handleClose = () => {
 
 <style lang="scss" scoped>
 .parcel-claim-upload {
+	.import-warn {
+		padding: 0 25px 12px;
+		color: #f56c6c;
+		font-size: 13px;
+		line-height: 1.4;
+		border-bottom: 1px dashed #ebeef5;
+	}
 	.import {
 		padding: 15px 25px 0;
 	}
