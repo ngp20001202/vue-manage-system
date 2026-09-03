@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus';
 
 const service = axios.create({
 	baseURL: (import.meta.env.VITE_APP_BASE as string) || '',
-	timeout: 60000,
+	timeout: 180000,
 });
 
 service.interceptors.request.use(
