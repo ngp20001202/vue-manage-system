@@ -489,6 +489,7 @@ export default {
       importStatusAlreadyClaimed: "Already claimed",
       importFailedFile: "claim-failed",
       importGeneratingFailed: "Generating failure file, please wait...",
+      importMaxWarn: "Maximum 10,000 parcels per batch import.",
     },
     type: "Type ",
     countrycode: "Country Code ",
