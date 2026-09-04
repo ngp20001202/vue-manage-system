@@ -54,6 +54,25 @@ export const refundlist = (params: {
 	periodMax?: string;
 }): Promise<ApiResponse> => request({ url: '/api/Parcels/refunds', method: 'GET', params });
 
+// 理赔列表（Status 传 "Nil" 表示不过滤；TrackingNbr 支持多行）
+export const claimlist = (params: {
+	Status?: string | number;
+	TrackingNbr?: string;
+	PageIndex: number;
+	PageSize: number;
+	PeriodMin?: string;
+	PeriodMax?: string;
+}): Promise<ApiResponse> => request({ url: '/api/Claims', method: 'GET', params });
+
+// 理赔上传（excel + zip，multipart/form-data）
+export const claimImport = (data: FormData): Promise<ApiResponse> =>
+	request({
+		url: '/api/Claims',
+		method: 'POST',
+		headers: { 'Content-Type': 'multipart/form-data' },
+		data,
+	});
+
 // 单个面单下载（返回 url）
 export const downloadlabel = (id: string) =>
 	request({ url: `/api/Parcels/${id}/labels`, method: 'GET' });

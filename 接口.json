@@ -1,0 +1,145 @@
+{
+  "理赔列表接口": {
+    "url": "/api/Claims",
+    "method": "GET",
+    "params": {
+      "Status": "Nil",
+      "TrackingNbr": "410245515",
+      "PageIndex": 0,
+      "PageSize": 10,
+      "PeriodMin": null,
+      "PeriodMax": null
+    },
+    "response": {
+      "paging": {
+        "size": 10,
+        "index": 0,
+        "availCnt": 10,
+        "availPage": 1,
+        "canPrev": false,
+        "canNext": false
+      },
+      "pagination": {
+        "size": 10,
+        "index": 0,
+        "availCnt": 10,
+        "availPage": 1,
+        "canPrev": false,
+        "canNext": false
+      },
+      "result": [
+        {
+          "id": 1001,
+          "trackingNbr": "Fake218414811787040605614",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1002,
+          "trackingNbr": "Fake218414621787040436393",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1003,
+          "trackingNbr": "Fake218414511787038858591",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1004,
+          "trackingNbr": "Fake218414441787038821231",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1005,
+          "trackingNbr": "Fake218414421786697185962",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1006,
+          "trackingNbr": "Fake218414411786697083165",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1007,
+          "trackingNbr": "Fake218414401786697078664",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1008,
+          "trackingNbr": "Fake218414321786696986259",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1009,
+          "trackingNbr": "Fake218414171786696346771",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        },
+        {
+          "id": 1010,
+          "trackingNbr": "Fake218414101786696309883",
+          "status": "Pending",
+          "amount": { "value": 0, "unit": "Nil" },
+          "reason": "",
+          "createdAt": "2026-09-02T05:58:59.9"
+        }
+      ],
+      "message": "",
+      "isSuccess": true,
+      "utcStamp": "2026-09-02T05:59:05.820633Z"
+    }
+  },
+  "理赔上传接口": {
+    "url": "/api/Claims",
+    "method": "POST",
+    "body": {
+      "excel": "excel文件",
+      "zip": "zip文件"
+    },
+    "headers": {
+      "Content-Type": "multipart/form-data"
+    },
+    "response": {
+      "result": [
+        { "trackingNbr": "9212290374414310751713", "status": "Success" },
+        { "trackingNbr": "9212290374414310751737", "status": "Success" },
+        { "trackingNbr": "9212290374414310751751", "status": "Success" },
+        { "trackingNbr": "9212290374414310751768", "status": "Success" },
+        { "trackingNbr": "9212290374414310751775", "status": "Success" },
+        { "trackingNbr": "Fake218411801785908936568", "status": "Success" },
+        { "trackingNbr": "Fake218411951785914615612", "status": "Success" },
+        { "trackingNbr": "TEST001677021841179011", "status": "Success" },
+        { "trackingNbr": "TEST001677021841181016", "status": "Success" },
+        { "trackingNbr": "TEST001679021841288012", "status": "Success" }
+      ],
+      "message": "",
+      "isSuccess": true,
+      "utcStamp": "2026-09-02T11:17:39.3355106Z"
+    }
+  }
+}

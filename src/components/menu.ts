@@ -23,6 +23,7 @@ export const menuData: Menus[] = [
             { id: '116', pid: '100', index: '/Parcels/Import', title: '批量创建', titleKey: 'menu.Parcel.Import' },
             { id: '117', pid: '100', index: '/Parcels/Batchcalculation', title: '批量试算', titleKey: 'menu.Parcel.Batchcalculation' },
             { id: '103', pid: '100', index: '/Parcels/RefundList', title: '退款列表', titleKey: 'menu.Parcel.RefundList' },
+            { id: '119', pid: '100', index: '/Parcels/ClaimList', title: '理赔列表', titleKey: 'menu.Parcel.ClaimList' },
             { id: '118', pid: '100', index: '/PostingToLastMiler/Import', title: '推送入网', titleKey: 'menu.Parcel.PostingtoLastMiler' },
         ],
     },
