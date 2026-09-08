@@ -55,7 +55,7 @@ export const menuData: Menus[] = [
         title: '配置',
         titleKey: 'menu.Configurations.Configurations',
         index: '160',
-        icon: 'Setting',
+        icon: 'Money',
         children: [
             { id: '108', pid: '160', index: '/Configurations/Sites/List', title: '操作点', titleKey: 'menu.Configurations.Site' },
             { id: '106', pid: '160', index: '/Configurations/Users/List', title: '用户', titleKey: 'menu.Configurations.User' },
