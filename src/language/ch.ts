@@ -416,6 +416,7 @@ export default {
     end: "结束日期",
     fromstage: "开始状态",
     tostage: "结束状态",
+    stage: "状态",
     cancelparcel: "取消订单",
     cancelWarning: "取消后无法撤销该包裹",
     cancelConfirm: "确认取消该包裹?",

@@ -8,23 +8,11 @@
 				:before-leave="beforeLeave"
 			>
 				<el-tab-pane :label="t('pages.all')" name="0" />
-				<el-tab-pane
-					v-for="item in tablist"
-					:key="item.stage"
-					:name="String(item.stage)"
-				>
-					<template #label>
-						<div>
-							{{ item.label }}
-							<el-badge :value="item.count" class="item" type="primary" />
-						</div>
-					</template>
-				</el-tab-pane>
 				<el-tab-pane :label="t('pages.tracking')" name="tracking" />
 			</el-tabs>
 
 			<div class="tabs-content">
-				<el-form v-if="activeName === '0'" :inline="true" class="filter-form">
+				<el-form v-if="activeName !== 'tracking'" :inline="true" class="filter-form">
 					<div class="date-picker">
 						<el-date-picker
 							v-model="dates"
@@ -36,20 +24,9 @@
 						/>
 					</div>
 					<el-form-item>
-						<el-select v-model="startstage" class="stage-select" :placeholder="t('pages.fromstage')">
+						<el-select v-model="stage" class="stage-select" :placeholder="t('pages.stage')">
 							<el-option
-								v-for="item in startsoptions"
-								:key="item.value"
-								:label="item.label"
-								:value="item.value"
-							/>
-						</el-select>
-					</el-form-item>
-					<span class="tilde">~</span>
-					<el-form-item>
-						<el-select v-model="endStage" class="stage-select" :placeholder="t('pages.tostage')">
-							<el-option
-								v-for="item in endoptions"
+								v-for="item in stageOptions"
 								:key="item.value"
 								:label="item.label"
 								:value="item.value"
@@ -136,7 +113,7 @@
 					:current-page="pagecurrent"
 					pager-count="5"
 					:page-size="count"
-					:page-sizes="[10, 20, 50, 100]"
+					:page-sizes="PAGE_SIZES"
 					@current-change="(p: number) => (pagecurrent = p)"
 					@size-change="(s: number) => (count = s)"
 				/>
@@ -250,7 +227,7 @@
 				:total="availcnt"
 				:current-page="pagecurrent"
 				:page-size="count"
-				:page-sizes="[10, 20, 50, 100]"
+				:page-sizes="PAGE_SIZES"
 				@current-change="(p: number) => (pagecurrent = p)"
 				@size-change="(s: number) => (count = s)"
 			/>
@@ -292,7 +269,6 @@ import {
 	parcelstage,
 	parcelcancel,
 	parcelexport,
-	getdashtab,
 	SackMftsign,
 	parceldownloadfile,
 	parcelSearchlist,
@@ -304,6 +280,7 @@ import ParcelDetail from './detail.vue';
 import ParcelTracking from './tracking.vue';
 import ParcelDownload from './download.vue';
 
+import { PAGE_SIZES } from '@/constants/table';
 const { t } = useI18n();
 const { isDesktop } = useViewport();
 
@@ -320,19 +297,12 @@ interface ParcelRow extends Record<string, any> {
 }
 
 const activeName = ref('0');
-const tablist = ref<Array<{ stage: number | string; label: string; count: number }>>([]);
 const dates = ref<[string, string] | null>(null);
 const textarea = ref('');
-const startstage = ref<string | number>(0);
-const endStage = ref<string | number>(0);
-const startsoptions = ref<Array<{ value: string | number; label: string }>>([
+const stage = ref<string | number>(0);
+const stageOptions = ref<Array<{ value: string | number; label: string }>>([
 	{ value: 0, label: '' },
 ]);
-const endoptions = ref<Array<{ value: string | number; label: string }>>([
-	{ value: 0, label: '' },
-]);
-const labellist = ref<string[]>([]);
-const Stage = ref<string | number>(0);
 const routeData = ref<ParcelRow[]>([]);
 const loading = ref(true);
 const availcnt = ref(0);
@@ -381,8 +351,7 @@ const defaultRange = (): [string, string] => [
 
 const init = () => {
 	dates.value = defaultRange();
-	startstage.value = 0;
-	endStage.value = 0;
+	stage.value = 0;
 	textarea.value = '';
 };
 
@@ -415,18 +384,6 @@ const changestatus = () => {
 	parcelDownload.ids = [];
 };
 
-const tabs = async () => {
-	const res: ApiResponse<any[]> = await getdashtab();
-	if (res?.isSuccess && Array.isArray(res.result)) {
-		labellist.value = [t('pages.pengding'), t('pages.measured'), t('pages.manifested')];
-		tablist.value = res.result.map((item: any, idx: number) => ({
-			stage: item.stage ?? item.id ?? idx,
-			label: labellist.value[idx] ?? item.label ?? '',
-			count: item.count ?? 0,
-		}));
-	}
-};
-
 const stages = async () => {
 	const res: ApiResponse<any[]> = await parcelstage();
 	if (res?.isSuccess && Array.isArray(res.result)) {
@@ -434,8 +391,7 @@ const stages = async () => {
 			value: item.value ?? item.stage ?? item.id,
 			label: item.text ?? item.label ?? String(item.value ?? ''),
 		}));
-		startsoptions.value = [{ value: 0, label: t('pages.fromstage') }, ...list];
-		endoptions.value = [{ value: 0, label: t('pages.tostage') }, ...list];
+		stageOptions.value = [{ value: 0, label: t('pages.stage') }, ...list];
 	}
 };
 
@@ -448,16 +404,10 @@ const onSearch = () => {
 };
 
 const beforeLeave = (e: string | number) => {
-	init();
 	if (e === 'tracking') {
 		routeData.value = [];
-		Stage.value = 0;
+		init();
 		return true;
-	}
-	if (Number(e) !== 0) {
-		Stage.value = e as string | number;
-	} else {
-		Stage.value = 0;
 	}
 	// before-leave 期间 activeName 仍是旧值，把目标页签显式传给 getdata；
 	// 不能在这里手动改 activeName——el-tabs 会 watch modelValue，外部改动会
@@ -474,9 +424,8 @@ const getdata = async (tabName?: string | number) => {
 	const res: ApiResponse<any> = await parcellist({
 		index: pagecurrent.value - 1,
 		size: count.value,
-		Stage: Stage.value as any,
-		StageMin: startstage.value as any,
-		StageMax: endStage.value as any,
+		StageMin: stage.value as any,
+		StageMax: stage.value as any,
 		PeriodMin: !isTracking ? datatoutc(dates.value?.[0]) : undefined,
 		PeriodMax: !isTracking ? datatoutc(dates.value?.[1]) : undefined,
 		IsUseTrackingNbr: isTracking ? encodeURIComponent(textarea.value) : undefined,
@@ -512,9 +461,8 @@ const parcelsexport = async () => {
 	try {
 		const res: any = await parcelexport(
 			{
-				Stage: Stage.value as any,
-				StageMin: startstage.value as any,
-				StageMax: endStage.value as any,
+				StageMin: stage.value as any,
+				StageMax: stage.value as any,
 				PeriodMin: datatoutc(dates.value?.[0]),
 				PeriodMax: datatoutc(dates.value?.[1]),
 			},
@@ -629,7 +577,6 @@ watch(
 
 onMounted(() => {
 	dates.value = defaultRange();
-	tabs();
 	stages();
 	getdata();
 });
@@ -684,10 +631,6 @@ onMounted(() => {
 	display: flex;
 	gap: 8px;
 	align-items: center;
-}
-.tilde {
-	color: #909399;
-	font-weight: 500;
 }
 .op-row {
 	display: flex;

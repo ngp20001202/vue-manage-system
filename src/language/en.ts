@@ -419,6 +419,7 @@ export default {
     end: "Period Max ",
     fromstage: "From Stage ",
     tostage: "To Stage ",
+    stage: "Stage ",
     cancelparcel: "Cancel Parcel ",
     cancelWarning: "Cancellation cannot be undone for this parcel",
     cancelConfirm: "Confirm to cancel this parcel?",
