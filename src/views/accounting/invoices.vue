@@ -33,7 +33,7 @@
 				:total="availcnt"
 				:current-page="pagecurrent"
 				:page-size="count"
-				:page-sizes="[10, 20, 50, 100]"
+				:page-sizes="PAGE_SIZES"
 				@current-change="(p: number) => (pagecurrent = p)"
 				@size-change="(s: number) => (count = s)"
 			/>
@@ -92,7 +92,7 @@
 				:total="availcnt"
 				:current-page="pagecurrent"
 				:page-size="count"
-				:page-sizes="[10, 20, 50, 100]"
+				:page-sizes="PAGE_SIZES"
 				@current-change="(p: number) => (pagecurrent = p)"
 				@size-change="(s: number) => (count = s)"
 			/>
@@ -110,6 +110,7 @@ import { datatoutc } from '@/utils/format';
 import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
 
+import { PAGE_SIZES } from '@/constants/table';
 const { t } = useI18n();
 
 interface InvoiceRow extends Record<string, any> {

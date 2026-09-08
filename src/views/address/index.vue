@@ -35,7 +35,7 @@
           :total="availcnt"
           :current-page="pagecurrent"
           :page-size="count"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="PAGE_SIZES"
           @current-change="(p: number) => (pagecurrent = p)"
           @size-change="(s: number) => (count = s)"
         />
@@ -161,7 +161,7 @@
         :total="availcnt"
         :current-page="pagecurrent"
         :page-size="count"
-        :page-sizes="[10, 20, 50, 100]"
+        :page-sizes="PAGE_SIZES"
         @current-change="(p: number) => (pagecurrent = p)"
         @size-change="(s: number) => (count = s)"
       />
@@ -319,6 +319,7 @@ import {
 import type { ApiResponse } from "@/api/types";
 import { countryOptions } from "@/utils/country";
 
+import { PAGE_SIZES } from '@/constants/table';
 const { t } = useI18n();
 const { isDesktop } = useViewport();
 
