@@ -24,7 +24,7 @@
 			</el-tabs>
 
 			<div class="tabs-content">
-				<el-form v-if="activeName === '0'" :inline="true" class="filter-form">
+				<el-form v-if="activeName !== 'tracking'" :inline="true" class="filter-form">
 					<div class="date-picker">
 						<el-date-picker
 							v-model="dates"
@@ -448,9 +448,9 @@ const onSearch = () => {
 };
 
 const beforeLeave = (e: string | number) => {
-	init();
 	if (e === 'tracking') {
 		routeData.value = [];
+		init();
 		Stage.value = 0;
 		return true;
 	}
