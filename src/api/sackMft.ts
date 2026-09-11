@@ -9,7 +9,7 @@ export const getSackMftdashtab = (): Promise<ApiResponse> =>
 export interface SackMftListParams {
 	index: number;
 	size: number;
-	Stage?: number;
+	Stage?: number | string;
 	StageMin?: number;
 	StageMax?: number;
 	PeriodMin?: string;
