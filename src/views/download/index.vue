@@ -81,7 +81,7 @@
 				/>
 				<el-table-column :label="t('pages.DownloadPage.state')" width="120">
 					<template #default="scope">
-						<span>{{ scope.row.status }}</span>
+						<span>{{ statusLabel(scope.row.status) }}</span>
 					</template>
 				</el-table-column>
 				<el-table-column :label="t('pages.DownloadPage.creationtime')" width="180">
@@ -173,6 +173,18 @@ const startsoptions = ref<Array<{ value: string; label: string }>>([
 ]);
 
 const routeData = ref<DownloadRow[]>([]);
+
+// 状态列转译：与筛选下拉 startsoptions 共用同一套映射
+const STATUS_KEY_MAP: Record<string, string> = {
+	Created: 'pages.DownloadPage.created',
+	Succeeded: 'pages.DownloadPage.completed',
+	Failed: 'pages.DownloadPage.failed',
+};
+const statusLabel = (status?: string): string => {
+	if (!status) return '';
+	const key = STATUS_KEY_MAP[status];
+	return key ? t(key) : status;
+};
 const loading = ref(true);
 const availcnt = ref(0);
 const count = ref(10);
