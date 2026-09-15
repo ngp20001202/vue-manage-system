@@ -24,7 +24,7 @@
 			</el-tabs>
 
 			<div class="tabs-content">
-				<template v-if="activeName === '0'">
+				<template v-if="activeName !== 'tracking'">
 					<div class="filter-row">
 						<div class="date-picker">
 							<el-date-picker
@@ -315,17 +315,16 @@ const onSearch = () => {
 };
 
 const beforeLeave = (e: string | number) => {
-	init();
 	if (e === 'tracking') {
 		routeData.value = [];
+		init();
 		return true;
 	}
-	if (Number(e) !== 0) {
-		getdata(e);
-	} else {
+	// 从主提单号 tab 切回时 init() 已把 dates 清空，需要补默认日期
+	if (!dates.value) {
 		dates.value = defaultRange();
-		getdata(e);
 	}
+	getdata(e);
 	return true;
 };
 
@@ -333,7 +332,9 @@ const getdata = async (tabName?: string | number) => {
 	loading.value = true;
 	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
 	const isTracking = currentTab === 'tracking';
-	const currentStage = isTracking ? 0 : Number(currentTab) || 0;
+	// SackMfts dashtab 返回的 stage 是字符串（SackMftCreated / Outgated / AwaitingPickup），
+	// 「全部」tab 的 name 是 '0'，需要还原成 undefined 让后端不筛选 Stage
+	const currentStage = isTracking || currentTab === '0' ? undefined : currentTab;
 	const encodedTracking = isTracking ? encodeURIComponent(textarea.value) : undefined;
 
 	const res: ApiResponse<any> = await sackMftlist({
