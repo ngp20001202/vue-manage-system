@@ -275,11 +275,21 @@ const uploadVisible = ref(false);
 const scanFormVisible = ref(false);
 const scanFormId = ref<string | number>('');
 
-const stageObj: Record<string, string> = {
-	SackMftCreated: t('pages.SackMfts.SackMftCreated'),
-	Outgated: t('pages.SackMfts.Outgated'),
-	AwaitingPickup: t('pages.SackMfts.AwaitingPickup'),
-};
+const STAGE_NAMES = [
+	'Nil', 'ParcelSplitted', 'ParcelVoided', 'RefundRequested', 'RefundRejected',
+	'ParcelCancelled', 'ParcelInfoReceived', 'ParcelCreated', 'ParcelReturnPending',
+	'ParcelReturned', 'ParcelDiscarded', 'ExportDeclarationHeld', 'ExportDeclarationSeized',
+	'HubAccepted', 'HubCheckedIn', 'HubMeasured', 'RootSvcCfmed', 'LabelRejected',
+	'LabelCreated', 'PostedToLastMiler', 'SackCreated', 'ParcelSacked', 'SackClosed',
+	'Manifested', 'SackMftCreated', 'SackReceived', 'AwaitingLoadBalance', 'ICManifested',
+	'HubManifested', 'ExportDeclarationReleased', 'Outgated', 'ExportDeclared', 'Seized',
+	'SackMftBoarded', 'FlightBooked', 'FlightDeparted', 'FlightArrived', 'ParcelArrived',
+	'SackMftArrived', 'BWPickedup', 'BWCheckedIn', 'AwaitingPickup', 'Surrendered', 'Held',
+] as const;
+
+const stageObj: Record<string, string> = Object.fromEntries(
+	STAGE_NAMES.map((name) => [name, t(`pages.SackMfts.${name}`)]),
+);
 
 // 行数据 stage 可能是状态名或状态码，优先取 stageText，再统一转译
 const stageText = (row: SackMftRow) => {
