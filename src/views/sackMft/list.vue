@@ -24,7 +24,7 @@
 			</el-tabs>
 
 			<div class="tabs-content">
-				<template v-if="activeName === '0'">
+				<template v-if="activeName !== 'tracking'">
 					<div class="filter-row">
 						<div class="date-picker">
 							<el-date-picker
@@ -151,7 +151,7 @@
 					<template #default="scope">
 						<span>
 							<el-icon><List /></el-icon>
-							{{ scope.row.stage }}
+							{{ stageText(scope.row) }}
 						</span>
 					</template>
 				</el-table-column>
@@ -248,6 +248,7 @@ interface SackMftRow extends Record<string, any> {
 	mawbNbr?: string;
 	flightNbr?: string;
 	poa?: string;
+	stage?: string | number;
 	stageText?: string;
 	postedStamp?: { utcTime: string };
 	roledActions?: number[];
@@ -274,10 +275,26 @@ const uploadVisible = ref(false);
 const scanFormVisible = ref(false);
 const scanFormId = ref<string | number>('');
 
-const stageObj: Record<string, string> = {
-	SackMftCreated: t('pages.SackMfts.SackMftCreated'),
-	Outgated: t('pages.SackMfts.Outgated'),
-	AwaitingPickup: t('pages.SackMfts.AwaitingPickup'),
+const STAGE_NAMES = [
+	'Nil', 'ParcelSplitted', 'ParcelVoided', 'RefundRequested', 'RefundRejected',
+	'ParcelCancelled', 'ParcelInfoReceived', 'ParcelCreated', 'ParcelReturnPending',
+	'ParcelReturned', 'ParcelDiscarded', 'ExportDeclarationHeld', 'ExportDeclarationSeized',
+	'HubAccepted', 'HubCheckedIn', 'HubMeasured', 'RootSvcCfmed', 'LabelRejected',
+	'LabelCreated', 'PostedToLastMiler', 'SackCreated', 'ParcelSacked', 'SackClosed',
+	'Manifested', 'SackMftCreated', 'SackReceived', 'AwaitingLoadBalance', 'ICManifested',
+	'HubManifested', 'ExportDeclarationReleased', 'Outgated', 'ExportDeclared', 'Seized',
+	'SackMftBoarded', 'FlightBooked', 'FlightDeparted', 'FlightArrived', 'ParcelArrived',
+	'SackMftArrived', 'BWPickedup', 'BWCheckedIn', 'AwaitingPickup', 'Surrendered', 'Held',
+] as const;
+
+const stageObj: Record<string, string> = Object.fromEntries(
+	STAGE_NAMES.map((name) => [name, t(`pages.SackMfts.${name}`)]),
+);
+
+// 行数据 stage 可能是状态名或状态码，优先取 stageText，再统一转译
+const stageText = (row: SackMftRow) => {
+	const raw = row.stageText ?? row.stage;
+	return stageObj[String(raw)] ?? raw ?? '';
 };
 
 const formatPosted = (utc: string | undefined) => {
@@ -315,17 +332,16 @@ const onSearch = () => {
 };
 
 const beforeLeave = (e: string | number) => {
-	init();
 	if (e === 'tracking') {
 		routeData.value = [];
+		init();
 		return true;
 	}
-	if (Number(e) !== 0) {
-		getdata(e);
-	} else {
+	// 从主提单号 tab 切回时 init() 已把 dates 清空，需要补默认日期
+	if (!dates.value) {
 		dates.value = defaultRange();
-		getdata(e);
 	}
+	getdata(e);
 	return true;
 };
 
@@ -333,7 +349,9 @@ const getdata = async (tabName?: string | number) => {
 	loading.value = true;
 	const currentTab = tabName !== undefined ? String(tabName) : activeName.value;
 	const isTracking = currentTab === 'tracking';
-	const currentStage = isTracking ? 0 : Number(currentTab) || 0;
+	// SackMfts dashtab 返回的 stage 是字符串（SackMftCreated / Outgated / AwaitingPickup），
+	// 「全部」tab 的 name 是 '0'，需要还原成 undefined 让后端不筛选 Stage
+	const currentStage = isTracking || currentTab === '0' ? undefined : currentTab;
 	const encodedTracking = isTracking ? encodeURIComponent(textarea.value) : undefined;
 
 	const res: ApiResponse<any> = await sackMftlist({
