@@ -120,10 +120,6 @@ export const mpsexport = (id: string) =>
 		responseType: 'blob',
 	});
 
-// 包裹追踪事件
-export const trackingdetail = (id: string) =>
-	request({ url: `/api/tracking/${id}`, method: 'GET' });
-
 // 批量获取面单 URL
 export const POSTparcelslabels = (body: { ids: string[] }) =>
 	request({ url: '/api/Parcels/labels', method: 'POST', data: body });
@@ -147,10 +143,6 @@ export const getservices = () =>
 // 收件人地址簿（Amazon）
 export const getAmazon = () =>
 	request({ url: '/api/address/Amazon/list', method: 'GET' });
-
-// 发票详情
-export const getInvoice = (id: string, invoiceID: string) =>
-	request({ url: `/api/accounting/xacts/${id}/Invoices/${invoiceID}`, method: 'GET' });
 
 // ========================= Overlabel =========================
 
