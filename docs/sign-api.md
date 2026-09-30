@@ -1,76 +1,63 @@
-# 签名接口清单
+# 签名接口改造清单（给后端）
 
-> 文件直链下载 / 导出场景使用：前端把要下载的 URL 发给后端换签名 token，拿到 token 后拼到 URL 上访问。
-> 这些接口**不在 cookie 鉴权改造范围**。
+> 前端通过 `/api/Tokens/sign` 把待下载 URL 发给后端，换回一个 `token` 后拼到 URL 上访问。
+> 当前 5 个调用场景里，有 2 个是**冗余**的——列表接口已经返回了完整文件 URL，前端再走签名。
+>
+> 目标：去掉前端对 `/api/Tokens/sign` 的依赖，列表接口直接返回已签名可访问的完整 URL。
 
-## 调用点按 URL 来源分类
+## 后端不推荐的接口
 
-| 调用点 | URL 来源 | 分类 | 涉及列表 API | 后端建议 |
-|---|---|---|---|---|
-| [src/views/sackMft/list.vue:398](src/views/sackMft/list.vue#L398) | 手拼 `/api/SackMfts/{id}/docs`（`id` 是行 ID） | 拼行 ID（非字段） | `GET /api/SackMfts?…` → [src/api/sackMft.ts:19](src/api/sackMft.ts#L19) `sackMftlist` | 可在列表行返回完整已签名 URL，免去前端二次签名 |
-| [src/views/download/index.vue:281](src/views/download/index.vue#L281) | `row.url` 直接是文件直链 | **列表字段** | `GET /api/Download?…` → [src/api/download.ts:12](src/api/download.ts#L12) `downloadlist` | **直接返回完整可访问 URL**，免 `/api/Tokens/sign` |
-| [src/views/accounting/invoices.vue:186](src/views/accounting/invoices.vue#L186) | `row.fileUrl` 直接是 PDF 完整 URL | **列表字段** | `GET /api/BillingStatements?…` → [src/api/accounting.ts:56](src/api/accounting.ts#L56) `GetInvoices` | **直接返回完整可访问 URL**，免 `/api/Tokens/sign` |
-| [src/views/accounting/ledger.vue:258](src/views/accounting/ledger.vue#L258) | 手拼 `/api/accounting/ledger/export?…`（用筛选条件） | 拼筛选条件 | 列表接口 → [src/api/accounting.ts](src/api/accounting.ts) `ledgerlist` | 列表返回签名后导出 URL |
-| [src/views/accounting/xacts.vue:222](src/views/accounting/xacts.vue#L222) | 手拼导出 URL（用筛选条件） | 拼筛选条件 | 列表接口 → [src/api/accounting.ts](src/api/accounting.ts) `xactslist` | 列表返回签名后导出 URL |
-
-> 标记"列表字段"的两处最值得后端改：现在 `row.url` / `row.fileUrl` 已经返回完整 URL，前端再走 `/api/Tokens/sign` 是冗余的。后端最简方案：列表接口直接返回"已经签好的完整可访问 URL"，前端不再调 `/api/Tokens/sign`。
-
-## 业务端点（需要签名访问的文件直链）
-
-| 端点 | 方法 | 用途 |
-|---|---|---|
-| `/api/SackMfts/{id}/docs` | GET | 下载清单相关文档（清单列表"下载相关文档"按钮） |
-
-> 由前端手拼 URL + 走 `/api/Tokens/sign` 换签名 token，再用 `window.open(url?token=…)` 打开。
-> 后端按 token 校验访问权限。
-
-### 业务端点声明
-
-| 文件 | 行 | 名称 | 备注 |
+| 端点 | 方法 | 现状 | 处理建议 |
 |---|---|---|---|
-| [src/api/sackMft.ts](src/api/sackMft.ts) | 57 | `sackMftDownload` | 已有声明但**未被调用**；list.vue 手拼 URL，未走此函数 |
+| `/api/Tokens/sign` | POST | 前端用于把待下载 URL 换成签名 token，再拼 `?token=…` 访问 | 列表接口直接返回可访问 URL，**前端不再调用此接口** |
 
-## 签名服务（共用）
+> 如果部分场景暂时无法在列表里直接返回完整 URL，可保留 `/api/Tokens/sign` 作为过渡。
 
-| 端点 | 方法 | 用途 |
-|---|---|---|
-| `/api/Tokens/sign` | POST | 用下载 URL 换 `token`，前端拼 `?token=…` 访问 |
+## 需要后端改造的列表接口
 
-> 三份前端声明重复指向同一端点（parcel.ts / sackMft.ts / accounting.ts），暂未合并。
+### 1. 下载中心列表
 
-### 签名服务声明
+- **端点**：`GET /api/Download?pageIndex=…&pageSize=…&Status=…&PeriodMin=…&PeriodMax=…`
+- **前端问题**：列表返回的 `row.url` 已是文件直链，前端拿到后再走 `/api/Tokens/sign` 拼 token 打开
+- **建议改动**：
+  - 方案 A（最简）：`row.url` 直接返回**已签名可访问的完整 URL**（带 token 或临时签名），前端不再调用 `/api/Tokens/sign`
+  - 方案 B：新增 `row.signedUrl` 字段返回已签名 URL，保留 `row.url` 原值
+- **前端变化**：`row.url` 直接 `window.open(row.url)`，不再调 `/api/Tokens/sign`
 
-| 文件 | 行 | 名称 | 入参 | 返参 |
-|---|---|---|---|---|
-| [src/api/parcel.ts](src/api/parcel.ts) | 100 | `SackMftsign` | `{ url: string }` | `{ token: string }`（也兼容 `result.token`） |
-| [src/api/sackMft.ts](src/api/sackMft.ts) | 77 | `sackMftsign` | `{ url: string }` | `{ token: string }` |
-| [src/api/accounting.ts](src/api/accounting.ts) | 37 | `SackMftsign` | `{ url: string }` | `{ token: string }` |
+### 2. 周期账单列表
 
-## 调用方明细
+- **端点**：`GET /api/BillingStatements?pageIndex=…&pageSize=…&Status=…&PeriodMin=…&PeriodMax=…`
+- **前端问题**：列表返回的 `row.fileUrl` 已是 PDF 完整 URL，前端拿到后走 `/api/Tokens/sign` 拼 token
+- **建议改动**：同方案 A/B，`row.fileUrl` 或新增字段直接返回已签名可访问 URL
 
-| 文件 | 行 | 场景 |
-|---|---|---|
-| [src/views/sackMft/list.vue](src/views/sackMft/list.vue) | 398 | 清单列表 → `downloads(id)` → `/api/SackMfts/{id}/docs`（手拼 URL，未走 `sackMftDownload`） |
-| [src/views/download/index.vue](src/views/download/index.vue) | 281 | 下载中心 → 打开文件直链（`row.url`） |
-| [src/views/accounting/invoices.vue](src/views/accounting/invoices.vue) | 186 | 周期账单 → 打开 `row.fileUrl` PDF |
-| [src/views/accounting/ledger.vue](src/views/accounting/ledger.vue) | 258 | 账本流水 → 导出 `/api/accounting/ledger/export?…` |
-| [src/views/accounting/xacts.vue](src/views/accounting/xacts.vue) | 222 | 交易记录 → 导出交易列表 |
+## 可选改造（手拼 URL 的场景）
 
-## 典型用法
+### 3. 清单列表
 
-```ts
-const url = `${getoriginurl()}/api/SackMfts/${id}/docs`;
-const res: any = await SackMftsign({ url });
-if (res?.token) {
-  window.open(`${url}?token=${res.token}`, '_blank');
-}
-```
+- **端点**：`GET /api/SackMfts?pageIndex=…&pageSize=…&Stage=…&PeriodMin=…&PeriodMax=…&IsUseMawbNbr=…`
+- **前端现状**：列表行只有 `id`，前端用 `id` 拼 `/api/SackMfts/{id}/docs`，再走 `/api/Tokens/sign`
+- **建议改动**：列表行新增字段（如 `docsUrl`）直接返回已签名的下载 URL
 
-## 容易混淆的另两个端点**（不是文件签名）
+### 5. 账本流水列表 + 导出
 
-| 端点 | 方法 | 用途 |
-|---|---|---|
-| `/api/Tokens` | POST | 用户名密码登录（[src/api/auth.ts](src/api/auth.ts#L4) `gettoken`） |
-| `/api/Tokens/{token}` | GET | 免密登录：URL 上的 `?token=` 换 cookie（[src/api/auth.ts](src/api/auth.ts#L8) `gettokens`） |
+- **端点**：`GET /api/accounting/ledger?pageIndex=…&pageSize=…`
+- **前端现状**：导出时用筛选条件拼 `/api/accounting/ledger/export?…`，再走 `/api/Tokens/sign`
+- **建议改动**：导出 URL 改为一次性签名好的完整 URL（前端不需要二次签名）
 
-这两个是**鉴权**链路，不是文件签名。
+### 6. 交易记录列表 + 导出
+
+- **端点**：`GET /api/Xacts?pageIndex=…&pageSize=…`
+- **前端现状**：导出时用筛选条件拼导出 URL，再走 `/api/Tokens/sign`
+- **建议改动**：同上，导出 URL 改为一次性签名好的完整 URL
+
+## 过渡方案
+
+如果后端无法一次性把所有列表都改成"返回已签名 URL"，可以分阶段：
+1. 先改 **1（Download）** 和 **2（Invoices）**——这两个是直接拼字段，最容易改
+2. 再改 **3（SackMfts）**、**5（Ledger）**、**6（Xacts）**——需要后端调整列表返回结构
+
+## 后端改动后前端会做什么
+
+- 删除 `SackMftsign` 的所有调用（src/api/{parcel,sackMft,accounting}.ts 中的声明保留备用）
+- `/api/Tokens/sign` 调用计数从 5 降到 0
+- 前端拿到的 `row.url` / `row.fileUrl` / 导出 URL 直接可访问
