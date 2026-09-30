@@ -54,7 +54,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { User, Van } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { trackingdetail } from '@/api/parcel';
+import { trackingDetail } from '@/api/tracking';
 import type { ApiResponse } from '@/api/types';
 
 const props = defineProps<{
@@ -78,7 +78,7 @@ const formatTime = (utc: string | undefined) => {
 const loadTracking = async (id: string) => {
 	loading.value = true;
 	try {
-		const res: ApiResponse<any> = await trackingdetail(id);
+		const res: ApiResponse<any> = await trackingDetail(id);
 		if (res?.isSuccess) {
 			tracking.value = res.result || { eventItems: [] };
 		} else {

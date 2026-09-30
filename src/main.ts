@@ -3,7 +3,6 @@ import { createPinia } from 'pinia';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import App from './App.vue';
 import router from './router';
-import { useUserStore } from './store/user';
 import i18n from './language';
 import 'element-plus/dist/index.css';
 import './assets/css/icon.css';
@@ -17,8 +16,5 @@ app.use(i18n);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component);
 }
-// 初始化 user store（从 localStorage 恢复 token/name）
-const user = useUserStore();
-user.init();
 
 app.mount('#app');

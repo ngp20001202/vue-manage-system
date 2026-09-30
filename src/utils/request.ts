@@ -4,14 +4,11 @@ import { ElMessage } from 'element-plus';
 const service = axios.create({
 	baseURL: (import.meta.env.VITE_APP_BASE as string) || '',
 	timeout: 180000,
+	withCredentials: true,
 });
 
 service.interceptors.request.use(
 	(config: InternalAxiosRequestConfig) => {
-		const token: string | null = localStorage.getItem('token');
-		if (token) {
-			config.headers['Authorization'] = `Bearer ${token}`;
-		}
 		config.headers['Content-Type'] = 'application/json';
 		// FormData 必须交给浏览器设置 multipart/form-data + boundary，
 		// 否则 axios 1.x 会把 FormData 序列化成 JSON，文件丢失
@@ -19,6 +16,7 @@ service.interceptors.request.use(
 			delete config.headers['Content-Type'];
 		}
 		config.headers['Accept-Language'] = localStorage.getItem('lang') || 'zh-cn';
+		config.headers['x-requested-with'] = 'XMLHttpRequest';
 		return config;
 	},
 	(error: AxiosError) => {
@@ -42,10 +40,17 @@ service.interceptors.response.use(
 	},
 	(error: AxiosError) => {
 		if (error.response && error.response.status === 401) {
-			localStorage.removeItem('token');
-			import('@/router').then(({ default: router }) => {
-				router.push('/login');
-			});
+			const headers = error.response.headers || {};
+			const loginUrl = headers['Location'] || headers['location'];
+			const redirectUri = window.location.pathname + window.location.search;
+			if (loginUrl) {
+				const url = new URL(loginUrl, window.location.origin);
+				url.searchParams.set('RedirectUri', redirectUri);
+				import('@/store/user').then(({ useUserStore }) => useUserStore().logout()).catch(() => {});
+				window.location.href = url.toString();
+			} else {
+				import('@/store/user').then(({ useUserStore }) => useUserStore().logout());
+			}
 		} else {
 			const data: any = error.response && error.response.data;
 			ElMessage.error((data && (data.errors || data.message)) || error.message);

@@ -105,7 +105,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search, Refresh } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { GetInvoices, SackMftsign } from '@/api/accounting';
+import { GetInvoices } from '@/api/accounting';
 import { datatoutc } from '@/utils/format';
 import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
@@ -183,11 +183,7 @@ const getdata = async () => {
 const onDownload = async (row: InvoiceRow) => {
 	if (!row?.fileUrl) return;
 	const url = new URL(row.fileUrl, getoriginurl());
-	const res: any = await SackMftsign({ url: url.toString() });
-	if (res?.token) {
-		url.searchParams.set('token', res.token);
-		window.open(url.toString(), '_blank');
-	}
+	window.open(url.toString(), '_blank');
 };
 
 watch([count, pagecurrent], () => {

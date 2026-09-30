@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar" :class="{ 'mobile-open': sidebar.mobileOpen }">
-        <div class="mobile-sidebar-header">
-            <div class="mobile-hamburger" @click="sidebar.closeMobile()">
+        <div class="mobile-sidebar-header" @click="redirectToAuthUrl()">
+            <div class="mobile-hamburger" @click.stop="sidebar.closeMobile()">
                 <el-icon :size="22"><Fold /></el-icon>
             </div>
             <img class="mobile-logo" src="../assets/img/logo.svg" alt="" />
@@ -64,7 +64,7 @@ import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Fold } from '@element-plus/icons-vue';
 import { useSidebarStore } from '../store/sidebar';
-import { useUserStore } from '../store/user';
+import { useUserStore, redirectToAuthUrl } from '../store/user';
 import { useRoute, useRouter } from 'vue-router';
 import { useViewport } from '@/composables/useViewport';
 import { menuData } from '@/components/menu';
@@ -81,7 +81,7 @@ const onRoutes = computed(() => {
 
 const sidebar = useSidebarStore();
 const userStore = useUserStore();
-const webTitle = computed(() => userStore.user.tenantAlias || '后台管理系统');
+const webTitle = computed(() => userStore.user.tenantAlias || t('app.title'));
 const { isMobile } = useViewport();
 const menuCollapse = computed(() => (isMobile.value ? false : sidebar.collapse));
 

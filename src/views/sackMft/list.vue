@@ -228,7 +228,6 @@ import {
 import moment from 'moment';
 import {
 	sackMftlist,
-	sackMftsign,
 	getSackMftdashtab,
 } from '@/api/sackMft';
 import { parcelstage } from '@/api/parcel';
@@ -397,16 +396,7 @@ const stages = async () => {
 
 const downloads = async (id: string | number) => {
 	const url = `${getoriginurl()}/api/SackMfts/${id}/docs`;
-	try {
-		const res: any = await sackMftsign({ url });
-		if (res?.token) {
-			window.open(`${url}?token=${res.token}`, '_blank');
-		} else {
-			ElMessage.error(t('pages.Failed'));
-		}
-	} catch {
-		ElMessage.error(t('pages.Failed'));
-	}
+	window.open(url, '_blank');
 };
 
 const openScanForm = (id: string | number) => {

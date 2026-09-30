@@ -149,7 +149,6 @@ import { saveAs } from 'file-saver';
 import { getoriginurl } from '@/utils/originurl';
 import { filenames } from '@/utils/filename';
 import { downloadlist, DELETEDownload, Downloadpdf } from '@/api/download';
-import { SackMftsign } from '@/api/parcel';
 import type { ApiResponse } from '@/api/types';
 
 import { PAGE_SIZES } from '@/constants/table';
@@ -279,11 +278,7 @@ const deleteitem = (id: string | number) => {
 const downloads = async (fileurl: string) => {
 	if (!fileurl) return;
 	const href = new URL(fileurl, getoriginurl());
-	const res: any = await SackMftsign({ url: href.toString() });
-	const token = res?.result?.token ?? res?.token;
-	if (token) {
-		window.open(`${href}?token=${token}`, '_blank');
-	}
+	window.open(href.toString(), '_blank');
 };
 
 const Combinedsheet = async (id: string | number, url: string) => {

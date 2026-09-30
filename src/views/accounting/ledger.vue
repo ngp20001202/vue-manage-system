@@ -142,7 +142,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { ledgerlist, SackMftsign } from '@/api/accounting';
+import { ledgerlist } from '@/api/accounting';
 import { formatChargeItem, LEDGER_CHARGE_FILTERS } from '@/utils/charge-item';
 import { getoriginurl } from '@/utils/originurl';
 import type { ApiResponse } from '@/api/types';
@@ -254,12 +254,8 @@ const exportdata = async () => {
 		params.push('IsUseTrackingNbr=true');
 		params.push(`RefNbrs=${normalizeTrackingNumbers(trackingNumbers.value)}`);
 	}
-	let url = `${getoriginurl()}/api/accounting/ledger/export?${params.join('&')}`;
-	const res: any = await SackMftsign({ url });
-	if (res?.token) {
-		url += `&token=${res.token}`;
-		window.open(url, '_blank');
-	}
+	const url = `${getoriginurl()}/api/accounting/ledger/export?${params.join('&')}`;
+	window.open(url, '_blank');
 };
 
 watch([count, pagecurrent], () => {

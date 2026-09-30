@@ -1,4 +1,7 @@
 export default {
+  app: {
+    title: "Client",
+  },
   menu: {
     Dashboard: "Dashboard",
     Parcel: {

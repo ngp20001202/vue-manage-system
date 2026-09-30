@@ -269,7 +269,6 @@ import {
 	parcelstage,
 	parcelcancel,
 	parcelexport,
-	SackMftsign,
 	parceldownloadfile,
 	parcelSearchlist,
 	downloadlabel,
@@ -492,11 +491,7 @@ const downloads = (id: string | number) => {
 
 const downpacking = async (id: string | number) => {
 	const url = new URL(`/api/download/parcels/${id}/file`, getoriginurl());
-	const res: any = await SackMftsign({ url: url.toString() });
-	if (res?.result?.token || res?.token) {
-		const token = res?.result?.token ?? res?.token;
-		window.open(`${url}?token=${token}`, '_blank');
-	}
+	window.open(url.toString(), '_blank');
 };
 
 const cancell = async (isBatch: boolean, id?: string | number) => {
