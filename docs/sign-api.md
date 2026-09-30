@@ -3,6 +3,18 @@
 > 文件直链下载 / 导出场景使用：前端把要下载的 URL 发给后端换签名 token，拿到 token 后拼到 URL 上访问。
 > 这些接口**不在 cookie 鉴权改造范围**。
 
+## 调用点按 URL 来源分类
+
+| 调用点 | URL 来源 | 分类 | 涉及列表 API | 后端建议 |
+|---|---|---|---|---|
+| [src/views/sackMft/list.vue:398](src/views/sackMft/list.vue#L398) | 手拼 `/api/SackMfts/{id}/docs`（`id` 是行 ID） | 拼行 ID（非字段） | `GET /api/SackMfts?…` → [src/api/sackMft.ts:19](src/api/sackMft.ts#L19) `sackMftlist` | 可在列表行返回完整已签名 URL，免去前端二次签名 |
+| [src/views/download/index.vue:281](src/views/download/index.vue#L281) | `row.url` 直接是文件直链 | **列表字段** | `GET /api/Download?…` → [src/api/download.ts:12](src/api/download.ts#L12) `downloadlist` | **直接返回完整可访问 URL**，免 `/api/Tokens/sign` |
+| [src/views/accounting/invoices.vue:186](src/views/accounting/invoices.vue#L186) | `row.fileUrl` 直接是 PDF 完整 URL | **列表字段** | `GET /api/BillingStatements?…` → [src/api/accounting.ts:56](src/api/accounting.ts#L56) `GetInvoices` | **直接返回完整可访问 URL**，免 `/api/Tokens/sign` |
+| [src/views/accounting/ledger.vue:258](src/views/accounting/ledger.vue#L258) | 手拼 `/api/accounting/ledger/export?…`（用筛选条件） | 拼筛选条件 | 列表接口 → [src/api/accounting.ts](src/api/accounting.ts) `ledgerlist` | 列表返回签名后导出 URL |
+| [src/views/accounting/xacts.vue:222](src/views/accounting/xacts.vue#L222) | 手拼导出 URL（用筛选条件） | 拼筛选条件 | 列表接口 → [src/api/accounting.ts](src/api/accounting.ts) `xactslist` | 列表返回签名后导出 URL |
+
+> 标记"列表字段"的两处最值得后端改：现在 `row.url` / `row.fileUrl` 已经返回完整 URL，前端再走 `/api/Tokens/sign` 是冗余的。后端最简方案：列表接口直接返回"已经签好的完整可访问 URL"，前端不再调 `/api/Tokens/sign`。
+
 ## 业务端点（需要签名访问的文件直链）
 
 | 端点 | 方法 | 用途 |
@@ -34,7 +46,7 @@
 | [src/api/sackMft.ts](src/api/sackMft.ts) | 77 | `sackMftsign` | `{ url: string }` | `{ token: string }` |
 | [src/api/accounting.ts](src/api/accounting.ts) | 37 | `SackMftsign` | `{ url: string }` | `{ token: string }` |
 
-## 调用方
+## 调用方明细
 
 | 文件 | 行 | 场景 |
 |---|---|---|
