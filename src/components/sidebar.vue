@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar" :class="{ 'mobile-open': sidebar.mobileOpen }">
         <div class="mobile-sidebar-header" @click="redirectToAuthUrl()">
-            <div class="mobile-hamburger" @click="sidebar.closeMobile()">
+            <div class="mobile-hamburger" @click.stop="sidebar.closeMobile()">
                 <el-icon :size="22"><Fold /></el-icon>
             </div>
             <img class="mobile-logo" src="../assets/img/logo.svg" alt="" />
