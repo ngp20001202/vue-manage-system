@@ -5,8 +5,10 @@
       <div class="hamburger" @click="sidebar.toggleMobile()">
         <el-icon :size="22"><Expand /></el-icon>
       </div>
-      <img class="logo" src="../assets/img/logo.svg" alt="" />
-      <div class="web-title">{{ webTitle }}</div>
+      <div class="brand" @click="redirectToAuthUrl()">
+        <img class="logo" src="../assets/img/logo.svg" alt="" />
+        <div class="web-title">{{ webTitle }}</div>
+      </div>
       <div class="collapse-btn" @click="collapseChage">
         <el-icon v-if="sidebar.collapse">
           <Expand />
@@ -94,7 +96,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useSidebarStore } from "../store/sidebar";
-import { useUserStore } from "../store/user";
+import { useUserStore, redirectToAuthUrl } from "../store/user";
 import { useRouter } from "vue-router";
 import { FullScreen } from "@element-plus/icons-vue";
 
