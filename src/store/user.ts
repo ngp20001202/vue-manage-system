@@ -58,7 +58,7 @@ export const useUserStore = defineStore('user', {
 
 export const redirectToAuthUrl = (options?: { clearStorage?: boolean }) => {
 	const idUrl = localStorage.getItem('idUrl');
-	const loginUrl = idUrl ? `${idUrl.replace(/\/$/, '')}` : '/Account/Logout';
+	const loginUrl = idUrl ? `${idUrl.replace(/\/$/, '')}` : '';
 	if (options?.clearStorage) localStorage.clear();
 	window.location.href = loginUrl;
 };
