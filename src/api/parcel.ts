@@ -96,10 +96,6 @@ export const parcelexport = (params: { Stage?: number; StageMin?: number; StageM
 export const getdashtab = () =>
 	request({ url: '/api/Parcels/dashtab', method: 'GET' });
 
-// 签名 token（shippingspa: POST /api/Tokens/sign）
-export const SackMftsign = (data: { url: string }) =>
-	request({ url: '/api/Tokens/sign', method: 'POST', data });
-
 // 批量下载面单（添加到下载中心任务，shippingspa: /api/Download/parcels）
 export const parceldownloadfile = (body: { ids: string[] }) =>
 	request({ url: '/api/Download/parcels', method: 'POST', data: body });

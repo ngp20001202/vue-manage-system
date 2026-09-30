@@ -2,7 +2,7 @@
 
 > 分支：`feature/auth-refactor`（基于 release）
 > 目标：登录态改为 cookie（后端 Set-Cookie），前端不再保存 / 读取 token
-> 保留范围：文件直链的临时签名 `SackMftsign({ url })` 拼 `?token=` 下载 —— 这部分属于"URL 获取签名"，**不在本次改造范围**
+> 保留范围：文件直链的临时签名 `SackMftsign({ url })` 拼 `?token=` 下载 —— 这部分属于"URL 获取签名"，**已在后续单独重构中去除**（见 `docs/sign-call-sites.md`）
 
 ## 状态
 
@@ -69,7 +69,7 @@
 
 ## 不动的部分
 
-- `SackMftsign({ url })` → 拿 `res.token` 拼到下载 URL（sackMft/list.vue、download/index.vue、accounting/invoices.vue）
+- ~~`SackMftsign({ url })` → 拿 `res.token` 拼到下载 URL~~ —— 已在后续重构中去除（见 `docs/sign-call-sites.md`）
 - axios baseURL、timeout
 - 后端 `/Account/Logout` 入口
 - 路由 `/login` → `login.vue` 的配置

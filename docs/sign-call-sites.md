@@ -18,9 +18,7 @@
 
 | 文件 | 函数 | 说明 |
 |---|---|---|
-| `src/api/accounting.ts:36-38` | `SackMftsign` | 用于 #1 #3 #4 |
-| `src/api/parcel.ts:99-101` | `SackMftsign` | 用于 #2 #5 |
-| `src/api/sackMft.ts:76-78` | `sackMftsign` | 用于 #6 |
+| — | — | 6 个调用点全部移除后，三处声明 `src/api/{accounting,parcel,sackMft}.ts` 中已删除 |
 
 ## 1. 周期账单下载（invoices）
 
@@ -192,9 +190,9 @@ const downloads = async (id: string | number) => {
 
 | # | 调用点 | 类别 | 是否去掉签名 | 备注 |
 |---|---|---|---|---|
-| 1 | invoices `onDownload` | 冗余（列表已返回 URL） | ☐ | |
-| 2 | download `downloads` | 冗余（列表已返回 URL） | ☐ | |
-| 3 | ledger `exportdata` | 手拼 URL | ☐ | |
-| 4 | xacts `exportdata` | 手拼 URL | ☐ | |
-| 5 | parcel `downpacking` | 手拼 URL | ☐ | |
-| 6 | sackMft `downloads` | 手拼 URL | ☐ | |
+| 1 | invoices `onDownload` | 冗余（列表已返回 URL） | ☑ 已去掉（invoices.vue 改动未提交） | 依赖后端 `/api/BillingStatements` 直接返回已签名 URL |
+| 2 | download `downloads` | 冗余（列表已返回 URL） | ☑ 已去掉（download/index.vue 改动未提交） | 依赖后端 `/api/Download` 直接返回已签名 URL |
+| 3 | ledger `exportdata` | 手拼 URL | ☑ 已去掉（ledger.vue 改动未提交） | 依赖后端 `/api/accounting/ledger/export` 改为不需 token |
+| 4 | xacts `exportdata` | 手拼 URL | ☑ 已去掉（xacts.vue 改动未提交） | 依赖后端 `/api/accounting/xacts/export` 改为不需 token |
+| 5 | parcel `downpacking` | 手拼 URL | ☑ 已去掉（parcel/list.vue 改动未提交） | 依赖后端 `/api/download/parcels/${id}/file` 改为不需 token |
+| 6 | sackMft `downloads` | 手拼 URL | ☑ 已去掉（sackMft/list.vue 改动未提交） | 依赖后端 `/api/SackMfts/{id}/docs` 改为不需 token |

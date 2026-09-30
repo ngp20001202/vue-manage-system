@@ -58,6 +58,7 @@
 
 ## 后端改动后前端会做什么
 
-- 删除 `SackMftsign` 的所有调用（src/api/{parcel,sackMft,accounting}.ts 中的声明保留备用）
+- 删除 `SackMftsign` 的所有调用
+- 同步删除 `src/api/{accounting,parcel,sackMft}.ts` 中 3 处 `SackMftsign` / `sackMftsign` 声明（已无引用）
 - `/api/Tokens/sign` 调用计数从 5 降到 0
 - 前端拿到的 `row.url` / `row.fileUrl` / 导出 URL 直接可访问
