@@ -1,6 +1,6 @@
 <template>
     <div class="sidebar" :class="{ 'mobile-open': sidebar.mobileOpen }">
-        <div class="mobile-sidebar-header">
+        <div class="mobile-sidebar-header" @click="redirectToAuthUrl()">
             <div class="mobile-hamburger" @click="sidebar.closeMobile()">
                 <el-icon :size="22"><Fold /></el-icon>
             </div>
@@ -64,7 +64,7 @@ import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Fold } from '@element-plus/icons-vue';
 import { useSidebarStore } from '../store/sidebar';
-import { useUserStore } from '../store/user';
+import { useUserStore, redirectToAuthUrl } from '../store/user';
 import { useRoute, useRouter } from 'vue-router';
 import { useViewport } from '@/composables/useViewport';
 import { menuData } from '@/components/menu';
