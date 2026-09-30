@@ -3,9 +3,22 @@
 > 文件直链下载 / 导出场景使用：前端把要下载的 URL 发给后端换签名 token，拿到 token 后拼到 URL 上访问。
 > 这些接口**不在 cookie 鉴权改造范围**。
 
-## 接口端点
+## 业务端点（需要签名访问的文件直链）
 
-所有签名走同一个后端端点：
+| 端点 | 方法 | 用途 |
+|---|---|---|
+| `/api/SackMfts/{id}/docs` | GET | 下载清单相关文档（清单列表"下载相关文档"按钮） |
+
+> 由前端手拼 URL + 走 `/api/Tokens/sign` 换签名 token，再用 `window.open(url?token=…)` 打开。
+> 后端按 token 校验访问权限。
+
+### 业务端点声明
+
+| 文件 | 行 | 名称 | 备注 |
+|---|---|---|---|
+| [src/api/sackMft.ts](src/api/sackMft.ts) | 57 | `sackMftDownload` | 已有声明但**未被调用**；list.vue 手拼 URL，未走此函数 |
+
+## 签名服务（共用）
 
 | 端点 | 方法 | 用途 |
 |---|---|---|
@@ -13,7 +26,7 @@
 
 > 三份前端声明重复指向同一端点（parcel.ts / sackMft.ts / accounting.ts），暂未合并。
 
-## 前端声明
+### 签名服务声明
 
 | 文件 | 行 | 名称 | 入参 | 返参 |
 |---|---|---|---|---|
@@ -25,7 +38,7 @@
 
 | 文件 | 行 | 场景 |
 |---|---|---|
-| [src/views/sackMft/list.vue](src/views/sackMft/list.vue) | 387 | 清单列表 → 下载清单相关文档（`/api/SackMfts/{id}/docs`） |
+| [src/views/sackMft/list.vue](src/views/sackMft/list.vue) | 398 | 清单列表 → `downloads(id)` → `/api/SackMfts/{id}/docs`（手拼 URL，未走 `sackMftDownload`） |
 | [src/views/download/index.vue](src/views/download/index.vue) | 281 | 下载中心 → 打开文件直链（`row.url`） |
 | [src/views/accounting/invoices.vue](src/views/accounting/invoices.vue) | 186 | 周期账单 → 打开 `row.fileUrl` PDF |
 | [src/views/accounting/ledger.vue](src/views/accounting/ledger.vue) | 258 | 账本流水 → 导出 `/api/accounting/ledger/export?…` |
@@ -34,11 +47,10 @@
 ## 典型用法
 
 ```ts
-const url = `${getoriginurl()}/api/...`;
+const url = `${getoriginurl()}/api/SackMfts/${id}/docs`;
 const res: any = await SackMftsign({ url });
 if (res?.token) {
-  url += `&token=${res.token}`;
-  window.open(url, '_blank');
+  window.open(`${url}?token=${res.token}`, '_blank');
 }
 ```
 
