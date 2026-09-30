@@ -36,7 +36,7 @@
 **src/router/index.ts**
 
 - [x] **保留** `beforeEach` 里 `?token=` 免密登录拦截块 —— 其它站点跳转过来测试时仍走这条
-- [ ] 待清理：路由 `/login` 和 `/login2` 都指向 `login2.vue`；`/login2` 是冗余路由，待决定是否移除
+- [x] `/login2` 路由不存在（仅 `/login` 指向 `login.vue`），无需清理
 
 ## 4. 接口
 
@@ -59,22 +59,24 @@
 - [x] line 123：删除冗余 `localStorage.removeItem('vuems_name")`
 - [x] line 124：`userStore.logout()` 无需改动（与 401 兜底共用）
 
-**src/views/pages/login2.vue**（实际登录页）
+**src/views/pages/login.vue**（实际登录页）
 
 - [x] line 154 `if (!user.token)` → `if (!res?.isSuccess)`
 
-**src/views/pages/login.vue**
+**src/views/pages/login2.vue**
 
-- [x] 删除 —— 没有任何路由引用，是未使用文件
+- [x] 删除 —— 没有路由引用，是未使用文件（保留路由 `/login` → login.vue 的配置不动）
 
 ## 不动的部分
 
 - `SackMftsign({ url })` → 拿 `res.token` 拼到下载 URL（sackMft/list.vue、download/index.vue、accounting/invoices.vue）
 - axios baseURL、timeout
 - 后端 `/Account/Logout` 入口
-- 路由 `/login` → login2.vue 的配置（暂不动，待决定 `/login2` 路由去留）
+- 路由 `/login` → `login.vue` 的配置
 
 ## 提交记录
 
+- `9fa4389` feat: axios 开启 withCredentials 以携带 cookie
+- `94acf14` chore: sign-api.md 改为后端视角版本
 - `6d6d51e` refactor: 切换为 cookie 鉴权（store、request、main、header、auth、login/login2 改造）
 - `6d205fe` chore: 删除未使用的 login.vue
