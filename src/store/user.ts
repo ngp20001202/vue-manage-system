@@ -35,6 +35,7 @@ export const useUserStore = defineStore('user', {
 				if (u?.name) this.user.name = u.name;
 				if (u?.avatar) this.user.avatar = u.avatar;
 				if (u?.tenantAlias) this.user.tenantAlias = u.tenantAlias;
+				if (u?.idUrl) localStorage.setItem('idUrl', u.idUrl);
 			} catch {}
 		},
 		// 免密登录：URL 上带 ?token= 时用它换取 cookie，由后端 Set-Cookie 写入
@@ -54,3 +55,10 @@ export const useUserStore = defineStore('user', {
 		},
 	},
 });
+
+export const redirectToAuthUrl = (options?: { clearStorage?: boolean }) => {
+	const idUrl = localStorage.getItem('idUrl');
+	const loginUrl = idUrl ? `${idUrl.replace(/\/$/, '')}` : '/Account/Logout';
+	if (options?.clearStorage) localStorage.clear();
+	window.location.href = loginUrl;
+};
