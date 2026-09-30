@@ -15,6 +15,7 @@ service.interceptors.request.use(
 			delete config.headers['Content-Type'];
 		}
 		config.headers['Accept-Language'] = localStorage.getItem('lang') || 'zh-cn';
+		config.headers['x-requested-with'] = 'XMLHttpRequest';
 		return config;
 	},
 	(error: AxiosError) => {
