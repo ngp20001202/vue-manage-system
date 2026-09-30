@@ -41,10 +41,10 @@ service.interceptors.response.use(
 	(error: AxiosError) => {
 		if (error.response && error.response.status === 401) {
 			const headers = error.response.headers || {};
-			const loginUrl = headers['Location'] || headers['location'];
+			const rawLoginUrl = headers['Location'] || headers['location'];
 			const redirectUri = window.location.pathname + window.location.search;
-			if (loginUrl) {
-				const url = new URL(loginUrl, window.location.origin);
+			if (typeof rawLoginUrl === 'string' && rawLoginUrl) {
+				const url = new URL(rawLoginUrl, window.location.origin);
 				url.searchParams.set('RedirectUri', redirectUri);
 				import('@/store/user').then(({ useUserStore }) => useUserStore().logout()).catch(() => {});
 				window.location.href = url.toString();
