@@ -5,10 +5,8 @@
       <div class="hamburger" @click="sidebar.toggleMobile()">
         <el-icon :size="22"><Expand /></el-icon>
       </div>
-      <div class="brand" @click="redirectToAuthUrl()">
-        <img class="logo" src="../assets/img/logo.svg" alt="" />
-        <div class="web-title">{{ webTitle }}</div>
-      </div>
+      <img class="logo" src="../assets/img/logo.svg" alt="" />
+      <div class="web-title">{{ webTitle }}</div>
       <div class="collapse-btn" @click="collapseChage">
         <el-icon v-if="sidebar.collapse">
           <Expand />
@@ -94,9 +92,8 @@
 </template>
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { useI18n } from "vue-i18n";
 import { useSidebarStore } from "../store/sidebar";
-import { useUserStore, redirectToAuthUrl } from "../store/user";
+import { useUserStore } from "../store/user";
 import { useRouter } from "vue-router";
 import { FullScreen } from "@element-plus/icons-vue";
 
@@ -106,7 +103,6 @@ const defaultAvatar =
 const userStore = useUserStore();
 const taskCount = ref(0);
 const isFullscreen = ref(false);
-const { t } = useI18n();
 
 const sidebar = useSidebarStore();
 const collapseChage = () => {
@@ -117,14 +113,16 @@ const router = useRouter();
 
 const lang = (localStorage.getItem("lang") as "zh-cn" | "en" | null) || "zh-cn";
 
-const webTitle = computed(() => userStore.user.tenantAlias || t('app.title'));
+const webTitle = computed(() => userStore.user.tenantAlias || "后台管理系统");
 const displayName = computed(
   () => userStore.user.name || localStorage.getItem("vuems_name") || "",
 );
 
 const handleCommand = (command: string) => {
   if (command == "loginout") {
+    localStorage.removeItem("vuems_name");
     userStore.logout();
+    router.push("/login");
   } else if (command == "user") {
     router.push("/ucenter");
   }
@@ -152,7 +150,7 @@ onMounted(() => {
   if (document.body.clientWidth < 1500) {
     collapseChage();
   }
-  if (userStore.user.name) {
+  if (userStore.token) {
     userStore.fetchProfile();
   }
   document.addEventListener("fullscreenchange", onFullscreenChange);

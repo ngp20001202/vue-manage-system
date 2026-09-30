@@ -10,6 +10,7 @@ interface UserInfo {
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
+		token: localStorage.getItem('token') || '',
 		user: {
 			name: localStorage.getItem('vuems_name') || '',
 			avatar: '',
@@ -17,9 +18,15 @@ export const useUserStore = defineStore('user', {
 		} as UserInfo,
 	}),
 	actions: {
+		setToken(t: string) {
+			this.token = t;
+			localStorage.setItem('token', t);
+		},
 		async login(username: string, password: string) {
 			const res: any = await gettoken({ username, password });
-			if (res?.isSuccess) {
+			const token = res?.result?.accessToken ?? res?.result?.token ?? res?.token;
+			if (token) {
+				this.setToken(token);
 				localStorage.setItem('vuems_name', username);
 					usePermissStore().reset();
 				try {
@@ -35,13 +42,14 @@ export const useUserStore = defineStore('user', {
 				if (u?.name) this.user.name = u.name;
 				if (u?.avatar) this.user.avatar = u.avatar;
 				if (u?.tenantAlias) this.user.tenantAlias = u.tenantAlias;
-				if (u?.idUrl) localStorage.setItem('idUrl', u.idUrl);
 			} catch {}
 		},
-		// 免密登录：URL 上带 ?token= 时用它换取 cookie，由后端 Set-Cookie 写入
+		// 免密登录：URL 上带 ?token= 时用它换取 accessToken
 		async loginByToken(urlToken: string) {
 			const res: any = await gettokens(urlToken);
-			if (!res?.isSuccess) return res;
+			const token = res?.result?.accessToken ?? res?.result?.token;
+			if (!token) return res;
+			this.setToken(token);
 			await this.fetchProfile();
 			// vuems_name 必须先落盘，permiss.reset() 依赖它判断是否已登录
 			localStorage.setItem('vuems_name', this.user.name || 'admin');
@@ -49,16 +57,15 @@ export const useUserStore = defineStore('user', {
 			return res;
 		},
 		logout() {
-			localStorage.clear();
+			this.token = '';
+			this.user.name = '';
+			this.user.tenantAlias = '';
+			localStorage.removeItem('token');
+			localStorage.removeItem('vuems_name');
 			usePermissStore().reset();
-			window.location.href = '/Account/Logout';
+		},
+		init() {
+			/* ensures reactive hydration from localStorage on first use */
 		},
 	},
 });
-
-export const redirectToAuthUrl = (options?: { clearStorage?: boolean }) => {
-	const idUrl = localStorage.getItem('idUrl');
-	const loginUrl = idUrl ? `${idUrl.replace(/\/$/, '')}` : '/Account/Logout';
-	if (options?.clearStorage) localStorage.clear();
-	window.location.href = loginUrl;
-};

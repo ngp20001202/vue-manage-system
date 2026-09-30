@@ -204,7 +204,17 @@ const routes: RouteRecordRaw[] = [
             titleKey: 'title.Login',
             noAuth: true,
         },
-        component: () => import(/* webpackChunkName: "login2" */ '../views/pages/login.vue'),
+        component: () => import(/* webpackChunkName: "login2" */ '../views/pages/login2.vue'),
+    },
+    {
+        path: '/login2',
+        meta: {
+            title: '登录',
+            titleKey: 'title.Login',
+            noAuth: true,
+            hideInMenu: true,
+        },
+        component: () => import(/* webpackChunkName: "login2" */ '../views/pages/login2.vue'),
     },
     {
         path: '/403',

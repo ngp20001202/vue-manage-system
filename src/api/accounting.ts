@@ -33,6 +33,10 @@ export const xactsexport = (params: { PeriodMin?: string; PeriodMax?: string }):
 	});
 };
 
+// 签名 token（导出 / 下载走签名链接时使用）
+export const SackMftsign = (data: { url: string }): Promise<any> =>
+	request({ url: '/api/Tokens/sign', method: 'POST', data });
+
 // 充值：创建支付订单
 export const Paymentsdata = (data: any): Promise<ApiResponse> =>
 	request({ url: '/api/Payments', method: 'POST', data });

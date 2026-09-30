@@ -126,7 +126,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Search, Refresh, InfoFilled } from '@element-plus/icons-vue';
 import moment from 'moment';
-import { xactslist } from '@/api/accounting';
+import { xactslist, SackMftsign } from '@/api/accounting';
 import { getoriginurl } from '@/utils/originurl';
 import XactDetailDialog from './components/XactDetailDialog.vue';
 import type { ApiResponse } from '@/api/types';
@@ -219,7 +219,11 @@ const exportdata = async () => {
 	if (params.length) {
 		url += `?${params.join('&')}`;
 	}
-	window.open(url, '_blank');
+	const res: any = await SackMftsign({ url });
+	if (res?.token) {
+		url += `${params.length ? '&' : '?'}token=${res.token}`;
+		window.open(url, '_blank');
+	}
 };
 
 const onRowClick = (row: XactsRow) => {

@@ -73,6 +73,10 @@ export const sackMftimport = (data: FormData): Promise<ApiResponse> =>
 		data,
 	});
 
+// 签名 token（shippingspa ships from usesackMfts.js → /api/Tokens/sign）
+export const sackMftsign = (data: { url: string }): Promise<any> =>
+	request({ url: '/api/Tokens/sign', method: 'POST', data });
+
 // 详情（shippingspa 有 detail 路径，下面按推测的 /api/SackMfts/detail/{id}）
 export const sackMftDetail = (params: { id: string }): Promise<ApiResponse> =>
 	request({ url: `/api/SackMfts/detail/${params.id}`, method: 'GET' });
