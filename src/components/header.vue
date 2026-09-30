@@ -120,9 +120,7 @@ const displayName = computed(
 
 const handleCommand = (command: string) => {
   if (command == "loginout") {
-    localStorage.removeItem("vuems_name");
     userStore.logout();
-    router.push("/login");
   } else if (command == "user") {
     router.push("/ucenter");
   }
@@ -150,7 +148,7 @@ onMounted(() => {
   if (document.body.clientWidth < 1500) {
     collapseChage();
   }
-  if (userStore.token) {
+  if (userStore.user.name) {
     userStore.fetchProfile();
   }
   document.addEventListener("fullscreenchange", onFullscreenChange);

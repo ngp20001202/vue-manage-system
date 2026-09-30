@@ -151,7 +151,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	submitting.value = true;
 	try {
 		const res: any = await user.login(param.username, param.password);
-		if (!user.token) {
+		if (!res?.isSuccess) {
 			errorMsg.value = res?.message || t('pages.Failed');
 			return;
 		}

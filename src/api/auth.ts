@@ -4,9 +4,20 @@ import request from '@/utils/request';
 export const gettoken = (data: { username?: string; password?: string; token?: string }) =>
 	request({ url: '/api/Tokens', method: 'POST', data });
 
-// 用 URL 上的 token 换取 accessToken（shippingspa: GET /api/Tokens/{token}）
-export const gettokens = (token: string) =>
-	request({ url: `/api/Tokens/${token}`, method: 'GET' });
+// 用 URL 上的 token 换取 accessToken
+// 线上：GET /api/Tokens/{token}
+// 开发：POST /api/Users/signIn?RedirectUri=/，body 为 application/x-www-form-urlencoded 的 Token=...
+export const gettokens = (token: string) => {
+	if (import.meta.env.DEV) {
+		return request({
+			url: '/api/Users/signIn?RedirectUri=/',
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			data: `Token=${encodeURIComponent(token)}`,
+		});
+	}
+	return request({ url: `/api/Tokens/${token}`, method: 'GET' });
+};
 
 export const getuser = () =>
 	request({ url: '/api/Users/me', method: 'GET' });
