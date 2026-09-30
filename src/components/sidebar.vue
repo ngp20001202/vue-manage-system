@@ -81,7 +81,7 @@ const onRoutes = computed(() => {
 
 const sidebar = useSidebarStore();
 const userStore = useUserStore();
-const webTitle = computed(() => userStore.user.tenantAlias || '后台管理系统');
+const webTitle = computed(() => userStore.user.tenantAlias || t('app.title'));
 const { isMobile } = useViewport();
 const menuCollapse = computed(() => (isMobile.value ? false : sidebar.collapse));
 
