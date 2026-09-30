@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus';
 const service = axios.create({
 	baseURL: (import.meta.env.VITE_APP_BASE as string) || '',
 	timeout: 180000,
+	withCredentials: true,
 });
 
 service.interceptors.request.use(

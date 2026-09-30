@@ -29,7 +29,7 @@
 
 - [x] 删除请求拦截器中 `Authorization: Bearer …` 头注入
 - [x] 401 处理改为读取响应头 `Location`，拼 `RedirectUri=当前路径` 后整页跳转；无 Location 时调 `userStore.logout()` 兜底
-- [ ] `withCredentials: true` 待确认（如果后端要求 cookie 同源 / 跨域携带）
+- [x] 开启 `withCredentials: true` —— 后端 Set-Cookie 需要前端请求携带 cookie
 
 ## 3. 路由守卫
 
