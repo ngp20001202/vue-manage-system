@@ -1,4 +1,7 @@
 export default {
+  app: {
+    title: "客户端",
+  },
   menu: {
     Dashboard: "控制面板",
     Parcel: {

@@ -92,6 +92,7 @@
 </template>
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useSidebarStore } from "../store/sidebar";
 import { useUserStore } from "../store/user";
 import { useRouter } from "vue-router";
@@ -103,6 +104,7 @@ const defaultAvatar =
 const userStore = useUserStore();
 const taskCount = ref(0);
 const isFullscreen = ref(false);
+const { t } = useI18n();
 
 const sidebar = useSidebarStore();
 const collapseChage = () => {
@@ -113,7 +115,7 @@ const router = useRouter();
 
 const lang = (localStorage.getItem("lang") as "zh-cn" | "en" | null) || "zh-cn";
 
-const webTitle = computed(() => userStore.user.tenantAlias || "后台管理系统");
+const webTitle = computed(() => userStore.user.tenantAlias || t('app.title'));
 const displayName = computed(
   () => userStore.user.name || localStorage.getItem("vuems_name") || "",
 );
