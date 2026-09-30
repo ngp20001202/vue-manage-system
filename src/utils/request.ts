@@ -4,19 +4,22 @@ import { ElMessage } from 'element-plus';
 const service = axios.create({
 	baseURL: (import.meta.env.VITE_APP_BASE as string) || '',
 	timeout: 180000,
-	withCredentials: true,
 });
 
 service.interceptors.request.use(
 	(config: InternalAxiosRequestConfig) => {
-		config.headers['Content-Type'] = 'application/json';
+		// 默认 Content-Type 为 application/json，但调用方已显式设置时不要覆盖
+		// （例如 POST /.authentication/signIn 需要 application/x-www-form-urlencoded）
+		if (!config.headers['Content-Type']) {
+			config.headers['Content-Type'] = 'application/json';
+		}
 		// FormData 必须交给浏览器设置 multipart/form-data + boundary，
 		// 否则 axios 1.x 会把 FormData 序列化成 JSON，文件丢失
 		if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
 			delete config.headers['Content-Type'];
 		}
 		config.headers['Accept-Language'] = localStorage.getItem('lang') || 'zh-cn';
-		config.headers['x-requested-with'] = 'XMLHttpRequest';
+		// config.headers['x-requested-with'] = 'XMLHttpRequest';
 		return config;
 	},
 	(error: AxiosError) => {
@@ -41,10 +44,10 @@ service.interceptors.response.use(
 	(error: AxiosError) => {
 		if (error.response && error.response.status === 401) {
 			const headers = error.response.headers || {};
-			const loginUrl = headers['Location'] || headers['location'];
+			const rawLoginUrl = headers['Location'] || headers['location'];
 			const redirectUri = window.location.pathname + window.location.search;
-			if (loginUrl) {
-				const url = new URL(loginUrl, window.location.origin);
+			if (typeof rawLoginUrl === 'string' && rawLoginUrl) {
+				const url = new URL(rawLoginUrl, window.location.origin);
 				url.searchParams.set('RedirectUri', redirectUri);
 				import('@/store/user').then(({ useUserStore }) => useUserStore().logout()).catch(() => {});
 				window.location.href = url.toString();

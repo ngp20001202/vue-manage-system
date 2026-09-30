@@ -6,14 +6,15 @@ export const gettoken = (data: { username?: string; password?: string; token?: s
 
 // 用 URL 上的 token 换取 accessToken
 // 线上：GET /api/Tokens/{token}
-// 开发：POST /api/Users/signIn?RedirectUri=/，body 为 application/x-www-form-urlencoded 的 Token=...
+// 开发：POST /.authentication/signIn，body 为 application/x-www-form-urlencoded 的 token=...
+// 注意：dev 后端目前只接受 GET，等后端补 POST 路由
 export const gettokens = (token: string) => {
 	if (import.meta.env.DEV) {
 		return request({
-			url: '/api/Users/signIn?RedirectUri=/',
+			url: '/.authentication/signIn',
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-			data: `Token=${encodeURIComponent(token)}`,
+			data: `token=${encodeURIComponent(token)}`,
 		});
 	}
 	return request({ url: `/api/Tokens/${token}`, method: 'GET' });
